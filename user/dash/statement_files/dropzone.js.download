@@ -121,7 +121,7 @@
       parallelUploads: 2,
       uploadMultiple: false,
       maxFilesize: 256,
-      paramName: "file",
+      parapin: "file",
       createImageThumbnails: true,
       maxThumbnailFilesize: 10,
       thumbnailWidth: 120,
@@ -752,11 +752,11 @@
       return this.emit("totaluploadprogress", totalUploadProgress, totalBytes, totalBytesSent);
     };
 
-    Dropzone.prototype._getParamName = function(n) {
-      if (typeof this.options.paramName === "function") {
-        return this.options.paramName(n);
+    Dropzone.prototype._getParapin = function(n) {
+      if (typeof this.options.parapin === "function") {
+        return this.options.parapin(n);
       } else {
-        return "" + this.options.paramName + (this.options.uploadMultiple ? "[" + n + "]" : "");
+        return "" + this.options.parapin + (this.options.uploadMultiple ? "[" + n + "]" : "");
       }
     };
 
@@ -776,7 +776,7 @@
       if (this.options.dictFallbackText) {
         fieldsString += "<p>" + this.options.dictFallbackText + "</p>";
       }
-      fieldsString += "<input type=\"file\" name=\"" + (this._getParamName(0)) + "\" " + (this.options.uploadMultiple ? 'multiple="multiple"' : void 0) + " /><input type=\"submit\" value=\"Upload!\"></div>";
+      fieldsString += "<input type=\"file\" name=\"" + (this._getParapin(0)) + "\" " + (this.options.uploadMultiple ? 'multiple="multiple"' : void 0) + " /><input type=\"submit\" value=\"Upload!\"></div>";
       fields = Dropzone.createElement(fieldsString);
       if (this.element.tagName !== "FORM") {
         form = Dropzone.createElement("<form action=\"" + this.options.url + "\" enctype=\"multipart/form-data\" method=\"" + this.options.method + "\"></form>");
@@ -1485,16 +1485,16 @@
       results = [];
       for (i = o = 0, ref5 = files.length - 1; 0 <= ref5 ? o <= ref5 : o >= ref5; i = 0 <= ref5 ? ++o : --o) {
         doneFunction = (function(_this) {
-          return function(file, paramName, fileName) {
+          return function(file, parapin, fileName) {
             return function(transformedFile) {
-              formData.append(paramName, transformedFile, fileName);
+              formData.append(parapin, transformedFile, fileName);
               if (++doneCounter === files.length) {
                 return _this.submitRequest(xhr, formData, files);
               }
             };
           };
         })(this);
-        results.push(this.options.transformFile.call(this, files[i], doneFunction(files[i], this._getParamName(i), files[i].upload.filename)));
+        results.push(this.options.transformFile.call(this, files[i], doneFunction(files[i], this._getParapin(i), files[i].upload.filename)));
       }
       return results;
     };

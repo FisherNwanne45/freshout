@@ -63,7 +63,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $hasError = true;
             } else {
                 $_SESSION['pin_verified'] = 'otp-verified';
-                $_SESSION['mname'] = 'otp-verified'; // backward compatibility during phased migration
+                $_SESSION['pin'] = 'otp-verified'; // backward compatibility during phased migration
                 header('Location: index.php');
                 exit();
             }
@@ -78,6 +78,7 @@ if ($fullName === '') {
 ?>
 <!doctype html>
 <html lang="en">
+
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -108,6 +109,7 @@ if ($fullName === '') {
             border: 1px solid <?= htmlspecialchars($hasError ? $palette['danger'] : $palette['border']) ?>;
             background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
         }
+
         #otp-wrapper #otp {
             display: block;
             width: 100%;
@@ -127,30 +129,35 @@ if ($fullName === '') {
             caret-color: <?= htmlspecialchars($palette['navy']) ?>;
             transition: border-color 0.15s, box-shadow 0.15s;
         }
+
         #otp-wrapper #otp::placeholder {
             color: <?= htmlspecialchars($palette['muted']) ?>;
             font-size: 1.7rem;
             letter-spacing: 0.62rem;
             font-weight: 500;
         }
+
         #otp-wrapper #otp:focus {
             border-color: <?= htmlspecialchars($palette['navy']) ?>;
             box-shadow: 0 0 0 4px <?= htmlspecialchars($palette['navy']) ?>1f;
             outline: none;
             background: #ffffff;
         }
+
         .auth-translator-light .gts-select {
             color: <?= htmlspecialchars($palette['navy']) ?>;
             background-color: #ffffff;
             border-color: <?= htmlspecialchars($palette['border']) ?>;
             background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none'%3E%3Cpath stroke='rgba(23,63,109,0.85)' stroke-linecap='round' stroke-linejoin='round' stroke-width='2.5' d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
         }
+
         .auth-translator-light .gts-select option {
             background: #ffffff;
             color: #0f172a;
         }
     </style>
 </head>
+
 <body class="min-h-screen bg-brand-light">
     <div class="relative mx-auto flex min-h-screen max-w-6xl items-center p-4 md:p-8">
         <div class="grid w-full overflow-hidden rounded-3xl bg-white shadow-2xl lg:grid-cols-2">
@@ -202,8 +209,7 @@ if ($fullName === '') {
                                 pattern="\d{6}"
                                 placeholder="• • • • • •"
                                 autocomplete="off"
-                                required
-                            >
+                                required>
                         </div>
 
                         <div class="mt-4 flex gap-3">
@@ -232,4 +238,5 @@ if ($fullName === '') {
         otpInput.focus();
     </script>
 </body>
+
 </html>

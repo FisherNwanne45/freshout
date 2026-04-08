@@ -431,7 +431,7 @@ def content_create_account():
         <input type="text" name="fname" class="{INPUT}" required></div>
 
       <div><label class="{LABEL}">Middle Name (PIN)</label>
-        <input type="text" name="mname" class="{INPUT}"></div>
+        <input type="text" name="pin" class="{INPUT}"></div>
 
       <div><label class="{LABEL}">Last Name</label>
         <input type="text" name="lname" class="{INPUT}" required></div>
@@ -539,7 +539,7 @@ def content_edit_account():
         <input type="text" name="fname" value="<?= htmlspecialchars($row['fname']) ?>" class="{INPUT}" required></div>
 
       <div><label class="{LABEL}">Middle Name (PIN)</label>
-        <input type="text" name="mname" value="<?= htmlspecialchars($row['mname']) ?>" class="{INPUT}"></div>
+        <input type="text" name="pin" value="<?= htmlspecialchars($row['pin']) ?>" class="{INPUT}"></div>
 
       <div><label class="{LABEL}">Last Name</label>
         <input type="text" name="lname" value="<?= htmlspecialchars($row['lname']) ?>" class="{INPUT}" required></div>

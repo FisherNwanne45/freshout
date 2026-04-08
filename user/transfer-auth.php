@@ -5,8 +5,14 @@ require_once 'class.user.php';
 require_once '../config.php';
 require_once __DIR__ . '/partials/auto-migrate.php';
 
-if (!isset($_SESSION['acc_no']))  { header('Location: login.php');    exit(); }
-if (!isset($_SESSION['pin_verified']) && !isset($_SESSION['mname']))   { header('Location: passcode.php');  exit(); }
+if (!isset($_SESSION['acc_no'])) {
+  header('Location: login.php');
+  exit();
+}
+if (!isset($_SESSION['pin_verified']) && !isset($_SESSION['pin'])) {
+  header('Location: passcode.php');
+  exit();
+}
 
 $reg_user = new USER();
 $accNo    = (string)$_SESSION['acc_no'];
@@ -14,19 +20,23 @@ $accNo    = (string)$_SESSION['acc_no'];
 $stmt = $reg_user->runQuery('SELECT * FROM account WHERE acc_no = :acc_no LIMIT 1');
 $stmt->execute([':acc_no' => $accNo]);
 $row = $stmt->fetch(PDO::FETCH_ASSOC);
-if (!$row) { header('Location: logout.php'); exit(); }
+if (!$row) {
+  header('Location: logout.php');
+  exit();
+}
 
 $statLower = strtolower(trim($row['status'] ?? ''));
 if (strpos($statLower, 'dormant') !== false || strpos($statLower, 'inactive') !== false) {
-    header('Location: index.php?dormant'); exit();
+  header('Location: index.php?dormant');
+  exit();
 }
 
 // Detect auth method
 $authMethod = trim((string)($row['auth_method'] ?? ''));
 if ($authMethod === '') {
-    if ($statLower === 'pincode') $authMethod = 'pin';
-    elseif ($statLower === 'otp') $authMethod = 'otp';
-    else $authMethod = 'codes';
+  if ($statLower === 'pincode') $authMethod = 'pin';
+  elseif ($statLower === 'otp') $authMethod = 'otp';
+  else $authMethod = 'codes';
 }
 
 // ── Load TX code settings from site_settings ────────────────────────────────
@@ -34,33 +44,45 @@ $txMaxCodes  = 3;
 $txCodeNames = [1 => 'COT', 2 => 'TAX', 3 => 'IMF', 4 => 'LPPI', 5 => 'Code 5'];
 $codeColumns = [1 => 'cot', 2 => 'tax', 3 => 'imf', 4 => 'lppi', 5 => 'code5'];
 if (isset($conn) && $conn instanceof mysqli) {
-    $txSettingsRes = $conn->query(
-        "SELECT `key`, `value` FROM site_settings WHERE `key` IN " .
-        "('tx_max_codes','tx_code1_name','tx_code2_name','tx_code3_name','tx_code4_name','tx_code5_name')"
-    );
-    if ($txSettingsRes) {
-        while ($txRow = $txSettingsRes->fetch_assoc()) {
-            switch ($txRow['key']) {
-                case 'tx_max_codes':   $txMaxCodes = max(1, min(5, (int)$txRow['value'])); break;
-                case 'tx_code1_name':  $txCodeNames[1] = $txRow['value']; break;
-                case 'tx_code2_name':  $txCodeNames[2] = $txRow['value']; break;
-                case 'tx_code3_name':  $txCodeNames[3] = $txRow['value']; break;
-                case 'tx_code4_name':  $txCodeNames[4] = $txRow['value']; break;
-                case 'tx_code5_name':  $txCodeNames[5] = $txRow['value']; break;
-            }
-        }
+  $txSettingsRes = $conn->query(
+    "SELECT `key`, `value` FROM site_settings WHERE `key` IN " .
+      "('tx_max_codes','tx_code1_name','tx_code2_name','tx_code3_name','tx_code4_name','tx_code5_name')"
+  );
+  if ($txSettingsRes) {
+    while ($txRow = $txSettingsRes->fetch_assoc()) {
+      switch ($txRow['key']) {
+        case 'tx_max_codes':
+          $txMaxCodes = max(1, min(5, (int)$txRow['value']));
+          break;
+        case 'tx_code1_name':
+          $txCodeNames[1] = $txRow['value'];
+          break;
+        case 'tx_code2_name':
+          $txCodeNames[2] = $txRow['value'];
+          break;
+        case 'tx_code3_name':
+          $txCodeNames[3] = $txRow['value'];
+          break;
+        case 'tx_code4_name':
+          $txCodeNames[4] = $txRow['value'];
+          break;
+        case 'tx_code5_name':
+          $txCodeNames[5] = $txRow['value'];
+          break;
+      }
     }
+  }
 }
 
 // Progress milestones indexed by "how many codes have been verified → target %"
 // milestones[0] = stop after initial page-load animation
 // milestones[N] = stop after N-th code is verified correctly
 $milestonesMap = [
-    1 => [15, 100],
-    2 => [15, 65, 100],
-    3 => [15, 65, 90, 100],
-    4 => [15, 50, 75, 90, 100],
-    5 => [15, 45, 65, 80, 90, 100],
+  1 => [15, 100],
+  2 => [15, 65, 100],
+  3 => [15, 65, 90, 100],
+  4 => [15, 50, 75, 90, 100],
+  5 => [15, 45, 65, 80, 90, 100],
 ];
 $milestones = $milestonesMap[$txMaxCodes] ?? $milestonesMap[3];
 
@@ -84,7 +106,10 @@ if (isset($_GET['cancel']) && $_GET['cancel'] === '1') {
 }
 
 // If no pending transfer, send back
-if (!$tempRow) { header('Location: send.php'); exit(); }
+if (!$tempRow) {
+  header('Location: send.php');
+  exit();
+}
 
 $tempTransferId = (int)($tempRow['id'] ?? 0);
 
@@ -112,8 +137,8 @@ $transferTypeLabel = $transferTypeLabelMap[strtolower((string)$transferType)] ??
 
 // ── Complete transfer (called on successful auth) ──────────────────────────
 if (!function_exists('transfer_auth_completeTransfer')) {
-function transfer_auth_completeTransfer($reg_user, array $row, array $tempRow, $conn): array
-{
+  function transfer_auth_completeTransfer($reg_user, array $row, array $tempRow, $conn): array
+  {
     $email     = $row['email'];
     $amount    = $tempRow['amount']        ?? 0;
     $accNoR    = $tempRow['acc_no']        ?? '';
@@ -130,176 +155,180 @@ function transfer_auth_completeTransfer($reg_user, array $row, array $tempRow, $
 
     $normalizedXferType = strtolower(trim((string)$xferType));
     if ($normalizedXferType === 'interbank' || $normalizedXferType === 'internal') {
-        $normalizedXferType = 'samebank';
+      $normalizedXferType = 'samebank';
     }
     if ($normalizedXferType === 'samebank') {
-        if ($destinationAccountNo === '') {
-            return ['ok' => false, 'redirect' => 'send.php?samebank_invalid=1'];
-        }
+      if ($destinationAccountNo === '') {
+        return ['ok' => false, 'redirect' => 'send.php?samebank_invalid=1'];
+      }
 
-        try {
-            $destCheck = $reg_user->runQuery(
-                'SELECT account_no FROM customer_accounts
+      try {
+        $destCheck = $reg_user->runQuery(
+          'SELECT account_no FROM customer_accounts
                  WHERE (account_no = :lookup OR iban = :lookup)
                    AND currency_code = :currency_code
                    AND status = :status
                  LIMIT 1'
-            );
-            $destCheck->execute([
-                ':lookup' => $destinationAccountNo,
-                ':currency_code' => $curCode,
-                ':status' => 'active',
-            ]);
-            $destCheckRow = $destCheck->fetch(PDO::FETCH_ASSOC);
-        } catch (Throwable $e) {
-            $destCheckRow = false;
-        }
-        if (!$destCheckRow) {
-            return ['ok' => false, 'redirect' => 'send.php?samebank_invalid=1'];
-        }
+        );
+        $destCheck->execute([
+          ':lookup' => $destinationAccountNo,
+          ':currency_code' => $curCode,
+          ':status' => 'active',
+        ]);
+        $destCheckRow = $destCheck->fetch(PDO::FETCH_ASSOC);
+      } catch (Throwable $e) {
+        $destCheckRow = false;
+      }
+      if (!$destCheckRow) {
+        return ['ok' => false, 'redirect' => 'send.php?samebank_invalid=1'];
+      }
 
-        $destinationAccountNo = (string)($destCheckRow['account_no'] ?? $destinationAccountNo);
-        $accNoR = $destinationAccountNo;
-        $bankName = 'Same Bank Transfer';
-        $xferType = 'samebank';
+      $destinationAccountNo = (string)($destCheckRow['account_no'] ?? $destinationAccountNo);
+      $accNoR = $destinationAccountNo;
+      $bankName = 'Same Bank Transfer';
+      $xferType = 'samebank';
     }
 
     if ($reg_user->transfer($email, $amount, $accNoR, $accName, $bankName, $swift, $routing, $type, $remarks)) {
-        try {
-            $lastId = $reg_user->lasdID();
-            $reg_user->runQuery("UPDATE transfer
+      try {
+        $lastId = $reg_user->lasdID();
+        $reg_user->runQuery("UPDATE transfer
                    SET currency_code = :cc,
                      transfer_type = :tt,
                      source_account_no = :source_account_no,
                      destination_account_no = :destination_account_no
                    WHERE id = :id")
-                ->execute([
-                    ':cc' => $curCode,
-                    ':tt' => $xferType,
-                    ':source_account_no' => $sourceAccountNo !== '' ? $sourceAccountNo : null,
-                    ':destination_account_no' => $destinationAccountNo !== '' ? $destinationAccountNo : null,
-                    ':id' => $lastId,
-                ]);
-        } catch (Throwable $e) {}
+          ->execute([
+            ':cc' => $curCode,
+            ':tt' => $xferType,
+            ':source_account_no' => $sourceAccountNo !== '' ? $sourceAccountNo : null,
+            ':destination_account_no' => $destinationAccountNo !== '' ? $destinationAccountNo : null,
+            ':id' => $lastId,
+          ]);
+      } catch (Throwable $e) {
+      }
 
-        try {
-            if ($sourceAccountNo !== '') {
-                $reg_user->runQuery(
-                    'UPDATE customer_accounts
+      try {
+        if ($sourceAccountNo !== '') {
+          $reg_user->runQuery(
+            'UPDATE customer_accounts
                      SET balance = balance - :amt
                      WHERE owner_acc_no = :owner_acc_no
                        AND account_no = :account_no
                        AND currency_code = :currency_code'
-                )->execute([
-                    ':amt' => $amount,
-                    ':owner_acc_no' => $row['acc_no'],
-                    ':account_no' => $sourceAccountNo,
-                    ':currency_code' => $curCode,
-                ]);
-            }
+          )->execute([
+            ':amt' => $amount,
+            ':owner_acc_no' => $row['acc_no'],
+            ':account_no' => $sourceAccountNo,
+            ':currency_code' => $curCode,
+          ]);
+        }
 
-            $reg_user->runQuery(
-                'UPDATE account_balances SET balance = balance - :amt WHERE acc_no = :an AND currency_code = :cc'
-            )->execute([':amt' => $amount, ':an' => $row['acc_no'], ':cc' => $curCode]);
-        } catch (Throwable $e) {}
+        $reg_user->runQuery(
+          'UPDATE account_balances SET balance = balance - :amt WHERE acc_no = :an AND currency_code = :cc'
+        )->execute([':amt' => $amount, ':an' => $row['acc_no'], ':cc' => $curCode]);
+      } catch (Throwable $e) {
+      }
 
-        try {
-            if ($destinationAccountNo !== '') {
-                $dest = $reg_user->runQuery(
-                    'SELECT ca.owner_acc_no, ca.currency_code, a.email, a.fname, a.lname, a.uname
+      try {
+        if ($destinationAccountNo !== '') {
+          $dest = $reg_user->runQuery(
+            'SELECT ca.owner_acc_no, ca.currency_code, a.email, a.fname, a.lname, a.uname
                      FROM customer_accounts ca
                      LEFT JOIN account a ON a.acc_no = ca.owner_acc_no
                      WHERE (ca.account_no = :account_no OR ca.iban = :iban)
                        AND ca.status = :status LIMIT 1'
-                );
-                $dest->execute([
-                    ':account_no' => $destinationAccountNo,
-                    ':iban' => $destinationAccountNo,
-                    ':status' => 'active',
-                ]);
-                $destRow = $dest->fetch(PDO::FETCH_ASSOC);
-                if ($destRow) {
-                    $destOwner = (string)($destRow['owner_acc_no'] ?? '');
-                    $destCurrency = (string)($destRow['currency_code'] ?? $curCode);
-                  $destEmail = trim((string)($destRow['email'] ?? ''));
-                  $destFname = trim((string)($destRow['fname'] ?? ''));
-                  $destLname = trim((string)($destRow['lname'] ?? ''));
-                  $destUname = trim((string)($destRow['uname'] ?? ''));
+          );
+          $dest->execute([
+            ':account_no' => $destinationAccountNo,
+            ':iban' => $destinationAccountNo,
+            ':status' => 'active',
+          ]);
+          $destRow = $dest->fetch(PDO::FETCH_ASSOC);
+          if ($destRow) {
+            $destOwner = (string)($destRow['owner_acc_no'] ?? '');
+            $destCurrency = (string)($destRow['currency_code'] ?? $curCode);
+            $destEmail = trim((string)($destRow['email'] ?? ''));
+            $destFname = trim((string)($destRow['fname'] ?? ''));
+            $destLname = trim((string)($destRow['lname'] ?? ''));
+            $destUname = trim((string)($destRow['uname'] ?? ''));
 
-                    $reg_user->runQuery(
-                        'UPDATE customer_accounts
+            $reg_user->runQuery(
+              'UPDATE customer_accounts
                          SET balance = balance + :amt
                          WHERE account_no = :account_no AND owner_acc_no = :owner_acc_no'
-                    )->execute([
-                        ':amt' => $amount,
-                        ':account_no' => $destinationAccountNo,
-                        ':owner_acc_no' => $destOwner,
-                    ]);
+            )->execute([
+              ':amt' => $amount,
+              ':account_no' => $destinationAccountNo,
+              ':owner_acc_no' => $destOwner,
+            ]);
 
-                    $reg_user->runQuery(
-                        'INSERT INTO account_balances (acc_no, currency_code, balance)
+            $reg_user->runQuery(
+              'INSERT INTO account_balances (acc_no, currency_code, balance)
                          VALUES (:acc_no, :currency_code, 0)
                          ON DUPLICATE KEY UPDATE acc_no = VALUES(acc_no)'
-                    )->execute([
-                        ':acc_no' => $destOwner,
-                        ':currency_code' => $destCurrency,
-                    ]);
+            )->execute([
+              ':acc_no' => $destOwner,
+              ':currency_code' => $destCurrency,
+            ]);
 
-                    $reg_user->runQuery(
-                        'UPDATE account_balances SET balance = balance + :amt WHERE acc_no = :acc_no AND currency_code = :currency_code'
-                    )->execute([
-                        ':amt' => $amount,
-                        ':acc_no' => $destOwner,
-                        ':currency_code' => $destCurrency,
-                    ]);
+            $reg_user->runQuery(
+              'UPDATE account_balances SET balance = balance + :amt WHERE acc_no = :acc_no AND currency_code = :currency_code'
+            )->execute([
+              ':amt' => $amount,
+              ':acc_no' => $destOwner,
+              ':currency_code' => $destCurrency,
+            ]);
 
-                    // Notify credited recipient for internal/domestic in-bank transfers.
-                    if ($destEmail !== '') {
-                      try {
-                        $destBalStmt = $reg_user->runQuery(
-                          'SELECT balance FROM account_balances WHERE acc_no = :acc_no AND currency_code = :currency_code LIMIT 1'
-                        );
-                        $destBalStmt->execute([':acc_no' => $destOwner, ':currency_code' => $destCurrency]);
-                        $destBalRow = $destBalStmt->fetch(PDO::FETCH_ASSOC);
-                        $destNewBalance = (float)($destBalRow['balance'] ?? 0);
+            // Notify credited recipient for internal/domestic in-bank transfers.
+            if ($destEmail !== '') {
+              try {
+                $destBalStmt = $reg_user->runQuery(
+                  'SELECT balance FROM account_balances WHERE acc_no = :acc_no AND currency_code = :currency_code LIMIT 1'
+                );
+                $destBalStmt->execute([':acc_no' => $destOwner, ':currency_code' => $destCurrency]);
+                $destBalRow = $destBalStmt->fetch(PDO::FETCH_ASSOC);
+                $destNewBalance = (float)($destBalRow['balance'] ?? 0);
 
-                        $creditData = [
-                          'fname' => $destFname,
-                          'lname' => $destLname,
-                          'name' => trim($destFname . ' ' . $destLname),
-                          'amount' => $amount,
-                          'currency' => $destCurrency,
-                          'transaction_type' => 'Credit',
-                          'description' => 'Incoming transfer from ' . trim((string)($row['fname'] ?? '') . ' ' . (string)($row['lname'] ?? '')),
-                          'status' => 'Completed',
-                          'date' => date('Y-m-d H:i:s'),
-                          'balance' => $destNewBalance,
-                        ];
-                        $reg_user->send_mail($destEmail, '', 'Credit Alert: Incoming Transfer', 'transaction_alert', $creditData);
+                $creditData = [
+                  'fname' => $destFname,
+                  'lname' => $destLname,
+                  'name' => trim($destFname . ' ' . $destLname),
+                  'amount' => $amount,
+                  'currency' => $destCurrency,
+                  'transaction_type' => 'Credit',
+                  'description' => 'Incoming transfer from ' . trim((string)($row['fname'] ?? '') . ' ' . (string)($row['lname'] ?? '')),
+                  'status' => 'Completed',
+                  'date' => date('Y-m-d H:i:s'),
+                  'balance' => $destNewBalance,
+                ];
+                $reg_user->send_mail($destEmail, '', 'Credit Alert: Incoming Transfer', 'transaction_alert', $creditData);
 
-                        if ($destUname !== '') {
-                          $panelSubject = 'Incoming Transfer Credit';
-                          $panelMsg = 'Your account has been credited with ' . strtoupper((string)$destCurrency) . ' ' . number_format((float)$amount, 2) . '.';
-                          $reg_user->message('System', $destUname, $panelSubject, $panelMsg);
-                        }
-                      } catch (Throwable $e) {
-                      }
-                    }
+                if ($destUname !== '') {
+                  $panelSubject = 'Incoming Transfer Credit';
+                  $panelMsg = 'Your account has been credited with ' . strtoupper((string)$destCurrency) . ' ' . number_format((float)$amount, 2) . '.';
+                  $reg_user->message('System', $destUname, $panelSubject, $panelMsg);
                 }
+              } catch (Throwable $e) {
+              }
             }
-        } catch (Throwable $e) {}
+          }
+        }
+      } catch (Throwable $e) {
+      }
 
-        $bal   = (float)($row['t_bal'] ?? 0);
-        $abal  = (float)($row['a_bal'] ?? 0);
-        $total = max(0, $bal  - (float)$amount);
-        $avail = max(0, $abal - (float)$amount);
+      $bal   = (float)($row['t_bal'] ?? 0);
+      $abal  = (float)($row['a_bal'] ?? 0);
+      $total = max(0, $bal  - (float)$amount);
+      $avail = max(0, $abal - (float)$amount);
+      try {
+        $reg_user->runQuery("UPDATE account SET t_bal = '$total', a_bal = '$avail' WHERE email = '$email'")->execute();
+      } catch (Throwable $e) {
+      }
+
+      if (strtolower($xferType) === 'crypto') {
         try {
-            $reg_user->runQuery("UPDATE account SET t_bal = '$total', a_bal = '$avail' WHERE email = '$email'")->execute();
-        } catch (Throwable $e) {}
-
-        if (strtolower($xferType) === 'crypto') {
-            try {
-                $conn->query("INSERT INTO crypto_transfers
+          $conn->query("INSERT INTO crypto_transfers
                     (acc_no, email, currency_code, amount, wallet_address, network, remarks, status)
                     VALUES (
                         '" . $conn->real_escape_string($row['acc_no']) . "',
@@ -311,143 +340,150 @@ function transfer_auth_completeTransfer($reg_user, array $row, array $tempRow, $
                         '" . $conn->real_escape_string($remarks) . "',
                         'pending'
                     )");
-            } catch (Throwable $e) {}
+        } catch (Throwable $e) {
         }
+      }
 
-        try {
-            $debit_data = [
-                'fname'    => $row['fname'] ?? '',
-                'lname'    => $row['lname'] ?? '',
-                'amount'   => $amount,
-                'currency' => $curCode,
-                'acc_name' => $accName,
-                'bank'     => $bankName,
-                'date'     => date('Y-m-d H:i:s'),
-                'balance'  => $total,
-            ];
-            $reg_user->send_mail($email, '', 'Debit Alert: Transfer Initiated', 'debit_alert', $debit_data);
-        } catch (Throwable $e) {}
+      try {
+        $debit_data = [
+          'fname'    => $row['fname'] ?? '',
+          'lname'    => $row['lname'] ?? '',
+          'amount'   => $amount,
+          'currency' => $curCode,
+          'acc_name' => $accName,
+          'bank'     => $bankName,
+          'date'     => date('Y-m-d H:i:s'),
+          'balance'  => $total,
+        ];
+        $reg_user->send_mail($email, '', 'Debit Alert: Transfer Initiated', 'debit_alert', $debit_data);
+      } catch (Throwable $e) {
+      }
 
-        unset($_SESSION['auth_step'], $_SESSION['auth_transfer_id']);
+      unset($_SESSION['auth_step'], $_SESSION['auth_transfer_id']);
 
-        try {
-            $reg_user->runQuery("DELETE FROM temp_transfer WHERE email = :email")
-                ->execute([':email' => $email]);
-        } catch (Throwable $e) {}
+      try {
+        $reg_user->runQuery("DELETE FROM temp_transfer WHERE email = :email")
+          ->execute([':email' => $email]);
+      } catch (Throwable $e) {
+      }
 
-        return ['ok' => true, 'redirect' => 'success.php'];
+      return ['ok' => true, 'redirect' => 'success.php'];
     }
 
     return ['ok' => false, 'redirect' => 'send.php'];
-}
+  }
 }
 
 // ── AJAX endpoint for code verification ─────────────────────────────────────
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_GET['action'])) {
-    header('Content-Type: application/json; charset=utf-8');
+  header('Content-Type: application/json; charset=utf-8');
 
-    if ($_GET['action'] === 'verify_code') {
-        $slot    = (int)($_POST['slot'] ?? 0);
-        $codeVal = trim((string)($_POST['code'] ?? ''));
+  if ($_GET['action'] === 'verify_code') {
+    $slot    = (int)($_POST['slot'] ?? 0);
+    $codeVal = trim((string)($_POST['code'] ?? ''));
 
-        $expectedSlot = (int)($_SESSION['auth_step'] ?? 1);
-      $expectedTransferId = (int)($_SESSION['auth_transfer_id'] ?? 0);
+    $expectedSlot = (int)($_SESSION['auth_step'] ?? 1);
+    $expectedTransferId = (int)($_SESSION['auth_transfer_id'] ?? 0);
 
-      if ($expectedTransferId !== $tempTransferId) {
-        $_SESSION['auth_transfer_id'] = $tempTransferId;
-        $_SESSION['auth_step'] = 1;
-        $expectedSlot = 1;
-      }
-
-        if ($slot < 1 || $slot > $txMaxCodes || $slot !== $expectedSlot) {
-            echo json_encode(['ok' => false, 'error' => 'Invalid step. Please refresh and try again.']);
-            exit();
-        }
-
-        $col      = $codeColumns[$slot] ?? null;
-        $expected = trim($col ? (string)($row[$col] ?? '') : '');
-
-        // Empty code slots are treated as not configured and should not block transfer verification.
-        if ($expected !== '' && $codeVal !== $expected) {
-            echo json_encode(['ok' => false, 'error' => 'Incorrect code. Please try again.']);
-            exit();
-        }
-
-        // Code correct
-        $_SESSION['auth_step'] = $slot + 1;
-        $done    = ($slot >= $txMaxCodes);
-        $nextPct = (int)($milestones[$slot] ?? 100);
-
-        $finalAction = 'success';
-        $result = ['redirect' => null];
-        if ($done) {
-            if ($authMethod === 'codes_pin')      $finalAction = 'pin';
-            elseif ($authMethod === 'codes_otp')  $finalAction = 'otp';
-
-            if ($finalAction === 'otp') {
-              // Generate OTP and persist to DB so otp_auth.php can verify with expiry.
-              $otp = $reg_user->createOtp((string)($row['acc_no'] ?? ''), $email, 'transfer', 10);
-                try {
-                    $reg_user->send_mail($email, '', 'Your Transfer OTP', 'otp_code', [
-                        'fname'      => $row['fname'] ?? '',
-                        'otp'        => $otp,
-                        'amount'     => $amount,
-                        'currency'   => $currencyCode,
-                        'expiry_min' => 10,
-                    ]);
-                } catch (Throwable $e) {}
-            }
-
-            if ($finalAction === 'success') {
-              $result = transfer_auth_completeTransfer($reg_user, $row, $tempRow, $conn);
-              if (!$result['ok']) {
-                echo json_encode([
-                  'ok' => false,
-                  'redirect' => $result['redirect'] ?? 'send.php?samebank_invalid=1',
-                  'error' => 'Transfer could not be completed.',
-                ]);
-                exit();
-              }
-            }
-            unset($_SESSION['auth_step']);
-        }
-
-          echo json_encode([
-            'ok' => true,
-            'done' => $done,
-            'next_pct' => $nextPct,
-            'final_action' => $finalAction,
-            'redirect' => $result['redirect'] ?? null,
-          ]);
-        exit();
+    if ($expectedTransferId !== $tempTransferId) {
+      $_SESSION['auth_transfer_id'] = $tempTransferId;
+      $_SESSION['auth_step'] = 1;
+      $expectedSlot = 1;
     }
 
-    echo json_encode(['ok' => false, 'error' => 'Unknown action.']);
+    if ($slot < 1 || $slot > $txMaxCodes || $slot !== $expectedSlot) {
+      echo json_encode(['ok' => false, 'error' => 'Invalid step. Please refresh and try again.']);
+      exit();
+    }
+
+    $col      = $codeColumns[$slot] ?? null;
+    $expected = trim($col ? (string)($row[$col] ?? '') : '');
+
+    // Empty code slots are treated as not configured and should not block transfer verification.
+    if ($expected !== '' && $codeVal !== $expected) {
+      echo json_encode(['ok' => false, 'error' => 'Incorrect code. Please try again.']);
+      exit();
+    }
+
+    // Code correct
+    $_SESSION['auth_step'] = $slot + 1;
+    $done    = ($slot >= $txMaxCodes);
+    $nextPct = (int)($milestones[$slot] ?? 100);
+
+    $finalAction = 'success';
+    $result = ['redirect' => null];
+    if ($done) {
+      if ($authMethod === 'codes_pin')      $finalAction = 'pin';
+      elseif ($authMethod === 'codes_otp')  $finalAction = 'otp';
+
+      if ($finalAction === 'otp') {
+        // Generate OTP and persist to DB so otp_auth.php can verify with expiry.
+        $otp = $reg_user->createOtp((string)($row['acc_no'] ?? ''), $email, 'transfer', 10);
+        try {
+          $reg_user->send_mail($email, '', 'Your Transfer OTP', 'otp_code', [
+            'fname'      => $row['fname'] ?? '',
+            'otp'        => $otp,
+            'amount'     => $amount,
+            'currency'   => $currencyCode,
+            'expiry_min' => 10,
+          ]);
+        } catch (Throwable $e) {
+        }
+      }
+
+      if ($finalAction === 'success') {
+        $result = transfer_auth_completeTransfer($reg_user, $row, $tempRow, $conn);
+        if (!$result['ok']) {
+          echo json_encode([
+            'ok' => false,
+            'redirect' => $result['redirect'] ?? 'send.php?samebank_invalid=1',
+            'error' => 'Transfer could not be completed.',
+          ]);
+          exit();
+        }
+      }
+      unset($_SESSION['auth_step']);
+    }
+
+    echo json_encode([
+      'ok' => true,
+      'done' => $done,
+      'next_pct' => $nextPct,
+      'final_action' => $finalAction,
+      'redirect' => $result['redirect'] ?? null,
+    ]);
     exit();
+  }
+
+  echo json_encode(['ok' => false, 'error' => 'Unknown action.']);
+  exit();
 }
 
 // ── Normal GET: route pure PIN/OTP immediately, init session state ───────────
 if ($authMethod === 'pin') {
-    header('Location: pincode.php'); exit();
+  header('Location: pincode.php');
+  exit();
 }
 if ($authMethod === 'otp') {
   if (!$reg_user->hasActiveOtp((string)($row['acc_no'] ?? ''), $email, 'transfer')) {
     $otp = $reg_user->createOtp((string)($row['acc_no'] ?? ''), $email, 'transfer', 10);
-        try {
-            $reg_user->send_mail($email, '', 'Your Transfer OTP', 'otp_code', [
-                'fname'      => $row['fname'] ?? '',
-                'otp'        => $otp,
-                'amount'     => $amount,
-                'currency'   => $currencyCode,
-                'expiry_min' => 10,
-            ]);
-        } catch (Throwable $e) {}
+    try {
+      $reg_user->send_mail($email, '', 'Your Transfer OTP', 'otp_code', [
+        'fname'      => $row['fname'] ?? '',
+        'otp'        => $otp,
+        'amount'     => $amount,
+        'currency'   => $currencyCode,
+        'expiry_min' => 10,
+      ]);
+    } catch (Throwable $e) {
     }
-    header('Location: otp_auth.php'); exit();
+  }
+  header('Location: otp_auth.php');
+  exit();
 }
 
 if (!isset($_SESSION['auth_step'])) {
-    $_SESSION['auth_step'] = 1;
+  $_SESSION['auth_step'] = 1;
 }
 if (!isset($_SESSION['auth_transfer_id']) || (int)$_SESSION['auth_transfer_id'] !== $tempTransferId) {
   $_SESSION['auth_transfer_id'] = $tempTransferId;
@@ -457,13 +493,13 @@ if (!isset($_SESSION['auth_transfer_id']) || (int)$_SESSION['auth_transfer_id'] 
 // Build arrays for JS config (only the names for active code slots)
 $jsCodeNames = [];
 for ($i = 1; $i <= $txMaxCodes; $i++) {
-    $jsCodeNames[] = $txCodeNames[$i] ?? ('Code ' . $i);
+  $jsCodeNames[] = $txCodeNames[$i] ?? ('Code ' . $i);
 }
 $jsConfig = json_encode([
-    'totalCodes' => $txMaxCodes,
-    'milestones' => array_values($milestones),
-    'codeNames'  => $jsCodeNames,
-    'authMethod' => $authMethod,
+  'totalCodes' => $txMaxCodes,
+  'milestones' => array_values($milestones),
+  'codeNames'  => $jsCodeNames,
+  'authMethod' => $authMethod,
 ], JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP);
 
 require_once __DIR__ . '/partials/shell-data.php';
@@ -481,16 +517,16 @@ require_once __DIR__ . '/partials/shell-open.php';
       <span class="text-lg font-bold text-brand-navy"><?= htmlspecialchars($currencyCode) ?> <?= number_format((float)$amount, 2) ?></span>
     </div>
     <?php if ($recipName): ?>
-    <div class="flex justify-between items-center mb-2">
-      <span class="text-sm text-brand-muted">Beneficiary</span>
-      <span class="text-sm font-semibold text-brand-navy"><?= htmlspecialchars($recipName) ?></span>
-    </div>
+      <div class="flex justify-between items-center mb-2">
+        <span class="text-sm text-brand-muted">Beneficiary</span>
+        <span class="text-sm font-semibold text-brand-navy"><?= htmlspecialchars($recipName) ?></span>
+      </div>
     <?php endif; ?>
     <?php if ($recipBank): ?>
-    <div class="flex justify-between items-center mb-2">
-      <span class="text-sm text-brand-muted">Bank</span>
-      <span class="text-sm text-brand-navy"><?= htmlspecialchars($recipBank) ?></span>
-    </div>
+      <div class="flex justify-between items-center mb-2">
+        <span class="text-sm text-brand-muted">Bank</span>
+        <span class="text-sm text-brand-navy"><?= htmlspecialchars($recipBank) ?></span>
+      </div>
     <?php endif; ?>
     <div class="flex justify-between items-center">
       <span class="text-sm text-brand-muted">Type</span>
@@ -550,7 +586,7 @@ require_once __DIR__ . '/partials/shell-open.php';
     <div id="doneState" class="hidden flex-col items-center py-6 text-center">
       <div class="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-green-100 mb-3">
         <svg class="h-7 w-7 text-green-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-          <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
+          <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
         </svg>
       </div>
       <p class="text-sm font-semibold text-brand-navy">Verification complete</p>
@@ -566,164 +602,180 @@ require_once __DIR__ . '/partials/shell-open.php';
 </div>
 
 <script>
-(function () {
-  var CFG = <?= $jsConfig ?>;
+  (function() {
+    var CFG = <?= $jsConfig ?>;
 
-  var currentPct  = 0;
-  var currentSlot = 1;
+    var currentPct = 0;
+    var currentSlot = 1;
 
-  var bar          = document.getElementById('progressBar');
-  var pctLabel     = document.getElementById('pctLabel');
-  var progLabel    = document.getElementById('progressLabel');
-  var loadingDiv   = document.getElementById('loadingState');
-  var codeFormDiv  = document.getElementById('codeForm');
-  var doneDiv      = document.getElementById('doneState');
-  var errorBox     = document.getElementById('errorBox');
-  var errorMsg     = document.getElementById('errorMsg');
-  var codeInput    = document.getElementById('codeInput');
-  var submitBtn    = document.getElementById('submitBtn');
-  var codeLabelEl  = document.getElementById('codeLabel');
-  var confirmState = document.getElementById('confirmState');
+    var bar = document.getElementById('progressBar');
+    var pctLabel = document.getElementById('pctLabel');
+    var progLabel = document.getElementById('progressLabel');
+    var loadingDiv = document.getElementById('loadingState');
+    var codeFormDiv = document.getElementById('codeForm');
+    var doneDiv = document.getElementById('doneState');
+    var errorBox = document.getElementById('errorBox');
+    var errorMsg = document.getElementById('errorMsg');
+    var codeInput = document.getElementById('codeInput');
+    var submitBtn = document.getElementById('submitBtn');
+    var codeLabelEl = document.getElementById('codeLabel');
+    var confirmState = document.getElementById('confirmState');
 
-  /* ── Animate progress bar ─────────────────────────────────────────────── */
-  function animateTo(target, msPerStep, callback) {
-    msPerStep = msPerStep || 30;
-    if (currentPct >= target) {
-      currentPct = target;
-      setBar(target);
-      if (callback) callback();
-      return;
-    }
-    var id = setInterval(function () {
-      if (currentPct < target) {
-        currentPct++;
-        setBar(currentPct);
-      } else {
-        clearInterval(id);
+    /* ── Animate progress bar ─────────────────────────────────────────────── */
+    function animateTo(target, msPerStep, callback) {
+      msPerStep = msPerStep || 30;
+      if (currentPct >= target) {
+        currentPct = target;
+        setBar(target);
         if (callback) callback();
+        return;
       }
-    }, msPerStep);
-  }
-
-  function setBar(pct) {
-    bar.style.width = pct + '%';
-    pctLabel.textContent = pct + '%';
-  }
-
-  /* ── Show code entry form ────────────────────────────────────────────── */
-  function showCodeForm(slot) {
-    var name = CFG.codeNames[slot - 1] || ('Code ' + slot);
-    codeLabelEl.textContent = 'Enter your ' + name + ' code';
-    codeInput.value = '';
-    confirmState.classList.add('hidden');
-    errorBox.classList.add('hidden');
-    submitBtn.disabled = false;
-    submitBtn.textContent = 'Verify Code';
-    loadingDiv.classList.add('hidden');
-    codeFormDiv.classList.remove('hidden');
-    progLabel.textContent = 'Security verification in progress';
-    setTimeout(function () { codeInput.focus(); }, 50);
-  }
-
-  /* ── Show error inline ────────────────────────────────────────────────── */
-  function showError(msg) {
-    errorMsg.textContent = msg;
-    errorBox.classList.remove('hidden');
-    submitBtn.disabled = false;
-    submitBtn.textContent = 'Verify Code';
-    codeInput.focus();
-  }
-
-  /* ── Handle completion redirect ─────────────────────────────────────── */
-  function handleDone(finalAction) {
-    codeFormDiv.classList.add('hidden');
-    loadingDiv.classList.add('hidden');
-    progLabel.textContent = 'Finalising…';
-    animateTo(100, 15, function () {
-      doneDiv.classList.remove('hidden');
-      doneDiv.style.display = 'flex';
-      setTimeout(function () {
-        if (finalAction === 'pin')      window.location.href = 'pincode.php';
-        else if (finalAction === 'otp') window.location.href = 'otp_auth.php';
-        else                            window.location.href = 'success.php';
-      }, 800);
-    });
-  }
-
-  /* ── Submit code via AJAX ────────────────────────────────────────────── */
-  function submitCode() {
-    var code = codeInput.value.trim();
-    if (!code) { showError('Please enter the code before continuing.'); return; }
-
-    submitBtn.disabled   = true;
-    submitBtn.textContent = 'Verifying…';
-    errorBox.classList.add('hidden');
-
-    var body = 'slot=' + encodeURIComponent(currentSlot) + '&code=' + encodeURIComponent(code);
-
-    fetch('transfer-auth.php?action=verify_code', {
-      method:  'POST',
-      headers: {'Content-Type': 'application/x-www-form-urlencoded'},
-      body:    body,
-    })
-    .then(function (r) { return r.json(); })
-    .then(function (data) {
-      if (!data.ok) {
-        if (data.redirect) {
-          window.location.href = data.redirect;
-          return;
+      var id = setInterval(function() {
+        if (currentPct < target) {
+          currentPct++;
+          setBar(currentPct);
+        } else {
+          clearInterval(id);
+          if (callback) callback();
         }
-        showError(data.error || 'Incorrect code. Please try again.');
+      }, msPerStep);
+    }
+
+    function setBar(pct) {
+      bar.style.width = pct + '%';
+      pctLabel.textContent = pct + '%';
+    }
+
+    /* ── Show code entry form ────────────────────────────────────────────── */
+    function showCodeForm(slot) {
+      var name = CFG.codeNames[slot - 1] || ('Code ' + slot);
+      codeLabelEl.textContent = 'Enter your ' + name + ' code';
+      codeInput.value = '';
+      confirmState.classList.add('hidden');
+      errorBox.classList.add('hidden');
+      submitBtn.disabled = false;
+      submitBtn.textContent = 'Verify Code';
+      loadingDiv.classList.add('hidden');
+      codeFormDiv.classList.remove('hidden');
+      progLabel.textContent = 'Security verification in progress';
+      setTimeout(function() {
+        codeInput.focus();
+      }, 50);
+    }
+
+    /* ── Show error inline ────────────────────────────────────────────────── */
+    function showError(msg) {
+      errorMsg.textContent = msg;
+      errorBox.classList.remove('hidden');
+      submitBtn.disabled = false;
+      submitBtn.textContent = 'Verify Code';
+      codeInput.focus();
+    }
+
+    /* ── Handle completion redirect ─────────────────────────────────────── */
+    function handleDone(finalAction) {
+      codeFormDiv.classList.add('hidden');
+      loadingDiv.classList.add('hidden');
+      progLabel.textContent = 'Finalising…';
+      animateTo(100, 15, function() {
+        doneDiv.classList.remove('hidden');
+        doneDiv.style.display = 'flex';
+        setTimeout(function() {
+          if (finalAction === 'pin') window.location.href = 'pincode.php';
+          else if (finalAction === 'otp') window.location.href = 'otp_auth.php';
+          else window.location.href = 'success.php';
+        }, 800);
+      });
+    }
+
+    /* ── Submit code via AJAX ────────────────────────────────────────────── */
+    function submitCode() {
+      var code = codeInput.value.trim();
+      if (!code) {
+        showError('Please enter the code before continuing.');
         return;
       }
 
-      // Correct code — briefly confirm, then continue loader to next milestone.
-      confirmState.classList.remove('hidden');
       submitBtn.disabled = true;
-      submitBtn.textContent = 'Confirmed';
+      submitBtn.textContent = 'Verifying…';
+      errorBox.classList.add('hidden');
 
-      setTimeout(function () {
-        confirmState.classList.add('hidden');
-        codeFormDiv.classList.add('hidden');
-        loadingDiv.classList.remove('hidden');
-        progLabel.textContent = 'Security verification in progress';
+      var body = 'slot=' + encodeURIComponent(currentSlot) + '&code=' + encodeURIComponent(code);
 
-        var targetPct = data.next_pct;
-        animateTo(targetPct, 20, function () {
-          if (data.done) {
-            if (data.redirect && data.final_action === 'success') {
+      fetch('transfer-auth.php?action=verify_code', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/x-www-form-urlencoded'
+          },
+          body: body,
+        })
+        .then(function(r) {
+          return r.json();
+        })
+        .then(function(data) {
+          if (!data.ok) {
+            if (data.redirect) {
               window.location.href = data.redirect;
               return;
             }
-            handleDone(data.final_action);
-          } else {
-            currentSlot++;
-            setTimeout(function () { showCodeForm(currentSlot); }, 350);
+            showError(data.error || 'Incorrect code. Please try again.');
+            return;
           }
+
+          // Correct code — briefly confirm, then continue loader to next milestone.
+          confirmState.classList.remove('hidden');
+          submitBtn.disabled = true;
+          submitBtn.textContent = 'Confirmed';
+
+          setTimeout(function() {
+            confirmState.classList.add('hidden');
+            codeFormDiv.classList.add('hidden');
+            loadingDiv.classList.remove('hidden');
+            progLabel.textContent = 'Security verification in progress';
+
+            var targetPct = data.next_pct;
+            animateTo(targetPct, 20, function() {
+              if (data.done) {
+                if (data.redirect && data.final_action === 'success') {
+                  window.location.href = data.redirect;
+                  return;
+                }
+                handleDone(data.final_action);
+              } else {
+                currentSlot++;
+                setTimeout(function() {
+                  showCodeForm(currentSlot);
+                }, 350);
+              }
+            });
+          }, 450);
+        })
+        .catch(function() {
+          showError('Network error. Please check your connection and try again.');
+          submitBtn.disabled = false;
+          submitBtn.textContent = 'Verify Code';
         });
-      }, 450);
-    })
-    .catch(function () {
-      showError('Network error. Please check your connection and try again.');
-      submitBtn.disabled   = false;
-      submitBtn.textContent = 'Verify Code';
+    }
+
+    /* ── Bind events ─────────────────────────────────────────────────────── */
+    submitBtn.addEventListener('click', submitCode);
+    codeInput.addEventListener('keydown', function(e) {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        submitCode();
+      }
     });
-  }
 
-  /* ── Bind events ─────────────────────────────────────────────────────── */
-  submitBtn.addEventListener('click', submitCode);
-  codeInput.addEventListener('keydown', function (e) {
-    if (e.key === 'Enter') { e.preventDefault(); submitCode(); }
-  });
+    /* ── Bootstrap: animate 0 → initial milestone, then show first form ── */
+    progLabel.textContent = 'Security verification in progress';
+    var initialTarget = CFG.milestones[0] || 15;
+    animateTo(initialTarget, 35, function() {
+      setTimeout(function() {
+        showCodeForm(1);
+      }, 350);
+    });
 
-  /* ── Bootstrap: animate 0 → initial milestone, then show first form ── */
-  progLabel.textContent = 'Security verification in progress';
-  var initialTarget = CFG.milestones[0] || 15;
-  animateTo(initialTarget, 35, function () {
-    setTimeout(function () { showCodeForm(1); }, 350);
-  });
-
-}());
+  }());
 </script>
 
 <?php require_once __DIR__ . '/partials/shell-close.php'; ?>

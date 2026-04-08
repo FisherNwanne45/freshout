@@ -5,12 +5,12 @@ include_once 'session.php';
 require_once 'class.user.php';
 
 if (!isset($_SESSION['acc_no'])) {
-    header('Location: login.php');
-    exit();
+  header('Location: login.php');
+  exit();
 }
-if (!isset($_SESSION['mname'])) {
-    header('Location: passcode.php');
-    exit();
+if (!isset($_SESSION['pin'])) {
+  header('Location: passcode.php');
+  exit();
 }
 
 $reg_user = new USER();
@@ -25,8 +25,8 @@ $stmt = $reg_user->runQuery('SELECT * FROM account WHERE acc_no = :acc_no LIMIT 
 $stmt->execute([':acc_no' => (string)$_SESSION['acc_no']]);
 $row = $stmt->fetch(PDO::FETCH_ASSOC);
 if (!$row) {
-    header('Location: logout.php');
-    exit();
+  header('Location: logout.php');
+  exit();
 }
 
 $email = (string)($row['email'] ?? '');
@@ -34,7 +34,7 @@ $fname = (string)($row['fname'] ?? '');
 $lname = (string)($row['lname'] ?? '');
 
 try {
-    $reg_user->runQuery("CREATE TABLE IF NOT EXISTS loan_applications (
+  $reg_user->runQuery("CREATE TABLE IF NOT EXISTS loan_applications (
         id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
         application_ref VARCHAR(32) NOT NULL,
         acc_no VARCHAR(50) NOT NULL,
@@ -58,69 +58,69 @@ try {
 }
 
 if (isset($_POST['submit_loan_application'])) {
-    $sender_name = trim((string)($_POST['sender_name'] ?? ''));
-    $purpose = trim((string)($_POST['subject'] ?? ''));
-    $details = trim((string)($_POST['msg'] ?? ''));
-    $amount = (float)($_POST['amount'] ?? 0);
-    $accNo = (string)($_SESSION['acc_no'] ?? '');
-    $currencyCode = strtoupper(trim((string)($row['currency'] ?? 'USD')));
+  $sender_name = trim((string)($_POST['sender_name'] ?? ''));
+  $purpose = trim((string)($_POST['subject'] ?? ''));
+  $details = trim((string)($_POST['msg'] ?? ''));
+  $amount = (float)($_POST['amount'] ?? 0);
+  $accNo = (string)($_SESSION['acc_no'] ?? '');
+  $currencyCode = strtoupper(trim((string)($row['currency'] ?? 'USD')));
 
-    if ($sender_name === '' || $purpose === '' || $details === '' || $amount <= 0) {
-        $flashType = 'error';
-        $flashMessage = 'Please complete all required fields and enter a valid amount.';
-    } else {
-        try {
-            $appRef = 'LN' . date('YmdHis') . strtoupper(substr(bin2hex(random_bytes(2)), 0, 4));
-            $now = date('Y-m-d H:i:s');
+  if ($sender_name === '' || $purpose === '' || $details === '' || $amount <= 0) {
+    $flashType = 'error';
+    $flashMessage = 'Please complete all required fields and enter a valid amount.';
+  } else {
+    try {
+      $appRef = 'LN' . date('YmdHis') . strtoupper(substr(bin2hex(random_bytes(2)), 0, 4));
+      $now = date('Y-m-d H:i:s');
 
-            $insertLoan = $reg_user->runQuery('INSERT INTO loan_applications
+      $insertLoan = $reg_user->runQuery('INSERT INTO loan_applications
                 (application_ref, acc_no, email, full_name, purpose, amount, currency_code, details, status, created_at, updated_at)
                 VALUES
                 (:application_ref, :acc_no, :email, :full_name, :purpose, :amount, :currency_code, :details, :status, :created_at, :updated_at)');
-            $insertLoan->execute([
-                ':application_ref' => $appRef,
-                ':acc_no' => $accNo,
-                ':email' => $email,
-                ':full_name' => $sender_name,
-                ':purpose' => $purpose,
-                ':amount' => $amount,
-                ':currency_code' => $currencyCode,
-                ':details' => $details,
-                ':status' => 'submitted',
-                ':created_at' => $now,
-                ':updated_at' => $now,
-            ]);
+      $insertLoan->execute([
+        ':application_ref' => $appRef,
+        ':acc_no' => $accNo,
+        ':email' => $email,
+        ':full_name' => $sender_name,
+        ':purpose' => $purpose,
+        ':amount' => $amount,
+        ':currency_code' => $currencyCode,
+        ':details' => $details,
+        ':status' => 'submitted',
+        ':created_at' => $now,
+        ':updated_at' => $now,
+      ]);
 
-            $subject = 'Your Loan Application [' . $appRef . '] Has Been Received';
-            $loanData = [
-                'fname' => $fname,
-                'lname' => $lname,
-                'loan_id' => $appRef,
-                'amount' => number_format($amount, 2),
-                'purpose' => $purpose,
-                'creation_date' => $now,
-                'response_time' => '24 hours',
-            ];
-            $reg_user->send_mail($email, '', $subject, 'loan_alert', $loanData);
+      $subject = 'Your Loan Application [' . $appRef . '] Has Been Received';
+      $loanData = [
+        'fname' => $fname,
+        'lname' => $lname,
+        'loan_id' => $appRef,
+        'amount' => number_format($amount, 2),
+        'purpose' => $purpose,
+        'creation_date' => $now,
+        'response_time' => '24 hours',
+      ];
+      $reg_user->send_mail($email, '', $subject, 'loan_alert', $loanData);
 
-            $flashType = 'success';
-            $flashMessage = 'Loan application submitted successfully. Reference: ' . $appRef;
-        } catch (Throwable $e) {
-            $flashType = 'error';
-            $flashMessage = 'Sorry, your application could not be submitted right now. Please try again.';
-        }
+      $flashType = 'success';
+      $flashMessage = 'Loan application submitted successfully. Reference: ' . $appRef;
+    } catch (Throwable $e) {
+      $flashType = 'error';
+      $flashMessage = 'Sorry, your application could not be submitted right now. Please try again.';
     }
+  }
 }
 
 $recentLoanApplications = [];
 try {
-    $fetchLoans = $reg_user->runQuery('SELECT application_ref, purpose, amount, currency_code, status, created_at, admin_note
+  $fetchLoans = $reg_user->runQuery('SELECT application_ref, purpose, amount, currency_code, status, created_at, admin_note
         FROM loan_applications
         WHERE acc_no = :acc_no
         ORDER BY id DESC
         LIMIT 8');
-    $fetchLoans->execute([':acc_no' => (string)($_SESSION['acc_no'] ?? '')]);
-    $recentLoanApplications = $fetchLoans->fetchAll(PDO::FETCH_ASSOC);
+  $fetchLoans->execute([':acc_no' => (string)($_SESSION['acc_no'] ?? '')]);
+  $recentLoanApplications = $fetchLoans->fetchAll(PDO::FETCH_ASSOC);
 } catch (Throwable $e) {
 }
 
@@ -131,9 +131,9 @@ require_once __DIR__ . '/partials/shell-open.php';
 ?>
 
 <?php if ($flashMessage !== ''): ?>
-<div class="mb-5 rounded-xl p-4 <?= $flashType === 'success' ? 'bg-green-50 border border-green-200 text-green-800' : 'bg-red-50 border border-red-200 text-red-800' ?> text-sm">
-  <?= htmlspecialchars($flashMessage) ?>
-</div>
+  <div class="mb-5 rounded-xl p-4 <?= $flashType === 'success' ? 'bg-green-50 border border-green-200 text-green-800' : 'bg-red-50 border border-red-200 text-red-800' ?> text-sm">
+    <?= htmlspecialchars($flashMessage) ?>
+  </div>
 <?php endif; ?>
 
 <div class="mb-6">
@@ -200,15 +200,15 @@ require_once __DIR__ . '/partials/shell-open.php';
         <tbody>
           <?php foreach ($recentLoanApplications as $app): ?>
             <?php
-              $status = strtolower(trim((string)($app['status'] ?? 'submitted')));
-              $statusClass = 'bg-slate-100 text-slate-700';
-              if ($status === 'approved' || $status === 'disbursed' || $status === 'active') {
-                  $statusClass = 'bg-green-100 text-green-700';
-              } elseif ($status === 'under_review') {
-                  $statusClass = 'bg-amber-100 text-amber-700';
-              } elseif ($status === 'rejected' || $status === 'cancelled' || $status === 'closed') {
-                  $statusClass = 'bg-red-100 text-red-700';
-              }
+            $status = strtolower(trim((string)($app['status'] ?? 'submitted')));
+            $statusClass = 'bg-slate-100 text-slate-700';
+            if ($status === 'approved' || $status === 'disbursed' || $status === 'active') {
+              $statusClass = 'bg-green-100 text-green-700';
+            } elseif ($status === 'under_review') {
+              $statusClass = 'bg-amber-100 text-amber-700';
+            } elseif ($status === 'rejected' || $status === 'cancelled' || $status === 'closed') {
+              $statusClass = 'bg-red-100 text-red-700';
+            }
             ?>
             <tr class="border-b border-gray-100">
               <td class="py-2 pr-4 font-mono text-xs text-gray-700"><?= htmlspecialchars((string)($app['application_ref'] ?? '')) ?></td>
@@ -225,4 +225,5 @@ require_once __DIR__ . '/partials/shell-open.php';
   <?php endif; ?>
 </div>
 
-<?php require_once __DIR__ . '/partials/shell-close.php'; exit(); ?>
+<?php require_once __DIR__ . '/partials/shell-close.php';
+exit(); ?>

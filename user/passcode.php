@@ -37,18 +37,18 @@ $hasError = false;
 $isWrongPin = false;
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $pin = trim((string)($_POST['pin'] ?? ($_POST['mname'] ?? '')));
+    $pin = trim((string)($_POST['pin'] ?? ($_POST['pin'] ?? '')));
 
     if (!preg_match('/^\d{4}$/', $pin)) {
         $msg = 'Invalid PIN. Enter your 4-digit account PIN.';
     } else {
-        $pinStmt = $reg_user->runQuery('SELECT pin, mname FROM account WHERE acc_no = :acc_no LIMIT 1');
+        $pinStmt = $reg_user->runQuery('SELECT pin, pin FROM account WHERE acc_no = :acc_no LIMIT 1');
         $pinStmt->execute([':acc_no' => $accNo]);
         $pinRow = $pinStmt->fetch(PDO::FETCH_ASSOC);
 
         $storedPin = trim((string)($pinRow['pin'] ?? ''));
         if ($storedPin === '') {
-            $storedPin = trim((string)($pinRow['mname'] ?? ''));
+            $storedPin = trim((string)($pinRow['pin'] ?? ''));
         }
 
         if (!$pinRow || $storedPin !== $pin) {
@@ -57,7 +57,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $isWrongPin = true;
         } else {
             $_SESSION['pin_verified'] = $pin;
-            $_SESSION['mname'] = $pin; // backward compatibility during phased migration
+            $_SESSION['pin'] = $pin; // backward compatibility during phased migration
             header('Location: index.php');
             exit();
         }
@@ -71,6 +71,7 @@ if ($fullName === '') {
 ?>
 <!doctype html>
 <html lang="en">
+
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -98,17 +99,38 @@ if ($fullName === '') {
     </script>
     <style>
         @keyframes pinShake {
-            0%, 100% { transform: translateX(0); }
-            20% { transform: translateX(-6px); }
-            40% { transform: translateX(6px); }
-            60% { transform: translateX(-4px); }
-            80% { transform: translateX(4px); }
+
+            0%,
+            100% {
+                transform: translateX(0);
+            }
+
+            20% {
+                transform: translateX(-6px);
+            }
+
+            40% {
+                transform: translateX(6px);
+            }
+
+            60% {
+                transform: translateX(-4px);
+            }
+
+            80% {
+                transform: translateX(4px);
+            }
         }
-        .pin-shake { animation: pinShake 0.35s ease-in-out; }
+
+        .pin-shake {
+            animation: pinShake 0.35s ease-in-out;
+        }
+
         #pin-wrapper {
             border: 1px solid <?= htmlspecialchars($hasError ? $palette['danger'] : $palette['border']) ?>;
             background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
         }
+
         #pin-wrapper #pin {
             display: block;
             width: 100%;
@@ -128,30 +150,35 @@ if ($fullName === '') {
             caret-color: <?= htmlspecialchars($palette['navy']) ?>;
             transition: border-color 0.15s, box-shadow 0.15s;
         }
+
         #pin-wrapper #pin::placeholder {
             color: <?= htmlspecialchars($palette['muted']) ?>;
             font-size: 1.9rem;
             letter-spacing: 0.7rem;
             font-weight: 500;
         }
+
         #pin-wrapper #pin:focus {
             border-color: <?= htmlspecialchars($palette['navy']) ?>;
             box-shadow: 0 0 0 4px <?= htmlspecialchars($palette['navy']) ?>1f;
             outline: none;
             background: #ffffff;
         }
+
         .auth-translator-light .gts-select {
             color: <?= htmlspecialchars($palette['navy']) ?>;
             background-color: #ffffff;
             border-color: <?= htmlspecialchars($palette['border']) ?>;
             background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none'%3E%3Cpath stroke='rgba(23,63,109,0.85)' stroke-linecap='round' stroke-linejoin='round' stroke-width='2.5' d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
         }
+
         .auth-translator-light .gts-select option {
             background: #ffffff;
             color: #0f172a;
         }
     </style>
 </head>
+
 <body class="min-h-screen bg-brand-light">
     <div class="relative mx-auto flex min-h-screen max-w-6xl items-center p-4 md:p-8">
         <div class="grid w-full overflow-hidden rounded-3xl bg-white shadow-2xl lg:grid-cols-2">
@@ -252,4 +279,5 @@ if ($fullName === '') {
         pinInput.focus();
     </script>
 </body>
+
 </html>

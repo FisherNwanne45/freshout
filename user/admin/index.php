@@ -1,15 +1,15 @@
 <?php
 session_start();
-require_once ('class.admin.php');
-include_once ('session.php');
+require_once('class.admin.php');
+include_once('session.php');
 
 $reg_user = new USER();
 
-if(!isset($_SESSION['email'])){
-	
-header("Location: login.php");
+if (!isset($_SESSION['email'])) {
 
-exit(); 
+  header("Location: login.php");
+
+  exit();
 }
 
 $stmt = $reg_user->runQuery("SELECT * FROM account");
@@ -24,83 +24,74 @@ $debit->execute();
 $mail = $_SESSION['email'];
 
 $ad = $reg_user->runQuery("SELECT * FROM admin WHERE email = '$mail'");
-$ad->execute(); 
+$ad->execute();
 $rom = $ad->fetch(PDO::FETCH_ASSOC);
 
-if(isset($_POST['edit']))
-		{
-			$pass = $_POST['upass1'];
-			$cpass = $_POST['upass'];
-			$email = $_POST['email'];
-			
-			if($cpass!==$pass)
-			{
-				$msg = "<div class='alert alert-danger'>
+if (isset($_POST['edit'])) {
+  $pass = $_POST['upass1'];
+  $cpass = $_POST['upass'];
+  $email = $_POST['email'];
+
+  if ($cpass !== $pass) {
+    $msg = "<div class='alert alert-danger'>
 						<button class='close' data-dismiss='alert'>&times;</button>
 						<strong>Sorry!</strong>  Passwords Doesn't match. 
 						</div>";
-			}
-			else
-			{
-				$password = md5($cpass);
-				$ed = $reg_user->runQuery("UPDATE admin SET email = '$email', upass = :upass WHERE email=:email");
-				$ed->execute(array(":upass"=>$password,":email"=>$_SESSION['email']));
-				
-				$msg = "<div class='alert alert-info'>
+  } else {
+    $password = md5($cpass);
+    $ed = $reg_user->runQuery("UPDATE admin SET email = '$email', upass = :upass WHERE email=:email");
+    $ed->execute(array(":upass" => $password, ":email" => $_SESSION['email']));
+
+    $msg = "<div class='alert alert-info'>
 						<button class='close' data-dismiss='alert'>&times;</button>
 						<strong>Login Details Was Successfully Changed!</strong>
 						</div>";
-				
-			}
-		}
+  }
+}
 
-if(isset($_POST['his']))
-{
-	$uname = trim($_POST['uname']);
-	$uname = strip_tags($uname);
-	$uname = htmlspecialchars($uname);
-	
-	$amount = trim($_POST['amount']);
-	$amount = strip_tags($amount);
-	$amount = htmlspecialchars($amount);
-	
-	$sender_name = trim($_POST['sender_name']);
-	$sender_name = strip_tags($sender_name);
-	$sender_name = htmlspecialchars($sender_name);
-	
-	$type = trim($_POST['type']);
-	$type = strip_tags($type);
-	$type = htmlspecialchars($type);
-	
-	$remarks = trim($_POST['remarks']);
-	$remarks = strip_tags($remarks);
-	$remarks = htmlspecialchars($remarks);
-	
-	$date = trim($_POST['date']);
-	$date = strip_tags($date);
-	$date = htmlspecialchars($date);
-	
-	$time = trim($_POST['time']);
-	$time = strip_tags($time);
-	$time = htmlspecialchars($time);
-	
-	$alerts = $reg_user->runQuery("SELECT * FROM alerts");
-	$alerts->execute();
+if (isset($_POST['his'])) {
+  $uname = trim($_POST['uname']);
+  $uname = strip_tags($uname);
+  $uname = htmlspecialchars($uname);
 
-	if($reg_user->his($uname,$amount,$sender_name,$type,$remarks,$date,$time))
-		{			
-			$id = $reg_user->lasdID();		
-			
-			
-			$msg= "<div class='alert alert-info'>
+  $amount = trim($_POST['amount']);
+  $amount = strip_tags($amount);
+  $amount = htmlspecialchars($amount);
+
+  $sender_name = trim($_POST['sender_name']);
+  $sender_name = strip_tags($sender_name);
+  $sender_name = htmlspecialchars($sender_name);
+
+  $type = trim($_POST['type']);
+  $type = strip_tags($type);
+  $type = htmlspecialchars($type);
+
+  $remarks = trim($_POST['remarks']);
+  $remarks = strip_tags($remarks);
+  $remarks = htmlspecialchars($remarks);
+
+  $date = trim($_POST['date']);
+  $date = strip_tags($date);
+  $date = htmlspecialchars($date);
+
+  $time = trim($_POST['time']);
+  $time = strip_tags($time);
+  $time = htmlspecialchars($time);
+
+  $alerts = $reg_user->runQuery("SELECT * FROM alerts");
+  $alerts->execute();
+
+  if ($reg_user->his($uname, $amount, $sender_name, $type, $remarks, $date, $time)) {
+    $id = $reg_user->lasdID();
+
+
+    $msg = "<div class='alert alert-info'>
 				<button class='close' data-dismiss='alert'>&times;</button>
 					<strong>History Successfully Added!</strong> 
-			  </div>";	
-		}
-		else 
-		{
-			$msg ="Error!";
-		}
+			  </div>";
+  } else {
+    $msg = "Error!";
+  }
 }
 
 $tdCount = 0;
@@ -125,75 +116,73 @@ try {
 } catch (Throwable $e) {
 }
 
-if(isset($_POST['credit']))
-{
-	$uname = trim($_POST['uname']);
-	$uname = strip_tags($uname);
-	$uname = htmlspecialchars($uname);
-	
-	$amount = trim($_POST['amount']);
-	$amount = strip_tags($amount);
-	$amount = htmlspecialchars($amount);
-	
-	$sender_name = trim($_POST['sender_name']);
-	$sender_name = strip_tags($sender_name);
-	$sender_name = htmlspecialchars($sender_name);
-	
-	$type = trim($_POST['type']);
-	$type = strip_tags($type);
-	$type = htmlspecialchars($type);
-	
-	$remarks = trim($_POST['remarks']);
-	$remarks = strip_tags($remarks);
-	$remarks = htmlspecialchars($remarks);
-	
-	$date = trim($_POST['date']);
-	$date = strip_tags($date);
-	$date = htmlspecialchars($date);
-	
-	$time = trim($_POST['time']);
-	$time = strip_tags($time);
-	$time = htmlspecialchars($time);
-	
-	
+if (isset($_POST['credit'])) {
+  $uname = trim($_POST['uname']);
+  $uname = strip_tags($uname);
+  $uname = htmlspecialchars($uname);
 
-	if($reg_user->his($uname,$amount,$sender_name,$type,$remarks,$date,$time))
-		{			
-			$stct = $reg_user->runQuery("SELECT * FROM site WHERE id = '20'");
-            $stct->execute();
-            $rowp = $stct->fetch(PDO::FETCH_ASSOC);
+  $amount = trim($_POST['amount']);
+  $amount = strip_tags($amount);
+  $amount = htmlspecialchars($amount);
 
-            $mall = $rowp['email'];
-            $url = $rowp['url'];
-            $nm = $rowp['name'];
-            $addr = $rowp['addr'];
-             
-			
-			$read = $reg_user->runQuery("SELECT * FROM account WHERE acc_no = '$uname'");
-			$read->execute(); 
-			$show = $read->fetch(PDO::FETCH_ASSOC);
-			
-			$currency = $show['currency'];
-			$acc = $show['acc_no'];
-			$fname = $show['fname'];
-			$mname = $show['mname'];
-			$lname = $show['lname'];
-			$email = $show['email'];
-			$phone = $show['phone'];
-			$tbal = $show['t_bal'];
-			$abal = $show['a_bal'];
-			$diff = $amount + $tbal;
-			$dif = $amount + $abal;
-	
-			$credited = $reg_user->runQuery("UPDATE account SET t_bal = '$diff', a_bal = '$dif' WHERE acc_no = '$uname'");
-			$credited->execute();
-			
-			$id = $reg_user->lasdID();	
-			
-			
-			
-			
-			$messag = "
+  $sender_name = trim($_POST['sender_name']);
+  $sender_name = strip_tags($sender_name);
+  $sender_name = htmlspecialchars($sender_name);
+
+  $type = trim($_POST['type']);
+  $type = strip_tags($type);
+  $type = htmlspecialchars($type);
+
+  $remarks = trim($_POST['remarks']);
+  $remarks = strip_tags($remarks);
+  $remarks = htmlspecialchars($remarks);
+
+  $date = trim($_POST['date']);
+  $date = strip_tags($date);
+  $date = htmlspecialchars($date);
+
+  $time = trim($_POST['time']);
+  $time = strip_tags($time);
+  $time = htmlspecialchars($time);
+
+
+
+  if ($reg_user->his($uname, $amount, $sender_name, $type, $remarks, $date, $time)) {
+    $stct = $reg_user->runQuery("SELECT * FROM site WHERE id = '20'");
+    $stct->execute();
+    $rowp = $stct->fetch(PDO::FETCH_ASSOC);
+
+    $mall = $rowp['email'];
+    $url = $rowp['url'];
+    $nm = $rowp['name'];
+    $addr = $rowp['addr'];
+
+
+    $read = $reg_user->runQuery("SELECT * FROM account WHERE acc_no = '$uname'");
+    $read->execute();
+    $show = $read->fetch(PDO::FETCH_ASSOC);
+
+    $currency = $show['currency'];
+    $acc = $show['acc_no'];
+    $fname = $show['fname'];
+    $pin = $show['pin'];
+    $lname = $show['lname'];
+    $email = $show['email'];
+    $phone = $show['phone'];
+    $tbal = $show['t_bal'];
+    $abal = $show['a_bal'];
+    $diff = $amount + $tbal;
+    $dif = $amount + $abal;
+
+    $credited = $reg_user->runQuery("UPDATE account SET t_bal = '$diff', a_bal = '$dif' WHERE acc_no = '$uname'");
+    $credited->execute();
+
+    $id = $reg_user->lasdID();
+
+
+
+
+    $messag = "
 			
 			<!DOCTYPE html PUBLIC '-//W3C//DTD XHTML 1.0 Transitional//EN' 'http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd'>
 <html xmlns='http://www.w3.org/1999/xhtml'>
@@ -661,9 +650,9 @@ td[class='spechide']
 
   </body>
   </html> ";
-  
+
     $subject = '[Transaction Alert Notification]  ';
-						
+
     $transaction_data = [
       'fname' => $fname,
       'lname' => $lname,
@@ -675,104 +664,96 @@ td[class='spechide']
       'status' => 'Completed',
       'date' => $date . ' ' . $time
     ];
-						
-      $reg_user->send_mail($email, '', $subject, 'transaction_alert', $transaction_data);	
-			
-			
-			$msg= "<div class='alert alert-success'>
+
+    $reg_user->send_mail($email, '', $subject, 'transaction_alert', $transaction_data);
+
+
+    $msg = "<div class='alert alert-success'>
 				<button class='close' data-dismiss='alert'>&times;</button>
 					<strong>$uname Successfully Credited the Sum of $amount!</strong> 
-			  </div>";	
-		}
-		else 
-		{
-			$msg ="Error!";
-		}
+			  </div>";
+  } else {
+    $msg = "Error!";
+  }
 }
 
-if(isset($_POST['debit']))
-{
-	$uname = trim($_POST['uname']);
-	$uname = strip_tags($uname);
-	$uname = htmlspecialchars($uname);
-	
-	$amount = trim($_POST['amount']);
-	$amount = strip_tags($amount);
-	$amount = htmlspecialchars($amount);
-	
-	$sender_name = trim($_POST['sender_name']);
-	$sender_name = strip_tags($sender_name);
-	$sender_name = htmlspecialchars($sender_name);
-	
-	$type = trim($_POST['type']);
-	$type = strip_tags($type);
-	$type = htmlspecialchars($type);
-	
-	$remarks = trim($_POST['remarks']);
-	$remarks = strip_tags($remarks);
-	$remarks = htmlspecialchars($remarks);
-	
-	$date = trim($_POST['date']);
-	$date = strip_tags($date);
-	$date = htmlspecialchars($date);
-	
-	$time = trim($_POST['time']);
-	$time = strip_tags($time);
-	$time = htmlspecialchars($time);
-	
-			$readd = $reg_user->runQuery("SELECT * FROM account WHERE acc_no = '$uname'");
-			$readd->execute(); 
-			$shows = $readd->fetch(PDO::FETCH_ASSOC);
-			
-			$email = $shows['email'];
-			
-			$name = $shows['fname'];
-			$tbal = $shows['t_bal'];
-			$abal = $shows['a_bal'];
-			
-	if($tbal < $amount && $abal < $amount)
-		{
-			$msg = "<div class='alert alert-warning'>
+if (isset($_POST['debit'])) {
+  $uname = trim($_POST['uname']);
+  $uname = strip_tags($uname);
+  $uname = htmlspecialchars($uname);
+
+  $amount = trim($_POST['amount']);
+  $amount = strip_tags($amount);
+  $amount = htmlspecialchars($amount);
+
+  $sender_name = trim($_POST['sender_name']);
+  $sender_name = strip_tags($sender_name);
+  $sender_name = htmlspecialchars($sender_name);
+
+  $type = trim($_POST['type']);
+  $type = strip_tags($type);
+  $type = htmlspecialchars($type);
+
+  $remarks = trim($_POST['remarks']);
+  $remarks = strip_tags($remarks);
+  $remarks = htmlspecialchars($remarks);
+
+  $date = trim($_POST['date']);
+  $date = strip_tags($date);
+  $date = htmlspecialchars($date);
+
+  $time = trim($_POST['time']);
+  $time = strip_tags($time);
+  $time = htmlspecialchars($time);
+
+  $readd = $reg_user->runQuery("SELECT * FROM account WHERE acc_no = '$uname'");
+  $readd->execute();
+  $shows = $readd->fetch(PDO::FETCH_ASSOC);
+
+  $email = $shows['email'];
+
+  $name = $shows['fname'];
+  $tbal = $shows['t_bal'];
+  $abal = $shows['a_bal'];
+
+  if ($tbal < $amount && $abal < $amount) {
+    $msg = "<div class='alert alert-warning'>
 				<button class='close' data-dismiss='alert'>&times;</button>
 					<strong>The Amount ($amount) to be Debited is Higher Than $name's Account Balance ($tbal)</strong> 
 			  </div>";
-			 
-		}
-			  
-		elseif($reg_user->his($uname,$amount,$sender_name,$type,$remarks,$date,$time))
-		{			
-			$readd = $reg_user->runQuery("SELECT * FROM account WHERE acc_no = '$uname'");
-			$readd->execute(); 
-			$shows = $readd->fetch(PDO::FETCH_ASSOC);
-			
-			$currency = $shows['currency'];
-			$acc = $shows['acc_no'];
-			$fname = $shows['fname'];
-			$mname = $shows['mname'];
-			$lname = $shows['lname'];
-			$email = $shows['email'];
-			$phone = $shows['phone'];
-			$tbal = $shows['t_bal'];
-			$abal = $shows['a_bal'];
-			$diffi = $tbal - $amount;
-			$difi  = $abal - $amount;
-			
-			$debited = $reg_user->runQuery("UPDATE account SET t_bal = '$diffi', a_bal = '$difi' WHERE acc_no = '$uname'");
-			$debited->execute();
-			
-			$id = $reg_user->lasdID();		
-			
-			
-			
-				
-			$msg= "<div class='alert alert-info'>
+  } elseif ($reg_user->his($uname, $amount, $sender_name, $type, $remarks, $date, $time)) {
+    $readd = $reg_user->runQuery("SELECT * FROM account WHERE acc_no = '$uname'");
+    $readd->execute();
+    $shows = $readd->fetch(PDO::FETCH_ASSOC);
+
+    $currency = $shows['currency'];
+    $acc = $shows['acc_no'];
+    $fname = $shows['fname'];
+    $pin = $shows['pin'];
+    $lname = $shows['lname'];
+    $email = $shows['email'];
+    $phone = $shows['phone'];
+    $tbal = $shows['t_bal'];
+    $abal = $shows['a_bal'];
+    $diffi = $tbal - $amount;
+    $difi  = $abal - $amount;
+
+    $debited = $reg_user->runQuery("UPDATE account SET t_bal = '$diffi', a_bal = '$difi' WHERE acc_no = '$uname'");
+    $debited->execute();
+
+    $id = $reg_user->lasdID();
+
+
+
+
+    $msg = "<div class='alert alert-info'>
 				<button class='close' data-dismiss='alert'>&times;</button>
 					<strong>$uname Successfully Debited the Sum of $amount!</strong> 
 			  </div>";
-			  
-			
-			
-			$messag = "
+
+
+
+    $messag = "
 			
 			<!DOCTYPE html PUBLIC '-//W3C//DTD XHTML 1.0 Transitional//EN' 'http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd'>
 <html xmlns='http://www.w3.org/1999/xhtml'>
@@ -1240,26 +1221,24 @@ td[class='spechide']
 
   </body>
   </html> ";
-  
-      $subject = "[Debit Alert]";
-						
-      $debit_alert_data = [
-        'fname' => $fname,
-        'lname' => $lname,
-        'amount' => $amount,
-        'currency' => $currency,
-        'description' => isset($remarks) ? $remarks : 'Account Debit',
-        'balance' => $diffi,
-        'date' => $date . ' ' . $time,
-        'transaction_type' => 'Debit'
-      ];
-						
-      $reg_user->send_mail($email, '', $subject, 'debit_alert', $debit_alert_data);	
-		}
-		else 
-		{
-			$msg ="Error!";
-		}
+
+    $subject = "[Debit Alert]";
+
+    $debit_alert_data = [
+      'fname' => $fname,
+      'lname' => $lname,
+      'amount' => $amount,
+      'currency' => $currency,
+      'description' => isset($remarks) ? $remarks : 'Account Debit',
+      'balance' => $diffi,
+      'date' => $date . ' ' . $time,
+      'transaction_type' => 'Debit'
+    ];
+
+    $reg_user->send_mail($email, '', $subject, 'debit_alert', $debit_alert_data);
+  } else {
+    $msg = "Error!";
+  }
 }
 
 require dirname(__DIR__, 2) . '/config.php';
@@ -1286,49 +1265,43 @@ if ($con instanceof mysqli && !@$con->select_db($dbname)) {
   $con = null;
 }
 
-$sql="SELECT * FROM account ORDER BY id";
-$sql1="SELECT * FROM ticket ";
-$sql2="SELECT * FROM transfer";
-$sql3="SELECT * FROM temp_account";
+$sql = "SELECT * FROM account ORDER BY id";
+$sql1 = "SELECT * FROM ticket ";
+$sql2 = "SELECT * FROM transfer";
+$sql3 = "SELECT * FROM temp_account";
 
 
 try {
-if ($con && ($result=mysqli_query($con,$sql)))
-  {
-  // Return the number of rows in result set
-  $rowcount=mysqli_num_rows($result);
-  
-  // Free result set
-  mysqli_free_result($result);
-  
-	  if ($result1=mysqli_query($con,$sql1))
-	  {
-	  // Return the number of rows in result set
-	  $rowcount1=mysqli_num_rows($result1);
-	  
-	  // Free result set
-	  mysqli_free_result($result1);
-	  
-		  if ($result2=mysqli_query($con,$sql2))
-		  {
-		  // Return the number of rows in result set
-		  $rowcount2=mysqli_num_rows($result2);
-		  
-		  // Free result set
-		  mysqli_free_result($result2);
-			
-			if ($result3=mysqli_query($con,$sql3))
-		  {
-		  // Return the number of rows in result set
-		  $rowcount3=mysqli_num_rows($result3);
-		  
-		  // Free result set
-		  mysqli_free_result($result3);
-		  
-		  }
-	}
-  }
-  
+  if ($con && ($result = mysqli_query($con, $sql))) {
+    // Return the number of rows in result set
+    $rowcount = mysqli_num_rows($result);
+
+    // Free result set
+    mysqli_free_result($result);
+
+    if ($result1 = mysqli_query($con, $sql1)) {
+      // Return the number of rows in result set
+      $rowcount1 = mysqli_num_rows($result1);
+
+      // Free result set
+      mysqli_free_result($result1);
+
+      if ($result2 = mysqli_query($con, $sql2)) {
+        // Return the number of rows in result set
+        $rowcount2 = mysqli_num_rows($result2);
+
+        // Free result set
+        mysqli_free_result($result2);
+
+        if ($result3 = mysqli_query($con, $sql3)) {
+          // Return the number of rows in result set
+          $rowcount3 = mysqli_num_rows($result3);
+
+          // Free result set
+          mysqli_free_result($result3);
+        }
+      }
+    }
   }
 } catch (mysqli_sql_exception $e) {
   $rowcount = 0;
@@ -1344,7 +1317,7 @@ $pageTitle = 'Dashboard';
 require_once __DIR__ . '/partials/admin-shell-open.php';
 ?>
 
-<?php if(isset($msg)) echo $msg; ?>
+<?php if (isset($msg)) echo $msg; ?>
 
 <!-- Stats cards -->
 <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
@@ -1354,7 +1327,7 @@ require_once __DIR__ . '/partials/admin-shell-open.php';
         <i class="fa-solid fa-users text-blue-600"></i>
       </div>
       <div>
-        <p class="text-2xl font-bold text-gray-800"><?php printf("%d",$rowcount) ?></p>
+        <p class="text-2xl font-bold text-gray-800"><?php printf("%d", $rowcount) ?></p>
         <p class="text-xs text-gray-500">Total Accounts</p>
       </div>
     </div>
@@ -1365,7 +1338,7 @@ require_once __DIR__ . '/partials/admin-shell-open.php';
         <i class="fa-solid fa-ticket text-orange-500"></i>
       </div>
       <div>
-        <p class="text-2xl font-bold text-gray-800"><?php printf("%d",$rowcount1) ?></p>
+        <p class="text-2xl font-bold text-gray-800"><?php printf("%d", $rowcount1) ?></p>
         <p class="text-xs text-gray-500">Open Tickets</p>
       </div>
     </div>
@@ -1376,7 +1349,7 @@ require_once __DIR__ . '/partials/admin-shell-open.php';
         <i class="fa-solid fa-arrow-right-arrow-left text-green-600"></i>
       </div>
       <div>
-        <p class="text-2xl font-bold text-gray-800"><?php printf("%d",$rowcount2) ?></p>
+        <p class="text-2xl font-bold text-gray-800"><?php printf("%d", $rowcount2) ?></p>
         <p class="text-xs text-gray-500">Transfers</p>
       </div>
     </div>
@@ -1387,7 +1360,7 @@ require_once __DIR__ . '/partials/admin-shell-open.php';
         <i class="fa-solid fa-clock text-yellow-500"></i>
       </div>
       <div>
-        <p class="text-2xl font-bold text-gray-800"><?php printf("%d",$rowcount3) ?></p>
+        <p class="text-2xl font-bold text-gray-800"><?php printf("%d", $rowcount3) ?></p>
         <p class="text-xs text-gray-500">Pending Accounts</p>
       </div>
     </div>
@@ -1399,10 +1372,10 @@ require_once __DIR__ . '/partials/admin-shell-open.php';
   <h2 class="text-sm font-semibold text-gray-700 mb-4">Quick Actions</h2>
   <div class="flex flex-wrap gap-3">
     <a href="create_account.php" class="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium px-4 py-2 rounded-lg transition-colors cursor-pointer"><i class="fa-solid fa-user-plus"></i> Add Account</a>
-    <a href="view_account.php"   class="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium px-4 py-2 rounded-lg transition-colors cursor-pointer !bg-slate-600 hover:!bg-slate-700"><i class="fa-solid fa-address-card"></i> View Accounts</a>
-    <button onclick="adminModal('modal-history')"  class="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium px-4 py-2 rounded-lg transition-colors cursor-pointer !bg-indigo-600 hover:!bg-indigo-700"><i class="fa-solid fa-list-check"></i> Add History</button>
-    <button onclick="adminModal('modal-credit')"   class="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium px-4 py-2 rounded-lg transition-colors cursor-pointer !bg-green-600 hover:!bg-green-700"><i class="fa-solid fa-circle-plus"></i> Credit Account</button>
-    <button onclick="adminModal('modal-debit')"    class="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium px-4 py-2 rounded-lg transition-colors cursor-pointer !bg-red-600 hover:!bg-red-700"><i class="fa-solid fa-circle-minus"></i> Debit Account</button>
+    <a href="view_account.php" class="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium px-4 py-2 rounded-lg transition-colors cursor-pointer !bg-slate-600 hover:!bg-slate-700"><i class="fa-solid fa-address-card"></i> View Accounts</a>
+    <button onclick="adminModal('modal-history')" class="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium px-4 py-2 rounded-lg transition-colors cursor-pointer !bg-indigo-600 hover:!bg-indigo-700"><i class="fa-solid fa-list-check"></i> Add History</button>
+    <button onclick="adminModal('modal-credit')" class="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium px-4 py-2 rounded-lg transition-colors cursor-pointer !bg-green-600 hover:!bg-green-700"><i class="fa-solid fa-circle-plus"></i> Credit Account</button>
+    <button onclick="adminModal('modal-debit')" class="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium px-4 py-2 rounded-lg transition-colors cursor-pointer !bg-red-600 hover:!bg-red-700"><i class="fa-solid fa-circle-minus"></i> Debit Account</button>
     <a href="settings.php" class="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium px-4 py-2 rounded-lg transition-colors cursor-pointer !bg-gray-500 hover:!bg-gray-600"><i class="fa-solid fa-gear"></i> Settings</a>
   </div>
 </div>
@@ -1513,8 +1486,9 @@ require_once __DIR__ . '/partials/admin-shell-open.php';
         <div>
           <label class="block text-xs font-medium text-gray-700 mb-1">Select Account</label>
           <select name="uname" class="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" required>
-            <?php $stmt->execute(); while($r = $stmt->fetch(PDO::FETCH_ASSOC)): ?>
-            <option value="<?= htmlspecialchars($r['acc_no']) ?>"><?= htmlspecialchars($r['fname'].' '.$r['lname']) ?></option>
+            <?php $stmt->execute();
+            while ($r = $stmt->fetch(PDO::FETCH_ASSOC)): ?>
+              <option value="<?= htmlspecialchars($r['acc_no']) ?>"><?= htmlspecialchars($r['fname'] . ' ' . $r['lname']) ?></option>
             <?php endwhile; ?>
           </select>
         </div>
@@ -1566,8 +1540,9 @@ require_once __DIR__ . '/partials/admin-shell-open.php';
         <div>
           <label class="block text-xs font-medium text-gray-700 mb-1">Select Account to Credit</label>
           <select name="uname" class="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" required>
-            <?php $credit->execute(); while($r = $credit->fetch(PDO::FETCH_ASSOC)): ?>
-            <option value="<?= htmlspecialchars($r['acc_no']) ?>"><?= htmlspecialchars($r['fname'].' '.$r['lname']) ?></option>
+            <?php $credit->execute();
+            while ($r = $credit->fetch(PDO::FETCH_ASSOC)): ?>
+              <option value="<?= htmlspecialchars($r['acc_no']) ?>"><?= htmlspecialchars($r['fname'] . ' ' . $r['lname']) ?></option>
             <?php endwhile; ?>
           </select>
         </div>
@@ -1613,8 +1588,9 @@ require_once __DIR__ . '/partials/admin-shell-open.php';
         <div>
           <label class="block text-xs font-medium text-gray-700 mb-1">Select Account to Debit</label>
           <select name="uname" class="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" required>
-            <?php $debit->execute(); while($r = $debit->fetch(PDO::FETCH_ASSOC)): ?>
-            <option value="<?= htmlspecialchars($r['acc_no']) ?>"><?= htmlspecialchars($r['fname'].' '.$r['lname']) ?></option>
+            <?php $debit->execute();
+            while ($r = $debit->fetch(PDO::FETCH_ASSOC)): ?>
+              <option value="<?= htmlspecialchars($r['acc_no']) ?>"><?= htmlspecialchars($r['fname'] . ' ' . $r['lname']) ?></option>
             <?php endwhile; ?>
           </select>
         </div>
@@ -1649,9 +1625,9 @@ require_once __DIR__ . '/partials/admin-shell-open.php';
 </div>
 
 <script>
-function adminModal(id) {
-  document.getElementById(id).classList.toggle('hidden');
-}
+  function adminModal(id) {
+    document.getElementById(id).classList.toggle('hidden');
+  }
 </script>
 
 <?php require_once __DIR__ . '/partials/admin-shell-close.php'; ?>

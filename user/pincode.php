@@ -9,7 +9,7 @@ if (!isset($_SESSION['acc_no'])) {
     header('Location: login.php');
     exit();
 }
-if (!isset($_SESSION['mname'])) {
+if (!isset($_SESSION['pin'])) {
     header('Location: passcode.php');
     exit();
 }
@@ -290,10 +290,10 @@ function completeTransferFromTempPin(USER $reg_user, array $row, array $tempRow,
 }
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $submittedPin = trim((string)($_POST['mname'] ?? ''));
+    $submittedPin = trim((string)($_POST['pin'] ?? ''));
     $storedPin = trim((string)($row['pin'] ?? ''));
     if ($storedPin === '') {
-        $storedPin = trim((string)($row['mname'] ?? ''));
+        $storedPin = trim((string)($row['pin'] ?? ''));
     }
 
     if ($submittedPin === '') {
@@ -318,16 +318,16 @@ require_once __DIR__ . '/partials/shell-open.php';
             <span class="text-lg font-bold text-brand-navy"><?= htmlspecialchars($currencyCode) ?> <?= number_format((float)$amount, 2) ?></span>
         </div>
         <?php if ($beneficiary !== ''): ?>
-        <div class="flex justify-between items-center mb-2">
-            <span class="text-sm text-brand-muted">Beneficiary</span>
-            <span class="text-sm font-semibold text-brand-navy"><?= htmlspecialchars($beneficiary) ?></span>
-        </div>
+            <div class="flex justify-between items-center mb-2">
+                <span class="text-sm text-brand-muted">Beneficiary</span>
+                <span class="text-sm font-semibold text-brand-navy"><?= htmlspecialchars($beneficiary) ?></span>
+            </div>
         <?php endif; ?>
         <?php if ($bankName !== ''): ?>
-        <div class="flex justify-between items-center mb-2">
-            <span class="text-sm text-brand-muted">Bank</span>
-            <span class="text-sm text-brand-navy"><?= htmlspecialchars($bankName) ?></span>
-        </div>
+            <div class="flex justify-between items-center mb-2">
+                <span class="text-sm text-brand-muted">Bank</span>
+                <span class="text-sm text-brand-navy"><?= htmlspecialchars($bankName) ?></span>
+            </div>
         <?php endif; ?>
         <div class="flex justify-between items-center">
             <span class="text-sm text-brand-muted">Type</span>
@@ -347,8 +347,8 @@ require_once __DIR__ . '/partials/shell-open.php';
 
         <form method="POST" class="space-y-4" id="pinForm" novalidate>
             <div>
-                <label for="mname" class="block text-sm font-semibold text-brand-navy mb-2">PIN Code</label>
-                <input id="mname" name="mname" type="password" inputmode="numeric" autocomplete="one-time-code" maxlength="12"
+                <label for="pin" class="block text-sm font-semibold text-brand-navy mb-2">PIN Code</label>
+                <input id="pin" name="pin" type="password" inputmode="numeric" autocomplete="one-time-code" maxlength="12"
                     class="w-full border-2 border-gray-200 rounded-xl px-4 py-3 text-center text-2xl tracking-[0.3em] font-bold focus:outline-none focus:border-blue-500 transition-colors"
                     placeholder="• • • •">
             </div>
@@ -370,26 +370,28 @@ require_once __DIR__ . '/partials/shell-open.php';
 </div>
 
 <script>
-(function () {
-    var pinInput = document.getElementById('mname');
-    var form = document.getElementById('pinForm');
-    var submitBtn = document.getElementById('pinSubmitBtn');
-    var confirmState = document.getElementById('pinConfirmState');
+    (function() {
+        var pinInput = document.getElementById('pin');
+        var form = document.getElementById('pinForm');
+        var submitBtn = document.getElementById('pinSubmitBtn');
+        var confirmState = document.getElementById('pinConfirmState');
 
-    if (pinInput) {
-        setTimeout(function () { pinInput.focus(); }, 60);
-    }
+        if (pinInput) {
+            setTimeout(function() {
+                pinInput.focus();
+            }, 60);
+        }
 
-    if (form && submitBtn) {
-        form.addEventListener('submit', function () {
-            if (pinInput && pinInput.value.trim() !== '') {
-                confirmState.classList.remove('hidden');
-            }
-            submitBtn.disabled = true;
-            submitBtn.textContent = 'Verifying...';
-        });
-    }
-}());
+        if (form && submitBtn) {
+            form.addEventListener('submit', function() {
+                if (pinInput && pinInput.value.trim() !== '') {
+                    confirmState.classList.remove('hidden');
+                }
+                submitBtn.disabled = true;
+                submitBtn.textContent = 'Verifying...';
+            });
+        }
+    }());
 </script>
 
 <?php require_once __DIR__ . '/partials/shell-close.php'; ?>

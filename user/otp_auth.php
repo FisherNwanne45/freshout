@@ -9,7 +9,7 @@ if (!isset($_SESSION['acc_no'])) {
     header('Location: login.php');
     exit();
 }
-if (!isset($_SESSION['mname'])) {
+if (!isset($_SESSION['pin'])) {
     header('Location: passcode.php');
     exit();
 }
@@ -199,14 +199,14 @@ function completeTransferFromTemp(USER $reg_user, array $row, array $tempRow, my
 
         if ($destinationAccountNo !== '') {
             try {
-                                $dest = $reg_user->runQuery(
-                                        'SELECT ca.owner_acc_no, ca.currency_code, a.email, a.fname, a.lname, a.uname
+                $dest = $reg_user->runQuery(
+                    'SELECT ca.owner_acc_no, ca.currency_code, a.email, a.fname, a.lname, a.uname
                                          FROM customer_accounts ca
                                          LEFT JOIN account a ON a.acc_no = ca.owner_acc_no
                                          WHERE (ca.account_no = :account_no OR ca.iban = :iban)
                                              AND ca.status = :status
                                          LIMIT 1'
-                                );
+                );
                 $dest->execute([
                     ':account_no' => $destinationAccountNo,
                     ':iban' => $destinationAccountNo,
@@ -368,16 +368,16 @@ require_once __DIR__ . '/partials/shell-open.php';
             <span class="text-lg font-bold text-brand-navy"><?= htmlspecialchars($currencyCode) ?> <?= number_format((float)$amount, 2) ?></span>
         </div>
         <?php if ($beneficiary !== ''): ?>
-        <div class="flex justify-between items-center mb-2">
-            <span class="text-sm text-brand-muted">Beneficiary</span>
-            <span class="text-sm font-semibold text-brand-navy"><?= htmlspecialchars($beneficiary) ?></span>
-        </div>
+            <div class="flex justify-between items-center mb-2">
+                <span class="text-sm text-brand-muted">Beneficiary</span>
+                <span class="text-sm font-semibold text-brand-navy"><?= htmlspecialchars($beneficiary) ?></span>
+            </div>
         <?php endif; ?>
         <?php if ($bankName !== ''): ?>
-        <div class="flex justify-between items-center mb-2">
-            <span class="text-sm text-brand-muted">Bank</span>
-            <span class="text-sm text-brand-navy"><?= htmlspecialchars($bankName) ?></span>
-        </div>
+            <div class="flex justify-between items-center mb-2">
+                <span class="text-sm text-brand-muted">Bank</span>
+                <span class="text-sm text-brand-navy"><?= htmlspecialchars($bankName) ?></span>
+            </div>
         <?php endif; ?>
         <div class="flex justify-between items-center">
             <span class="text-sm text-brand-muted">Type</span>
@@ -416,22 +416,24 @@ require_once __DIR__ . '/partials/shell-open.php';
 </div>
 
 <script>
-(function () {
-    var otpInput = document.getElementById('otp');
-    var form = document.getElementById('otpForm');
-    var submitBtn = document.getElementById('otpSubmitBtn');
+    (function() {
+        var otpInput = document.getElementById('otp');
+        var form = document.getElementById('otpForm');
+        var submitBtn = document.getElementById('otpSubmitBtn');
 
-    if (otpInput) {
-        setTimeout(function () { otpInput.focus(); }, 60);
-    }
+        if (otpInput) {
+            setTimeout(function() {
+                otpInput.focus();
+            }, 60);
+        }
 
-    if (form && submitBtn) {
-        form.addEventListener('submit', function () {
-            submitBtn.disabled = true;
-            submitBtn.textContent = 'Verifying...';
-        });
-    }
-}());
+        if (form && submitBtn) {
+            form.addEventListener('submit', function() {
+                submitBtn.disabled = true;
+                submitBtn.textContent = 'Verifying...';
+            });
+        }
+    }());
 </script>
 
 <?php require_once __DIR__ . '/partials/shell-close.php'; ?>

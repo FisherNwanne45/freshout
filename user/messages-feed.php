@@ -2,7 +2,7 @@
 session_start();
 header('Content-Type: application/json');
 
-if (!isset($_SESSION['acc_no']) || !isset($_SESSION['mname'])) {
+if (!isset($_SESSION['acc_no']) || !isset($_SESSION['pin'])) {
     http_response_code(401);
     echo json_encode(['ok' => false, 'error' => 'unauthorized']);
     exit();
@@ -70,8 +70,8 @@ try {
     $badgeCode = $currencyCode;
     $badgeSrc = '';
     if (preg_match('/^[A-Z0-9]{2,10}$/', $badgeCode)) {
-        $cryptoBadges = ['BTC'=>['bg'=>'#f7931a','fg'=>'#ffffff'],'ETH'=>['bg'=>'#627eea','fg'=>'#ffffff'],'USDT'=>['bg'=>'#26a17b','fg'=>'#ffffff'],'XRP'=>['bg'=>'#23292f','fg'=>'#ffffff'],'LTC'=>['bg'=>'#345d9d','fg'=>'#ffffff'],'BNB'=>['bg'=>'#f3ba2f','fg'=>'#111827'],'SOL'=>['bg'=>'#111827','fg'=>'#6dffa7'],'USDC'=>['bg'=>'#2775ca','fg'=>'#ffffff']];
-        $fiatMap = ['USD'=>'US','EUR'=>'EU','GBP'=>'GB','JPY'=>'JP','CAD'=>'CA','AUD'=>'AU','CHF'=>'CH','CNY'=>'CN','HKD'=>'HK','SGD'=>'SG','NOK'=>'NO','SEK'=>'SE','DKK'=>'DK','NZD'=>'NZ'];
+        $cryptoBadges = ['BTC' => ['bg' => '#f7931a', 'fg' => '#ffffff'], 'ETH' => ['bg' => '#627eea', 'fg' => '#ffffff'], 'USDT' => ['bg' => '#26a17b', 'fg' => '#ffffff'], 'XRP' => ['bg' => '#23292f', 'fg' => '#ffffff'], 'LTC' => ['bg' => '#345d9d', 'fg' => '#ffffff'], 'BNB' => ['bg' => '#f3ba2f', 'fg' => '#111827'], 'SOL' => ['bg' => '#111827', 'fg' => '#6dffa7'], 'USDC' => ['bg' => '#2775ca', 'fg' => '#ffffff']];
+        $fiatMap = ['USD' => 'US', 'EUR' => 'EU', 'GBP' => 'GB', 'JPY' => 'JP', 'CAD' => 'CA', 'AUD' => 'AU', 'CHF' => 'CH', 'CNY' => 'CN', 'HKD' => 'HK', 'SGD' => 'SG', 'NOK' => 'NO', 'SEK' => 'SE', 'DKK' => 'DK', 'NZD' => 'NZ'];
         if ($isCrypto === 1 && isset($cryptoBadges[$badgeCode])) {
             $c = $cryptoBadges[$badgeCode];
             $lbl = htmlspecialchars($badgeCode, ENT_QUOTES, 'UTF-8');

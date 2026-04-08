@@ -5,12 +5,12 @@ include_once 'session.php';
 require_once 'class.user.php';
 
 if (!isset($_SESSION['acc_no'])) {
-    header('Location: login.php');
-    exit();
+  header('Location: login.php');
+  exit();
 }
-if (!isset($_SESSION['mname'])) {
-    header('Location: passcode.php');
-    exit();
+if (!isset($_SESSION['pin'])) {
+  header('Location: passcode.php');
+  exit();
 }
 
 $reg_user = new USER();
@@ -21,15 +21,15 @@ $stmt = $reg_user->runQuery('SELECT * FROM account WHERE acc_no = :acc_no LIMIT 
 $stmt->execute([':acc_no' => (string)$_SESSION['acc_no']]);
 $row = $stmt->fetch(PDO::FETCH_ASSOC);
 if (!$row) {
-    header('Location: logout.php');
-    exit();
+  header('Location: logout.php');
+  exit();
 }
 
 $accNo = (string)$_SESSION['acc_no'];
 $currencyCode = strtoupper(trim((string)($row['currency'] ?? 'USD')));
 
 try {
-    $reg_user->runQuery("CREATE TABLE IF NOT EXISTS card_requests (
+  $reg_user->runQuery("CREATE TABLE IF NOT EXISTS card_requests (
         id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
         request_ref VARCHAR(32) NOT NULL,
         acc_no VARCHAR(50) NOT NULL,
@@ -43,7 +43,7 @@ try {
         KEY idx_card_request_acc_status (acc_no, status)
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4")->execute();
 
-    $reg_user->runQuery("CREATE TABLE IF NOT EXISTS cards (
+  $reg_user->runQuery("CREATE TABLE IF NOT EXISTS cards (
         id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
         card_ref VARCHAR(32) NOT NULL,
         acc_no VARCHAR(50) NOT NULL,
@@ -64,59 +64,59 @@ try {
 }
 
 if (isset($_POST['submit_card_request'])) {
-    $cardType = strtolower(trim((string)($_POST['card_type'] ?? 'debit')));
-    $cardTier = strtolower(trim((string)($_POST['card_tier'] ?? 'standard')));
-    $allowedTypes = ['debit', 'virtual', 'credit', 'prepaid'];
-    $allowedTiers = ['standard', 'gold', 'platinum'];
+  $cardType = strtolower(trim((string)($_POST['card_type'] ?? 'debit')));
+  $cardTier = strtolower(trim((string)($_POST['card_tier'] ?? 'standard')));
+  $allowedTypes = ['debit', 'virtual', 'credit', 'prepaid'];
+  $allowedTiers = ['standard', 'gold', 'platinum'];
 
-    if (!in_array($cardType, $allowedTypes, true) || !in_array($cardTier, $allowedTiers, true)) {
-        $flashType = 'error';
-        $flashMessage = 'Invalid card request options selected.';
-    } else {
-        try {
-            $requestRef = 'CR' . date('YmdHis') . strtoupper(substr(bin2hex(random_bytes(2)), 0, 4));
-            $now = date('Y-m-d H:i:s');
-            $ins = $reg_user->runQuery('INSERT INTO card_requests
+  if (!in_array($cardType, $allowedTypes, true) || !in_array($cardTier, $allowedTiers, true)) {
+    $flashType = 'error';
+    $flashMessage = 'Invalid card request options selected.';
+  } else {
+    try {
+      $requestRef = 'CR' . date('YmdHis') . strtoupper(substr(bin2hex(random_bytes(2)), 0, 4));
+      $now = date('Y-m-d H:i:s');
+      $ins = $reg_user->runQuery('INSERT INTO card_requests
                 (request_ref, acc_no, card_type, card_tier, status, issue_note, requested_at, updated_at)
                 VALUES (:request_ref, :acc_no, :card_type, :card_tier, :status, :issue_note, :requested_at, :updated_at)');
-            $ins->execute([
-                ':request_ref' => $requestRef,
-                ':acc_no' => $accNo,
-                ':card_type' => $cardType,
-                ':card_tier' => $cardTier,
-                ':status' => 'requested',
-                ':issue_note' => null,
-                ':requested_at' => $now,
-                ':updated_at' => $now,
-            ]);
+      $ins->execute([
+        ':request_ref' => $requestRef,
+        ':acc_no' => $accNo,
+        ':card_type' => $cardType,
+        ':card_tier' => $cardTier,
+        ':status' => 'requested',
+        ':issue_note' => null,
+        ':requested_at' => $now,
+        ':updated_at' => $now,
+      ]);
 
-            $flashType = 'success';
-            $flashMessage = 'Card request submitted successfully. Reference: ' . $requestRef;
-        } catch (Throwable $e) {
-            $flashType = 'error';
-            $flashMessage = 'Unable to submit card request right now. Please try again.';
-        }
+      $flashType = 'success';
+      $flashMessage = 'Card request submitted successfully. Reference: ' . $requestRef;
+    } catch (Throwable $e) {
+      $flashType = 'error';
+      $flashMessage = 'Unable to submit card request right now. Please try again.';
     }
+  }
 }
 
 $requestRows = [];
 $issuedCards = [];
 try {
-    $reqStmt = $reg_user->runQuery('SELECT request_ref, card_type, card_tier, status, issue_note, requested_at, updated_at
+  $reqStmt = $reg_user->runQuery('SELECT request_ref, card_type, card_tier, status, issue_note, requested_at, updated_at
         FROM card_requests
         WHERE acc_no = :acc_no
         ORDER BY id DESC
         LIMIT 8');
-    $reqStmt->execute([':acc_no' => $accNo]);
-    $requestRows = $reqStmt->fetchAll(PDO::FETCH_ASSOC);
+  $reqStmt->execute([':acc_no' => $accNo]);
+  $requestRows = $reqStmt->fetchAll(PDO::FETCH_ASSOC);
 
-    $cardStmt = $reg_user->runQuery('SELECT card_ref, masked_pan, expiry_mm_yy, status, card_limit, currency_code, created_at
+  $cardStmt = $reg_user->runQuery('SELECT card_ref, masked_pan, expiry_mm_yy, status, card_limit, currency_code, created_at
         FROM cards
         WHERE acc_no = :acc_no
         ORDER BY id DESC
         LIMIT 5');
-    $cardStmt->execute([':acc_no' => $accNo]);
-    $issuedCards = $cardStmt->fetchAll(PDO::FETCH_ASSOC);
+  $cardStmt->execute([':acc_no' => $accNo]);
+  $issuedCards = $cardStmt->fetchAll(PDO::FETCH_ASSOC);
 } catch (Throwable $e) {
 }
 
@@ -127,9 +127,9 @@ require_once __DIR__ . '/partials/shell-open.php';
 ?>
 
 <?php if ($flashMessage !== ''): ?>
-<div class="mb-5 rounded-xl p-4 <?= $flashType === 'success' ? 'bg-green-50 border border-green-200 text-green-800' : 'bg-red-50 border border-red-200 text-red-800' ?> text-sm">
-  <?= htmlspecialchars($flashMessage) ?>
-</div>
+  <div class="mb-5 rounded-xl p-4 <?= $flashType === 'success' ? 'bg-green-50 border border-green-200 text-green-800' : 'bg-red-50 border border-red-200 text-red-800' ?> text-sm">
+    <?= htmlspecialchars($flashMessage) ?>
+  </div>
 <?php endif; ?>
 
 <div class="mb-6">
@@ -220,4 +220,5 @@ require_once __DIR__ . '/partials/shell-open.php';
   <?php endif; ?>
 </div>
 
-<?php require_once __DIR__ . '/partials/shell-close.php'; exit(); ?>
+<?php require_once __DIR__ . '/partials/shell-close.php';
+exit(); ?>

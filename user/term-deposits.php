@@ -5,12 +5,12 @@ include_once 'session.php';
 require_once 'class.user.php';
 
 if (!isset($_SESSION['acc_no'])) {
-    header('Location: login.php');
-    exit();
+  header('Location: login.php');
+  exit();
 }
-if (!isset($_SESSION['mname'])) {
-    header('Location: passcode.php');
-    exit();
+if (!isset($_SESSION['pin'])) {
+  header('Location: passcode.php');
+  exit();
 }
 
 $reg_user = new USER();
@@ -21,15 +21,15 @@ $stmt = $reg_user->runQuery('SELECT * FROM account WHERE acc_no = :acc_no LIMIT 
 $stmt->execute([':acc_no' => (string)$_SESSION['acc_no']]);
 $row = $stmt->fetch(PDO::FETCH_ASSOC);
 if (!$row) {
-    header('Location: logout.php');
-    exit();
+  header('Location: logout.php');
+  exit();
 }
 
 $accNo = (string)$_SESSION['acc_no'];
 $currency = strtoupper(trim((string)($row['currency'] ?? 'USD')));
 
 try {
-    $reg_user->runQuery("CREATE TABLE IF NOT EXISTS term_deposits (
+  $reg_user->runQuery("CREATE TABLE IF NOT EXISTS term_deposits (
       id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
       deposit_ref VARCHAR(32) NOT NULL,
       acc_no VARCHAR(50) NOT NULL,
@@ -50,107 +50,107 @@ try {
 }
 
 if (isset($_POST['open_term_deposit'])) {
-    $principal = (float)($_POST['principal'] ?? 0);
-    $annualRate = (float)($_POST['annual_rate'] ?? 0);
-    $tenorMonths = (int)($_POST['tenor_months'] ?? 0);
-    $payoutMode = strtolower(trim((string)($_POST['payout_mode'] ?? 'payout')));
+  $principal = (float)($_POST['principal'] ?? 0);
+  $annualRate = (float)($_POST['annual_rate'] ?? 0);
+  $tenorMonths = (int)($_POST['tenor_months'] ?? 0);
+  $payoutMode = strtolower(trim((string)($_POST['payout_mode'] ?? 'payout')));
 
-    if ($principal <= 0 || $annualRate <= 0 || $tenorMonths <= 0) {
-        $flashType = 'error';
-        $flashMessage = 'Enter valid principal, rate, and tenor.';
-    } elseif (!in_array($payoutMode, ['payout', 'renew_principal', 'renew_all'], true)) {
-        $flashType = 'error';
-        $flashMessage = 'Invalid maturity instruction selected.';
-    } elseif ((float)$row['a_bal'] < $principal) {
-        $flashType = 'error';
-        $flashMessage = 'Insufficient available balance for this placement.';
-    } else {
-        try {
-            $reg_user->runQuery('START TRANSACTION')->execute();
+  if ($principal <= 0 || $annualRate <= 0 || $tenorMonths <= 0) {
+    $flashType = 'error';
+    $flashMessage = 'Enter valid principal, rate, and tenor.';
+  } elseif (!in_array($payoutMode, ['payout', 'renew_principal', 'renew_all'], true)) {
+    $flashType = 'error';
+    $flashMessage = 'Invalid maturity instruction selected.';
+  } elseif ((float)$row['a_bal'] < $principal) {
+    $flashType = 'error';
+    $flashMessage = 'Insufficient available balance for this placement.';
+  } else {
+    try {
+      $reg_user->runQuery('START TRANSACTION')->execute();
 
-            $fresh = $reg_user->runQuery('SELECT a_bal, t_bal FROM account WHERE acc_no = :acc_no FOR UPDATE');
-            $fresh->execute([':acc_no' => $accNo]);
-            $acct = $fresh->fetch(PDO::FETCH_ASSOC) ?: ['a_bal' => 0, 't_bal' => 0];
-            if ((float)$acct['a_bal'] < $principal) {
-                throw new RuntimeException('Insufficient available balance for this placement.');
-            }
+      $fresh = $reg_user->runQuery('SELECT a_bal, t_bal FROM account WHERE acc_no = :acc_no FOR UPDATE');
+      $fresh->execute([':acc_no' => $accNo]);
+      $acct = $fresh->fetch(PDO::FETCH_ASSOC) ?: ['a_bal' => 0, 't_bal' => 0];
+      if ((float)$acct['a_bal'] < $principal) {
+        throw new RuntimeException('Insufficient available balance for this placement.');
+      }
 
-            $startDate = date('Y-m-d');
-            $maturityDate = date('Y-m-d', strtotime('+' . $tenorMonths . ' months'));
-            $interest = $principal * ($annualRate / 100) * ($tenorMonths / 12);
-            $maturityAmount = round($principal + $interest, 2);
-            $now = date('Y-m-d H:i:s');
-            $depositRef = 'TD' . date('YmdHis') . strtoupper(substr(bin2hex(random_bytes(2)), 0, 4));
+      $startDate = date('Y-m-d');
+      $maturityDate = date('Y-m-d', strtotime('+' . $tenorMonths . ' months'));
+      $interest = $principal * ($annualRate / 100) * ($tenorMonths / 12);
+      $maturityAmount = round($principal + $interest, 2);
+      $now = date('Y-m-d H:i:s');
+      $depositRef = 'TD' . date('YmdHis') . strtoupper(substr(bin2hex(random_bytes(2)), 0, 4));
 
-            $ins = $reg_user->runQuery('INSERT INTO term_deposits
+      $ins = $reg_user->runQuery('INSERT INTO term_deposits
                 (deposit_ref, acc_no, principal, annual_rate, tenor_months, start_date, maturity_date, maturity_amount, status, payout_mode, created_at, updated_at)
                 VALUES
                 (:deposit_ref, :acc_no, :principal, :annual_rate, :tenor_months, :start_date, :maturity_date, :maturity_amount, :status, :payout_mode, :created_at, :updated_at)');
-            $ins->execute([
-                ':deposit_ref' => $depositRef,
-                ':acc_no' => $accNo,
-                ':principal' => $principal,
-                ':annual_rate' => $annualRate,
-                ':tenor_months' => $tenorMonths,
-                ':start_date' => $startDate,
-                ':maturity_date' => $maturityDate,
-                ':maturity_amount' => $maturityAmount,
-                ':status' => 'active',
-                ':payout_mode' => $payoutMode,
-                ':created_at' => $now,
-                ':updated_at' => $now,
-            ]);
+      $ins->execute([
+        ':deposit_ref' => $depositRef,
+        ':acc_no' => $accNo,
+        ':principal' => $principal,
+        ':annual_rate' => $annualRate,
+        ':tenor_months' => $tenorMonths,
+        ':start_date' => $startDate,
+        ':maturity_date' => $maturityDate,
+        ':maturity_amount' => $maturityAmount,
+        ':status' => 'active',
+        ':payout_mode' => $payoutMode,
+        ':created_at' => $now,
+        ':updated_at' => $now,
+      ]);
 
-            $upd = $reg_user->runQuery('UPDATE account SET a_bal = a_bal - :p, t_bal = t_bal - :p WHERE acc_no = :acc_no');
-            $upd->execute([':p' => $principal, ':acc_no' => $accNo]);
+      $upd = $reg_user->runQuery('UPDATE account SET a_bal = a_bal - :p, t_bal = t_bal - :p WHERE acc_no = :acc_no');
+      $upd->execute([':p' => $principal, ':acc_no' => $accNo]);
 
-            try {
-                $alerts = $reg_user->runQuery('INSERT INTO alerts (uname, type, amount, sender_name, remarks, date, time) VALUES (:uname, :type, :amount, :sender_name, :remarks, :date, :time)');
-                $alerts->execute([
-                    ':uname' => $accNo,
-                    ':type' => 'Term Deposit Placement',
-                    ':amount' => $principal,
-                    ':sender_name' => 'Treasury Desk',
-                    ':remarks' => 'Ref ' . $depositRef . ', maturity ' . $maturityDate,
-                    ':date' => date('Y-m-d'),
-                    ':time' => date('H:i:s'),
-                ]);
-            } catch (Throwable $e) {
-            }
+      try {
+        $alerts = $reg_user->runQuery('INSERT INTO alerts (uname, type, amount, sender_name, remarks, date, time) VALUES (:uname, :type, :amount, :sender_name, :remarks, :date, :time)');
+        $alerts->execute([
+          ':uname' => $accNo,
+          ':type' => 'Term Deposit Placement',
+          ':amount' => $principal,
+          ':sender_name' => 'Treasury Desk',
+          ':remarks' => 'Ref ' . $depositRef . ', maturity ' . $maturityDate,
+          ':date' => date('Y-m-d'),
+          ':time' => date('H:i:s'),
+        ]);
+      } catch (Throwable $e) {
+      }
 
-            $reg_user->runQuery('COMMIT')->execute();
-            $flashType = 'success';
-            $flashMessage = 'Term deposit opened successfully. Reference: ' . $depositRef;
+      $reg_user->runQuery('COMMIT')->execute();
+      $flashType = 'success';
+      $flashMessage = 'Term deposit opened successfully. Reference: ' . $depositRef;
 
-            $stmt->execute([':acc_no' => (string)$_SESSION['acc_no']]);
-            $row = $stmt->fetch(PDO::FETCH_ASSOC) ?: $row;
-        } catch (Throwable $e) {
-            try {
-                $reg_user->runQuery('ROLLBACK')->execute();
-            } catch (Throwable $rollbackError) {
-            }
-            $flashType = 'error';
-            $flashMessage = $e->getMessage();
-        }
+      $stmt->execute([':acc_no' => (string)$_SESSION['acc_no']]);
+      $row = $stmt->fetch(PDO::FETCH_ASSOC) ?: $row;
+    } catch (Throwable $e) {
+      try {
+        $reg_user->runQuery('ROLLBACK')->execute();
+      } catch (Throwable $rollbackError) {
+      }
+      $flashType = 'error';
+      $flashMessage = $e->getMessage();
     }
+  }
 }
 
 $depositRows = [];
 $depositSummary = ['active' => 0.0, 'matured' => 0.0, 'closed' => 0.0];
 try {
-    $list = $reg_user->runQuery('SELECT deposit_ref, principal, annual_rate, tenor_months, maturity_date, maturity_amount, status, payout_mode, created_at
+  $list = $reg_user->runQuery('SELECT deposit_ref, principal, annual_rate, tenor_months, maturity_date, maturity_amount, status, payout_mode, created_at
         FROM term_deposits
         WHERE acc_no = :acc_no
         ORDER BY id DESC
         LIMIT 25');
-    $list->execute([':acc_no' => $accNo]);
-    $depositRows = $list->fetchAll(PDO::FETCH_ASSOC);
-    foreach ($depositRows as $d) {
-        $k = strtolower((string)($d['status'] ?? 'active'));
-        if (isset($depositSummary[$k])) {
-            $depositSummary[$k] += (float)($d['maturity_amount'] ?? 0);
-        }
+  $list->execute([':acc_no' => $accNo]);
+  $depositRows = $list->fetchAll(PDO::FETCH_ASSOC);
+  foreach ($depositRows as $d) {
+    $k = strtolower((string)($d['status'] ?? 'active'));
+    if (isset($depositSummary[$k])) {
+      $depositSummary[$k] += (float)($d['maturity_amount'] ?? 0);
     }
+  }
 } catch (Throwable $e) {
 }
 
@@ -161,9 +161,9 @@ require_once __DIR__ . '/partials/shell-open.php';
 ?>
 
 <?php if ($flashMessage !== ''): ?>
-<div class="mb-5 rounded-xl p-4 <?= $flashType === 'success' ? 'bg-green-50 border border-green-200 text-green-800' : 'bg-red-50 border border-red-200 text-red-800' ?> text-sm">
-  <?= htmlspecialchars($flashMessage) ?>
-</div>
+  <div class="mb-5 rounded-xl p-4 <?= $flashType === 'success' ? 'bg-green-50 border border-green-200 text-green-800' : 'bg-red-50 border border-red-200 text-red-800' ?> text-sm">
+    <?= htmlspecialchars($flashMessage) ?>
+  </div>
 <?php endif; ?>
 
 <div class="mb-6">
@@ -263,4 +263,5 @@ require_once __DIR__ . '/partials/shell-open.php';
   <?php endif; ?>
 </div>
 
-<?php require_once __DIR__ . '/partials/shell-close.php'; exit(); ?>
+<?php require_once __DIR__ . '/partials/shell-close.php';
+exit(); ?>

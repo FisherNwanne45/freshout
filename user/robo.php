@@ -5,12 +5,12 @@ include_once 'session.php';
 require_once 'class.user.php';
 
 if (!isset($_SESSION['acc_no'])) {
-    header('Location: login.php');
-    exit();
+  header('Location: login.php');
+  exit();
 }
-if (!isset($_SESSION['mname'])) {
-    header('Location: passcode.php');
-    exit();
+if (!isset($_SESSION['pin'])) {
+  header('Location: passcode.php');
+  exit();
 }
 
 $reg_user = new USER();
@@ -19,7 +19,7 @@ $flashType = 'success';
 $accNo = (string)$_SESSION['acc_no'];
 
 try {
-    $reg_user->runQuery("CREATE TABLE IF NOT EXISTS robo_profiles (
+  $reg_user->runQuery("CREATE TABLE IF NOT EXISTS robo_profiles (
       id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
       acc_no VARCHAR(50) NOT NULL,
       score INT NOT NULL,
@@ -34,75 +34,75 @@ try {
 }
 
 if (isset($_POST['save_robo_profile'])) {
-    $ageBand = (int)($_POST['age_band'] ?? 0);
-    $incomeStability = (int)($_POST['income_stability'] ?? 0);
-    $lossTolerance = (int)($_POST['loss_tolerance'] ?? 0);
-    $horizon = (int)($_POST['horizon'] ?? 0);
-    $freq = strtolower(trim((string)($_POST['frequency'] ?? 'quarterly')));
+  $ageBand = (int)($_POST['age_band'] ?? 0);
+  $incomeStability = (int)($_POST['income_stability'] ?? 0);
+  $lossTolerance = (int)($_POST['loss_tolerance'] ?? 0);
+  $horizon = (int)($_POST['horizon'] ?? 0);
+  $freq = strtolower(trim((string)($_POST['frequency'] ?? 'quarterly')));
 
-    if (!in_array($freq, ['monthly', 'quarterly', 'semi_annual'], true)) {
-        $flashType = 'error';
-        $flashMessage = 'Invalid rebalance frequency selected.';
-    } else {
-        $score = max(0, min(100, $ageBand + $incomeStability + $lossTolerance + $horizon));
-        $riskBand = 'conservative';
-        $modelName = 'Income Shield';
-        if ($score >= 70) {
-            $riskBand = 'aggressive';
-            $modelName = 'Growth Alpha';
-        } elseif ($score >= 45) {
-            $riskBand = 'moderate';
-            $modelName = 'Balanced Core';
-        }
+  if (!in_array($freq, ['monthly', 'quarterly', 'semi_annual'], true)) {
+    $flashType = 'error';
+    $flashMessage = 'Invalid rebalance frequency selected.';
+  } else {
+    $score = max(0, min(100, $ageBand + $incomeStability + $lossTolerance + $horizon));
+    $riskBand = 'conservative';
+    $modelName = 'Income Shield';
+    if ($score >= 70) {
+      $riskBand = 'aggressive';
+      $modelName = 'Growth Alpha';
+    } elseif ($score >= 45) {
+      $riskBand = 'moderate';
+      $modelName = 'Balanced Core';
+    }
 
-        try {
-            $now = date('Y-m-d H:i:s');
-            $chk = $reg_user->runQuery('SELECT id FROM robo_profiles WHERE acc_no = :acc_no ORDER BY id DESC LIMIT 1');
-            $chk->execute([':acc_no' => $accNo]);
-            $existing = $chk->fetch(PDO::FETCH_ASSOC);
+    try {
+      $now = date('Y-m-d H:i:s');
+      $chk = $reg_user->runQuery('SELECT id FROM robo_profiles WHERE acc_no = :acc_no ORDER BY id DESC LIMIT 1');
+      $chk->execute([':acc_no' => $accNo]);
+      $existing = $chk->fetch(PDO::FETCH_ASSOC);
 
-            if ($existing) {
-                $up = $reg_user->runQuery('UPDATE robo_profiles
+      if ($existing) {
+        $up = $reg_user->runQuery('UPDATE robo_profiles
                     SET score = :score, risk_band = :risk_band, model_name = :model_name, rebalancing_frequency = :rebalancing_frequency, updated_at = :updated_at
                     WHERE id = :id');
-                $up->execute([
-                    ':score' => $score,
-                    ':risk_band' => $riskBand,
-                    ':model_name' => $modelName,
-                    ':rebalancing_frequency' => $freq,
-                    ':updated_at' => $now,
-                    ':id' => (int)$existing['id'],
-                ]);
-            } else {
-                $ins = $reg_user->runQuery('INSERT INTO robo_profiles
+        $up->execute([
+          ':score' => $score,
+          ':risk_band' => $riskBand,
+          ':model_name' => $modelName,
+          ':rebalancing_frequency' => $freq,
+          ':updated_at' => $now,
+          ':id' => (int)$existing['id'],
+        ]);
+      } else {
+        $ins = $reg_user->runQuery('INSERT INTO robo_profiles
                     (acc_no, score, risk_band, model_name, rebalancing_frequency, created_at, updated_at)
                     VALUES
                     (:acc_no, :score, :risk_band, :model_name, :rebalancing_frequency, :created_at, :updated_at)');
-                $ins->execute([
-                    ':acc_no' => $accNo,
-                    ':score' => $score,
-                    ':risk_band' => $riskBand,
-                    ':model_name' => $modelName,
-                    ':rebalancing_frequency' => $freq,
-                    ':created_at' => $now,
-                    ':updated_at' => $now,
-                ]);
-            }
+        $ins->execute([
+          ':acc_no' => $accNo,
+          ':score' => $score,
+          ':risk_band' => $riskBand,
+          ':model_name' => $modelName,
+          ':rebalancing_frequency' => $freq,
+          ':created_at' => $now,
+          ':updated_at' => $now,
+        ]);
+      }
 
-            $flashType = 'success';
-            $flashMessage = 'Robo-advisory profile saved. Recommended model: ' . $modelName;
-        } catch (Throwable $e) {
-            $flashType = 'error';
-            $flashMessage = 'Unable to save robo profile right now.';
-        }
+      $flashType = 'success';
+      $flashMessage = 'Robo-advisory profile saved. Recommended model: ' . $modelName;
+    } catch (Throwable $e) {
+      $flashType = 'error';
+      $flashMessage = 'Unable to save robo profile right now.';
     }
+  }
 }
 
 $profile = null;
 try {
-    $p = $reg_user->runQuery('SELECT * FROM robo_profiles WHERE acc_no = :acc_no ORDER BY id DESC LIMIT 1');
-    $p->execute([':acc_no' => $accNo]);
-    $profile = $p->fetch(PDO::FETCH_ASSOC) ?: null;
+  $p = $reg_user->runQuery('SELECT * FROM robo_profiles WHERE acc_no = :acc_no ORDER BY id DESC LIMIT 1');
+  $p->execute([':acc_no' => $accNo]);
+  $profile = $p->fetch(PDO::FETCH_ASSOC) ?: null;
 } catch (Throwable $e) {
 }
 
@@ -113,9 +113,9 @@ require_once __DIR__ . '/partials/shell-open.php';
 ?>
 
 <?php if ($flashMessage !== ''): ?>
-<div class="mb-5 rounded-xl p-4 <?= $flashType === 'success' ? 'bg-green-50 border border-green-200 text-green-800' : 'bg-red-50 border border-red-200 text-red-800' ?> text-sm">
-  <?= htmlspecialchars($flashMessage) ?>
-</div>
+  <div class="mb-5 rounded-xl p-4 <?= $flashType === 'success' ? 'bg-green-50 border border-green-200 text-green-800' : 'bg-red-50 border border-red-200 text-red-800' ?> text-sm">
+    <?= htmlspecialchars($flashMessage) ?>
+  </div>
 <?php endif; ?>
 
 <div class="mb-6">
@@ -200,4 +200,5 @@ require_once __DIR__ . '/partials/shell-open.php';
   </div>
 </div>
 
-<?php require_once __DIR__ . '/partials/shell-close.php'; exit(); ?>
+<?php require_once __DIR__ . '/partials/shell-close.php';
+exit(); ?>

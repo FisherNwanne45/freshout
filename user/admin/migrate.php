@@ -197,7 +197,7 @@ if ($didRun) {
               KEY idx_acc (acc_no)
             ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4",
 
-                        "CREATE TABLE IF NOT EXISTS customer_accounts (
+            "CREATE TABLE IF NOT EXISTS customer_accounts (
                             id INT AUTO_INCREMENT PRIMARY KEY,
                             owner_acc_no VARCHAR(50) NOT NULL,
                             account_no VARCHAR(40) NOT NULL,
@@ -353,7 +353,7 @@ if ($didRun) {
               KEY idx_product_activity_ref (product_type, product_ref)
                         ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4",
 
-                        "CREATE TABLE IF NOT EXISTS beneficiaries (
+            "CREATE TABLE IF NOT EXISTS beneficiaries (
                             id INT AUTO_INCREMENT PRIMARY KEY,
                             acc_no VARCHAR(50) NOT NULL,
                             nick_name VARCHAR(100) NOT NULL,
@@ -365,7 +365,7 @@ if ($didRun) {
                             KEY idx_bene_acc (acc_no)
                         ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4",
 
-                        "CREATE TABLE IF NOT EXISTS ticket_replies (
+            "CREATE TABLE IF NOT EXISTS ticket_replies (
                             id INT AUTO_INCREMENT PRIMARY KEY,
                             ticket_id INT NOT NULL,
                             sender_role VARCHAR(20) NOT NULL DEFAULT 'customer',
@@ -376,7 +376,7 @@ if ($didRun) {
                             INDEX idx_ticket (ticket_id)
                         ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4",
 
-                        "CREATE TABLE IF NOT EXISTS site_branches (
+            "CREATE TABLE IF NOT EXISTS site_branches (
                             id INT AUTO_INCREMENT PRIMARY KEY,
                             branch_name VARCHAR(100) NOT NULL DEFAULT '',
                             address VARCHAR(255) NOT NULL DEFAULT '',
@@ -386,7 +386,7 @@ if ($didRun) {
                             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
                         ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4",
 
-                        "CREATE TABLE IF NOT EXISTS account_otp_codes (
+            "CREATE TABLE IF NOT EXISTS account_otp_codes (
                             id INT AUTO_INCREMENT PRIMARY KEY,
                             acc_no VARCHAR(50) NULL,
                             email VARCHAR(190) NULL,
@@ -400,7 +400,7 @@ if ($didRun) {
                             INDEX idx_otp_exp (expires_at)
                         ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4",
 
-                        "CREATE TABLE IF NOT EXISTS crypto_deposit_wallets (
+            "CREATE TABLE IF NOT EXISTS crypto_deposit_wallets (
                             id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
                             currency_code VARCHAR(10) NOT NULL,
                             network_name VARCHAR(60) NOT NULL DEFAULT '',
@@ -415,7 +415,7 @@ if ($didRun) {
                             KEY idx_crypto_wallet_active (is_active)
                         ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4",
 
-                        "CREATE TABLE IF NOT EXISTS crypto_deposit_requests (
+            "CREATE TABLE IF NOT EXISTS crypto_deposit_requests (
                             id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
                             deposit_ref VARCHAR(32) NOT NULL,
                             acc_no VARCHAR(50) NOT NULL,
@@ -439,7 +439,7 @@ if ($didRun) {
                             KEY idx_crypto_deposit_currency (currency_code)
                         ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4",
 
-                        "CREATE TABLE IF NOT EXISTS crypto_withdrawal_requests (
+            "CREATE TABLE IF NOT EXISTS crypto_withdrawal_requests (
                             id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
                             withdrawal_ref VARCHAR(32) NOT NULL,
                             acc_no VARCHAR(50) NOT NULL,
@@ -460,7 +460,7 @@ if ($didRun) {
                             KEY idx_crypto_withdrawal_currency (currency_code)
                         ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4",
 
-                        "CREATE TABLE IF NOT EXISTS crypto_transfers (
+            "CREATE TABLE IF NOT EXISTS crypto_transfers (
                             id INT AUTO_INCREMENT PRIMARY KEY,
                             acc_no VARCHAR(20) NOT NULL,
                             email VARCHAR(120) NOT NULL,
@@ -476,7 +476,7 @@ if ($didRun) {
                             KEY idx_email (email)
                         ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4",
 
-                        "CREATE TABLE IF NOT EXISTS transfer_status_history (
+            "CREATE TABLE IF NOT EXISTS transfer_status_history (
                             id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
                             transfer_id INT NOT NULL,
                             old_status VARCHAR(20) NULL DEFAULT NULL,
@@ -488,7 +488,7 @@ if ($didRun) {
                             KEY idx_changed_at (changed_at)
                         ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4",
 
-                        "CREATE TABLE IF NOT EXISTS iban_change_history (
+            "CREATE TABLE IF NOT EXISTS iban_change_history (
                             id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
                             customer_account_id INT NOT NULL,
                             old_iban VARCHAR(34) NULL DEFAULT NULL,
@@ -500,7 +500,7 @@ if ($didRun) {
                             KEY idx_changed_at (changed_at)
                         ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4",
 
-                        "CREATE TABLE IF NOT EXISTS transfer_settings (
+            "CREATE TABLE IF NOT EXISTS transfer_settings (
                             id INT AUTO_INCREMENT PRIMARY KEY,
                             setting_key VARCHAR(100) NOT NULL UNIQUE,
                             setting_value TEXT NULL,
@@ -596,29 +596,36 @@ if ($didRun) {
         }
 
         if ($tableExists($conn, 'account')) {
-            $hasMname = $columnExists($conn, 'account', 'mname');
+            $haspin = $columnExists($conn, 'account', 'pin');
             $hasPin = $columnExists($conn, 'account', 'pin');
 
-            if ($hasMname && !$hasPin) {
-                $exec($conn, "ALTER TABLE `account` CHANGE COLUMN `mname` `pin` VARCHAR(100) NOT NULL", 'Renamed account.mname to account.pin');
-            } elseif ($hasMname && $hasPin) {
+            if ($haspin && !$hasPin) {
+                $exec($conn, "ALTER TABLE `account` CHANGE COLUMN `pin` `pin` VARCHAR(100) NOT NULL", 'Renamed account.pin to account.pin');
+            } elseif ($haspin && $hasPin) {
                 $exec(
                     $conn,
-                    "UPDATE `account` SET `pin` = `mname` WHERE (`pin` IS NULL OR TRIM(`pin`) = '') AND `mname` IS NOT NULL AND TRIM(`mname`) <> ''",
-                    'Backfilled account.pin from account.mname (pin already existed)'
+                    "UPDATE `account` SET `pin` = `pin` WHERE (`pin` IS NULL OR TRIM(`pin`) = '') AND `pin` IS NOT NULL AND TRIM(`pin`) <> ''",
+                    'Backfilled account.pin from account.pin (pin already existed)'
                 );
-                $log('[SKIP] account.mname was not renamed because account.pin already exists. Data has been copied to pin.');
-            } elseif (!$hasMname && $hasPin) {
-                $log('[SKIP] account.pin already present and account.mname not found.');
+                $log('[SKIP] account.pin was not renamed because account.pin already exists. Data has been copied to pin.');
+            } elseif (!$haspin && $hasPin) {
+                $log('[SKIP] account.pin already present and account.pin not found.');
             } else {
-                $log('[SKIP] account table does not have mname or pin columns.');
+                $log('[SKIP] account table does not have pin or pin columns.');
             }
         } else {
             $log('[SKIP] account table not found; rename step skipped.');
         }
 
         $excludedKeys = [
-            'smtp_host', 'smtp_port', 'smtp_secure', 'smtp_username', 'smtp_password', 'smtp_from', 'smtp_from_name', 'smtp_reply_to'
+            'smtp_host',
+            'smtp_port',
+            'smtp_secure',
+            'smtp_username',
+            'smtp_password',
+            'smtp_from',
+            'smtp_from_name',
+            'smtp_reply_to'
         ];
 
         foreach ($hardcodedSiteSettings as $k => $v) {
@@ -685,21 +692,23 @@ require_once __DIR__ . '/partials/admin-shell-open.php';
 ?>
 
 <div class="max-w-5xl space-y-6">
-  <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-    <h2 class="text-lg font-semibold text-gray-800">Remote Build Migration</h2>
-    <p class="text-sm text-gray-600 mt-2">This runs an idempotent schema and settings migration for older databases after deploying this codebase. SMTP keys are excluded by design.</p>
-    <form method="post" class="mt-4">
-      <button type="submit" name="run_migration" class="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium px-4 py-2 rounded-lg transition-colors cursor-pointer">Run Build Migration</button>
-      <a href="?run=1" class="inline-flex items-center gap-2 ml-2 bg-gray-100 hover:bg-gray-200 text-gray-800 text-sm font-medium px-4 py-2 rounded-lg transition-colors">Run via URL</a>
-    </form>
-  </div>
+    <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+        <h2 class="text-lg font-semibold text-gray-800">Remote Build Migration</h2>
+        <p class="text-sm text-gray-600 mt-2">This runs an idempotent schema and settings migration for older databases after deploying this codebase. SMTP keys are excluded by design.</p>
+        <form method="post" class="mt-4">
+            <button type="submit" name="run_migration" class="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium px-4 py-2 rounded-lg transition-colors cursor-pointer">Run Build Migration</button>
+            <a href="?run=1" class="inline-flex items-center gap-2 ml-2 bg-gray-100 hover:bg-gray-200 text-gray-800 text-sm font-medium px-4 py-2 rounded-lg transition-colors">Run via URL</a>
+        </form>
+    </div>
 
-  <?php if ($didRun): ?>
-  <div class="bg-slate-950 text-slate-100 rounded-xl border border-slate-800 p-5">
-    <h3 class="text-sm font-semibold tracking-wide uppercase text-slate-300 mb-3">Migration Progress Log</h3>
-    <div class="text-xs leading-6 font-mono whitespace-pre-wrap"><?php foreach ($logs as $line) { echo htmlspecialchars($line) . "\n"; } ?></div>
-  </div>
-  <?php endif; ?>
+    <?php if ($didRun): ?>
+        <div class="bg-slate-950 text-slate-100 rounded-xl border border-slate-800 p-5">
+            <h3 class="text-sm font-semibold tracking-wide uppercase text-slate-300 mb-3">Migration Progress Log</h3>
+            <div class="text-xs leading-6 font-mono whitespace-pre-wrap"><?php foreach ($logs as $line) {
+                                                                                echo htmlspecialchars($line) . "\n";
+                                                                            } ?></div>
+        </div>
+    <?php endif; ?>
 </div>
 
 <?php require_once __DIR__ . '/partials/admin-shell-close.php'; ?>

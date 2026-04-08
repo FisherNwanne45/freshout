@@ -113,7 +113,6 @@ if (isset($_POST['update'])) {
 
   $fname    = trim($_POST['fname']);
   $pin    = trim($_POST['pin']);
-  $pin      = $pin;
   $lname    = trim($_POST['lname']);
   $uname    = trim($_POST['uname']);
   $upass    = $_POST['upass'];
@@ -158,7 +157,7 @@ if (isset($_POST['update'])) {
   }
 
   $q = $reg_user->runQuery("UPDATE account SET
-      fname=:fname, pin=:pin, pin=:pin, lname=:lname, uname=:uname, upass=:upass, upass2=:upass2,
+      fname=:fname, pin=:pin, lname=:lname, uname=:uname, upass=:upass, upass2=:upass2,
         phone=:phone, email=:email, type=:type, work=:work, acc_no=:acc_no, addr=:addr,
         sex=:sex, dob=:dob, marry=:marry, t_bal=:t_bal, a_bal=:a_bal, currency=:currency,
         cot=:cot, tax=:tax, lppi=:lppi, imf=:imf, code5=:code5,
@@ -166,7 +165,6 @@ if (isset($_POST['update'])) {
         WHERE id=:id");
   $q->execute([
     ':fname' => $fname,
-    ':pin' => $pin,
     ':pin' => $pin,
     ':lname' => $lname,
     ':uname' => $uname,

@@ -1,0 +1,29 @@
+#RewriteEngine On
+#RewriteBase /freshout/
+
+# Disable directory listings
+Options -Indexes
+
+# ── Infrastructure: always serve directly, never rewrite ─────────────
+RewriteRule ^index\.php$   - [L]
+RewriteRule ^asset\.php$   - [L]
+RewriteRule ^config\.php$  - [F,L]
+RewriteRule ^session\.php$ - [F,L]
+RewriteRule ^submit\.php$  - [L]
+RewriteRule ^user/         - [L]
+RewriteRule ^themes/       - [L]
+RewriteRule ^\.htaccess$   - [F,L]
+
+# ── [THEME_REWRITE_START] ─────────────────────────────────────────────
+# Active theme: theme1
+# Static asset directories — resolved at runtime by asset.php.
+RewriteRule ^(css|js|img|fonts|assets|images|js\.locatorsearch\.com|maxcdn\.bootstrapcdn\.com|static\.ctctcdn\.com|www\.google-analytics\.com)/(.*)$ asset.php?path=$1/$2 [L,QSA]
+
+# PHP page requests — dispatched through the theme front controller.
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule ^([A-Za-z0-9_%-][A-Za-z0-9_.%-]*)\.php$ index.php?_page=$1.php [L,QSA]
+
+# Root request → index page.
+RewriteRule ^$ index.php [L]
+# ── [THEME_REWRITE_END] ───────────────────────────────────────────────

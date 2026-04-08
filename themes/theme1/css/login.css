@@ -1,0 +1,549 @@
+﻿body, html {
+    padding: 0;
+    margin: 0;
+    box-sizing: border-box;
+    font-family: Arial;
+    /*color: red;*/
+}
+
+@font-face {
+    font-family: 'FontAwesome';
+    src: url('https://maxcdn.bootstrapcdn.com/font-awesome/4.5.0/fonts/fontawesome-webfont.eot?v=4.5.0');
+    src: url('https://maxcdn.bootstrapcdn.com/font-awesome/4.5.0/fonts/fontawesome-webfont.eot?#iefix&v=4.5.0') format('embedded-opentype'),url('https://maxcdn.bootstrapcdn.com/font-awesome/4.5.0/fonts/fontawesome-webfont.woff?v=4.5.0') format('woff'),url('https://maxcdn.bootstrapcdn.com/font-awesome/4.5.0/fonts/fontawesome-webfont.ttf?v=4.5.0') format('truetype'),url('https://maxcdn.bootstrapcdn.com/font-awesome/4.5.0/fonts/fontawesome-webfont.svg?v=4.5.0#fontawesomeregular') format('svg');
+    font-weight: normal;
+    font-style: normal;
+}
+/* Online Banking ---------------------------------------------------------------------------------------------------*/
+#login {
+    background-color: #eee;
+    padding: 1em 2em;
+    box-sizing: border-box;
+    width: 20em;
+    font-size: 1rem;
+    position: relative;
+    z-index: 340;
+    flex-direction: column;
+}
+
+@media only screen and (min-width: 670px) {
+    #login {
+        font-size: 1rem;
+    }
+}
+
+#login,
+#login form {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: stretch;
+}
+
+    #login form {
+        margin-bottom: 0;
+    }
+
+    #login h2 {
+        width: 100%;
+        margin-top: 0;
+    }
+
+    #login label {
+        flex-grow: 1;
+        margin: 0.25em 0;
+        border-right: solid 1px #eee;
+        position: relative;
+        line-height: inherit;
+        box-sizing: border-box;
+        font-size: inherit;
+    }
+
+    #login form label {
+        width: 51%;
+    }
+
+    #login label,
+    #login button {
+        height: 3em;
+    }
+
+    #login button {
+        border: none;
+        margin: 0.25em 0;
+        display: flex;
+        align-items: center;
+        background-color: #aaa;
+        font-size: 1em;
+        padding: 0 0.75em;
+        cursor: pointer;
+        transition: background-color 0.25s ease;
+    }
+
+        #login button:hover {
+            background-color: #ccc;
+        }
+
+    #login label span {
+        display: none;
+    }
+
+    #login:not(.personal) .personal,
+    #login:not(.business) .business,
+    #login:not(.other) .other {
+        display: none;
+    }
+
+    #login input:not([type=radio]):not([type=checkbox]),
+    #login select {
+        border: none;
+        width: 100%; /* Comment out if not using lable > input structure*/
+        box-sizing: border-box;
+        border-radius: 0;
+        padding: 0 1em;
+        background-color: #fff;
+        height: 100%;
+        font-size: inherit;
+        font-family: inherit;
+        transition: background-color 0.25s ease;
+        border: solid 1px rgba(204, 204, 204, 1);
+        -webkit-appearance: none;
+        -moz-appearance: none;
+    }
+
+        #login input:not([type=radio]):not([type=checkbox]):focus {
+            background-color: #eee;
+        }
+
+    #login ul {
+        display: flex;
+        list-style: none;
+        padding: 0;
+        width: 100%;
+    }
+
+        #login ul li {
+            margin: 0 1em 0 0;
+            list-style-type: none;
+        }
+
+    #login ::-webkit-input-placeholder { /* Chrome/Opera/Safari */
+        color: #333;
+    }
+
+    #login ::-moz-placeholder { /* Firefox 19+ */
+        color: #333;
+    }
+
+    #login :-ms-input-placeholder { /* IE 10+ */
+        color: #333;
+    }
+
+    #login :-moz-placeholder { /* Firefox 18- */
+        color: #333;
+    }
+
+    #login fieldset {
+        border: none;
+        padding: 0;
+        margin: 0 0 0.5em 0;
+        display: block;
+        position: relative;
+        flex-grow: 1;
+    }
+
+        #login fieldset legend {
+            display: block;
+            margin-bottom: 0.5em;
+        }
+
+        #login fieldset label {
+            border: none;
+            width: auto;
+            display: inline-flex;
+            flex-wrap: wrap;
+            height: auto;
+            margin-right: 1em;
+            overflow: hidden;
+            cursor: pointer;
+        }
+
+            #login fieldset label:last-child {
+                margin-right: 0;
+            }
+
+    #login input[type=radio] {
+        position: absolute;
+        left: -12em;
+        top: -12em;
+        visibility: hidden;
+    }
+
+        #login input[type=radio] + span::before {
+            content: "";
+            width: 1em;
+            height: 1em;
+            display: inline-flex;
+            border-radius: 50%;
+            border: solid 2px #666;
+            margin-right: 0.5em;
+            transition: background-color 0.25s ease;
+        }
+
+        #login input[type=radio]:checked + span::before {
+            background-color: #666;
+        }
+
+        #login input[type=checkbox] + span,
+        #login input[type=radio] + span {
+            display: block;
+        }
+
+    #login .valid::before {
+        display: none;
+    }
+
+    #login label:last-of-type input:not([type=radio]):not([type=checkbox]) {
+        border-top-right-radius: 0;
+        border-bottom-right-radius: 0;
+        border-right-width: 0;
+    }
+
+    #login label {
+        border: none;
+    }
+
+    #login input + span[class*=fa-],
+    #login select + span[class*=fa-] {
+        position: absolute;
+        display: flex;
+        height: 100%;
+        right: 0.5em;
+        top: 0;
+        align-items: center;
+        font-size: 1.5em;
+        pointer-events: none;
+    }
+    /* Border Radius */
+    #login.rounded-corners,
+    #login.rounded-corners.horizontal fieldset ~ form label:first-child input:not([type=radio]):not([type=checkbox]) {
+        border-radius: 0.5em; /*Change the border-radius here. */
+    }
+
+        #login.rounded-corners input:not([type=radio]):not([type=checkbox]),
+        #login.rounded-corners select,
+        #login.rounded-corners button {
+            border-radius: 0.5em; /*Change the border-radius here. */
+        }
+
+        #login.rounded-corners button {
+            border-top-left-radius: 0;
+            border-bottom-left-radius: 0;
+        }
+
+        #login.rounded-corners.horizontal fieldset ~ form label:first-child input:not([type=radio]):not([type=checkbox]) {
+            border-top-right-radius: 0;
+            border-bottom-right-radius: 0;
+        }
+    /* Hide Password */
+    #login.hide-password form label + label {
+        display: none;
+    }
+
+    #login.hide-password form label.valid + label {
+        display: flex;
+    }
+
+    #login.hide-password label:not(.valid):not(.invalid) input:not([type=radio]):not([type=checkbox]) {
+        border-top-right-radius: 0;
+        border-bottom-right-radius: 0;
+        border-right-width: 0;
+    }
+
+/* Horizontal Layout */
+@media (min-width: 768px) {
+    #login.horizontal {
+        width: auto;
+        flex-direction: row;
+    }
+
+        #login.horizontal label {
+            width: 10em;
+        }
+
+        #login.horizontal form {
+            flex-grow: 2;
+            flex-wrap: nowrap;
+            width: 24em;
+        }
+
+        #login.horizontal input:not([type=radio]):not([type=checkbox]) {
+            border-left-width: 0;
+            border-right-width: 0;
+        }
+
+        #login.horizontal label + label input:not([type=radio]):not([type=checkbox]),
+        #login.horizontal fieldset ~ form label:first-child input:not([type=radio]):not([type=checkbox]) {
+            border-left-width: 1px;
+        }
+
+        #login.horizontal.rounded-corners form input:not([type=radio]):not([type=checkbox]) {
+            border-radius: 0;
+        }
+
+        #login.horizontal.rounded-corners select {
+            border-top-right-radius: 0;
+            border-bottom-right-radius: 0;
+        }
+}
+/*Psuedo Select --------------------------------------*/
+/* Non-Adjustable Styles */
+.ps-select {
+    position: relative;
+    display: block;
+}
+
+    .ps-select select {
+        position: relative;
+        z-index: 1;
+        width: 100%;
+        font-size: inherit;
+        outline: none !important;
+    }
+
+    .ps-select [data-select] {
+        display: block !important;
+        position: absolute;
+        width: auto;
+        min-width: 100%;
+        bottom: 0;
+        left: 0;
+        z-index: 2;
+        height: inherit;
+        line-height: inherit;
+        outline: none;
+        transition: z-index 0s 0.5s ease;
+        pointer-events: none;
+    }
+
+        .ps-select [data-select]:focus {
+            z-index: 1000;
+            transition-delay: 0s;
+        }
+
+        .ps-select [data-select]::after {
+            content: "\f107";
+            display: flex;
+            font-family: "FontAwesome";
+            position: absolute;
+            top: 50%;
+            z-index: 3;
+            pointer-events: none;
+            font-size: 1.25em;
+            transform: translateY(-50%);
+        }
+
+    .ps-select [data-select],
+    .ps-select [data-option] {
+        cursor: pointer;
+    }
+
+        .ps-select [data-select]::before,
+        .ps-select [data-option] {
+            display: flex !important;
+            flex-direction: column;
+            justify-content: center;
+            align-items: flex-start;
+            position: relative;
+            background-color: #fff;
+            height: inherit;
+            line-height: inherit;
+            box-sizing: border-box;
+            z-index: 1;
+            white-space: nowrap;
+            text-decoration: inherit;
+            font-style: inherit;
+        }
+
+        .ps-select [data-select]::before {
+            content: attr(data-html);
+            position: absolute;
+            z-index: 2;
+            top: 0;
+            left: 0;
+            width: 100%;
+            border: none;
+            color: inherit;
+            background-color: inherit;
+        }
+
+    .ps-select.invalid [data-select]::before {
+        height: 100%;
+        width: 100%;
+    }
+
+    .ps-select [data-select]:focus::before {
+        pointer-events: none;
+    }
+
+    .ps-select [data-option].disabled {
+        cursor: default;
+    }
+
+    .ps-select.ready [data-option] {
+        transition: margin 0.25s 0.25s ease, background-color 0.25s ease, border-radius 0s 0.25s !important;
+    }
+
+    .ps-select [data-option] a {
+        display: flex;
+        height: 100%;
+        width: 100%;
+        align-items: center;
+        color: inherit;
+        text-decoration: inherit;
+        font-style: inherit;
+    }
+
+        .ps-select [data-option] a:hover {
+            color: inherit;
+        }
+
+    .ps-select [data-select]:focus [data-option] {
+        margin-top: 0 !important;
+        transition-delay: 0s !important;
+    }
+
+    .ps-select [data-select].open-up,
+    .ps-select [data-select].open-up [data-option],
+    .ps-select [data-select].open-up::before {
+        transform: rotateX(180deg);
+    }
+
+        .ps-select [data-select].open-up:focus [data-option] {
+            transform: rotateX(180deg);
+        }
+
+@media only screen and (min-width: 1024px) {
+    .ps-select [data-select] {
+        pointer-events: all;
+    }
+}
+
+/* Adjustable Styles */
+.ps-select select,
+.ps-select [data-select] {
+    height: 3em; /* The pseudo select will inherit this height */
+    line-height: 3em; /* Set to the same as the height */
+}
+
+.ps-select [data-option] + [data-option] {
+    /*margin-top: -3em !important; /* Set to the same as the select height if pixel rounding problems occur*/
+}
+
+.ps-select [data-select] {
+    color: inherit;
+    background-color: #fff;
+    text-decoration: none;
+    font-style: normal;
+}
+
+    .ps-select [data-select]::before,
+    .ps-select [data-option] {
+        padding: 0 1em;
+    }
+
+    .ps-select [data-select]::before {
+        color: inherit;
+    }
+
+.ps-select.invalid [data-select]::before {
+    box-shadow: inset 0 0 0 2px #666;
+}
+
+.ps-select [data-select]::after {
+    color: inherit;
+    right: 1em;
+}
+
+.ps-select [data-option] {
+    color: inherit;
+    border-top: solid 1px rgba(0,0,0,0.1);
+}
+
+.ps-select [data-select].open-up [data-option]:nth-child(2) {
+    border-bottom: solid 1px rgba(0,0,0,0.1);
+}
+
+.ps-select.ready [data-option] {
+    transition-duration: 0.25s, 0.25s !important; /* Margin, Background */
+}
+
+.ps-select [data-select]:focus [data-option].active { /* Currently selected option */
+    background-color: #eee;
+}
+
+    .ps-select [data-option]:hover,
+    .ps-select [data-select]:focus [data-option].active:hover { /* Option and selected option hover */
+        background-color: #ccc;
+    }
+
+.ps-select [data-option].disabled { /* Disabled option */
+    color: #aaa;
+}
+
+/* Show first option */
+/*
+.ps-select.ready [data-option] {
+    transition: margin 0.25s 0.25s ease, background-color 0.25s ease, transform 0.25s 0.25s ease !important;
+}
+.ps-select [data-select].open-up:focus [data-option] {
+    transform: rotateX(180deg) translateY(-100%);
+}
+.ps-select [data-select]:focus [data-option] {
+    transform: translateY(100%);
+}
+.ps-select [data-select].open-up [data-option]:nth-child(2) {
+	border-bottom: none;
+}
+*/
+/* End show first option */
+
+/* Border Radius */
+/*
+#login input:not([type=radio]):not([type=checkbox]),
+#login select,
+#login button,
+.ps-select [data-select],
+.ps-select [data-select]::before,
+.ps-select [data-option] {
+    border-radius: 0.5em; /*Change the border-radius here.
+}
+
+#login label {
+    border: none;
+}
+
+#login label:last-of-type input:not([type=radio]):not([type=checkbox]) {
+    border-top-right-radius: 0;
+    border-bottom-right-radius: 0;
+}
+
+#login button {
+    border-top-left-radius: 0;
+    border-bottom-left-radius: 0;
+}
+
+.ps-select [data-select]:focus [data-option]:not(:first-child):not(:last-child) {
+    border-radius: 0;
+}
+
+.ps-select [data-select]:focus::before,
+.ps-select [data-select]:focus [data-option]:first-child {
+    border-bottom-left-radius: 0;
+    border-bottom-right-radius: 0;
+}
+
+.ps-select [data-select]:focus [data-option]:last-child {
+    border-top-left-radius: 0;
+    border-top-right-radius: 0;
+}
+*/
+/* End Border Radius */

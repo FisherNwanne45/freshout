@@ -1,0 +1,762 @@
+/*-----------------panel nav-----------------------------------------------------*/
+#mainnav .panel-content h2, #mainnav .panel-content h2 a {
+ 	font-family: 'Merriweather Bold', Arial, Helvetica, sans-serif;
+	font-weight: normal;
+	color: #581c20;
+ }
+ul.panelnav > li a.category, #mainnav .panel-content ul li, #mainnav .panel-content ul li a  {
+	font-family: 'Roboto Light',Arial, Helvetica, sans-serif;
+	font-weight: normal;
+	color: #333333;
+}
+.desktop #nav {
+	display: block;
+	bottom: 0;
+	height: 100px;
+	width: 100%;
+	right: 0;
+	-webkit-transition: all .5s ease;
+	-moz-transition: 	all .5s ease;
+	-ms-transition: 	all .5s ease;
+	transition: 		all .5s ease;
+	z-index: 20500;
+	/* left: 50%; */
+	/* margin-left: -600px; */
+}
+.desktop #nav:hover {
+}
+.desktop.scroll #nav {
+	/* top: 0; */
+}
+.translate-active.desktop #nav, .translate-active.desktop #nav.fixed {
+	top: 50px;
+}
+.home.translate-active.desktop #nav {
+	top: auto;
+}
+#nav {
+	display: none;
+	position: absolute;
+	bottom: 0;
+	width: 100%;
+	z-index: 2500;
+}
+.desktop #nav.fixed, .home.translate-active.desktop #nav.fixed {
+	position: fixed;
+	top: 0;
+}
+body.desktop #nav .inner-content {
+	position: relative;
+	height: 100%;
+	/* width: 100%; */
+	/* padding: 0; */
+}
+
+
+.desktop #mainnav {
+	position: absolute;
+	width: 800px;
+	height: 65px;
+	margin: 0px auto;
+	padding: 0px;
+	top: 35px;
+	right: 0;
+	z-index: 10000;
+}
+@media only screen and (max-width:1300px){
+body.desktop #nav .inner-content {
+	width: 100%;
+	padding: 0;
+}
+.desktop #mainnav {
+	right: 1%;
+}
+}
+.desktop #mainnav ul.panelnav {
+	position: relative;
+	margin: 0 auto;
+	padding: 0 0 0 0;
+	width: 100%;
+	height: 100%;
+	z-index: 1000;
+	list-style-type: none;
+}
+.desktop #mainnav ul.panelnav > li {
+	float: left;
+	color: #fff;
+	text-decoration: none;
+	position: relative;
+	width: 138px;
+}
+
+.desktop #mainnav ul.panelnav li.menuitem0 {
+	width: 106px;
+}
+.desktop #mainnav ul.panelnav li.menuitem2 {
+	/* width: 185px; */
+}
+.desktop #mainnav ul.panelnav li.menuitem3 {
+	width: 230px;
+}
+.desktop #mainnav ul.panelnav li.menuitem4 {
+	/* width: 132px; */
+}
+.desktop #mainnav ul.panelnav li.menuitem5 {
+	/* width: 149px; */
+}
+.desktop #mainnav ul.panelnav li a.category {
+	position: relative;
+	float: left;
+	color: #fff;
+	width: 100%;
+	height: 50px;
+	padding: 10px 0 5px 0;
+	text-align: center;
+	text-decoration: none;
+	font-size: 20px;
+	line-height: 22px;
+	text-align: center;
+	background: none;
+	z-index: 1020;
+}
+.desktop #mainnav ul.panelnav li a.category strong {
+	display: block;
+	font-family: 'Roboto Bold',Arial, Helvetica, sans-serif;
+	font-weight: 700;
+	color: #4f4c46;
+}
+.desktop #mainnav ul.panelnav li.menuitem4 a.category {
+}
+.desktop #mainnav ul.panelnav li.menuitem5 a.category {
+}
+.desktop #mainnav ul.panelnav li:hover a.category {
+	background-image: url(../images/bg-nav-hover.png);
+	background-position: center bottom;
+	background-repeat: no-repeat;
+}
+
+.desktop #mainnav ul li div.navpanel {
+	position: absolute;
+	overflow: hidden;
+	top: 65px;
+	margin: 0;
+	padding: 0;
+	z-index: 1000;
+	/* box-sizing: border-box; */
+}
+.desktop #mainnav ul li div.item1panel {
+	left: -16px;
+	width: 580px;
+}
+.desktop #mainnav ul li:hover div.item1panel {
+	left: -16px;
+	height: 254px;
+}
+.desktop #mainnav ul li div.item2panel {
+	right: -422px;
+	width: 580px;
+}
+.desktop #mainnav ul li:hover div.item2panel {
+	/* right: -507px; */
+	height: 200px;
+}
+.desktop #mainnav ul li div.item3panel {
+	right: -300px;
+	width: 580px;
+}
+.desktop #mainnav ul li:hover div.item3panel {
+	right: -300px;
+	height: 240px;
+}
+.desktop #mainnav ul li div.item4panel {
+	right: -120px;
+	width: 580px;
+}
+.desktop #mainnav ul li:hover div.item4panel {
+	right: -120px;
+	height: 150px;
+}
+.desktop #mainnav ul li div.item5panel {
+	right: -24px;
+	width: 580px;
+}
+.desktop #mainnav ul li:hover div.item5panel {
+	right: -24px;
+	height: 271px;
+}
+.desktop #mainnav ul li div.navpanel .panelxy {
+	margin: -360px 1% 0 1%;
+}
+.desktop #mainnav ul li:hover div.item1panel .panelxy div:first-child {
+	/* width: 236px; */
+}
+.desktop #mainnav ul li:hover div.navpanel .panelxy {
+	margin: -6px 1% 0 1%;
+}
+.desktop #mainnav .panel-content {
+	position: relative;
+	display: block;
+	padding: 0;
+	width: 100%;
+	height: 100%;
+}
+.desktop #mainnav .panelxy {
+	float: left;
+	display: block;
+	width: 98%;
+	height: 100%;
+	padding: 0;
+	background-color: rgba(255,255,255,1);
+	border-bottom: 6px solid #ba8553;
+	-webkit-box-shadow: inset 0px 18px 20px -15px rgba(83,102,112,0.32), 0px 0px 10px 0px rgba(0,0,0,0.2);
+	-moz-box-shadow: inset 0px 18px 20px -15px rgba(83,102,112,0.32), 0px 0px 10px 0px rgba(0,0,0,0.2);
+	box-shadow: inset 0px 18px 20px -15px rgba(83,102,112,0.32), 0px 0px 10px 0px rgba(0,0,0,0.2);
+	-webkit-transition: all .5s ease;
+	-moz-transition: all .5s ease;
+	-ms-transition: all .5s ease;
+	transition: 		all .5s ease;
+}
+.desktop #mainnav .panelxy div {
+	position: relative;
+	float: left;
+	width: 243px;
+	height: 100%;
+	padding: 0 20px 0 20px;
+	margin: 0;
+}
+.desktop #mainnav .panelxy div>*:first-child {
+	padding-top: 25px;
+}
+.desktop #mainnav .item3panel .panelxy div {
+	/* width: 210px; */
+}
+/*.desktop #mainnav .item4panel .panelxy div {
+	width: 280px;
+}*/
+.desktop #mainnav .item4panel .panelxy div:first-child {
+}
+.desktop #mainnav .item4panel .panelxy div:nth-child(3) ul {
+	padding-top: 50px;
+}
+.desktop .item5panel .panelxy div {
+	/* width: 214px; */
+}
+.desktop .item5panel .panelxy div:first-of-type {
+	/* width: 191px; */
+}
+.desktop #mainnav .panelxy div:before {
+	position: absolute;
+	display: block;
+	content: "";
+	left: -5px;
+	bottom: 0;
+	width: 1px;
+	height: 80%;
+	background: -moz-linear-gradient(top, rgba(255,255,255,0) 29%, rgba(207,207,207,1) 100%);
+	background: -webkit-gradient(linear, left top, left bottom, color-stop(29%,rgba(255,255,255,0)), color-stop(100%,rgba(207,207,207,1)));
+	background: -webkit-linear-gradient(top, rgba(255,255,255,0) 29%,rgba(207,207,207,1) 100%);
+	background: -o-linear-gradient(top, rgba(255,255,255,0) 29%,rgba(207,207,207,1) 100%);
+	background: -ms-linear-gradient(top, rgba(255,255,255,0) 29%,rgba(207,207,207,1) 100%);
+	background: linear-gradient(to bottom, rgba(255,255,255,0) 29%,rgba(207,207,207,1) 100%);
+}
+.ie9 .desktop #mainnav .panelxy div:before {
+	background-image: url(images/divider_navpanel.html);
+	background-repeat: no-repeat;
+	background-position: bottom right;
+}
+.desktop #mainnav .panelxy div:first-of-type:before {
+	/*position: absolute;
+	display: block;
+	content: "";
+	width: 46px;
+	height: 17px;
+	top: 6px;*/
+	background: transparent !important;
+	/*background-image: url(images/panel-arrow.png) !important;
+	background-repeat: no-repeat;*/
+}
+/*
+.desktop .item1panel .panelxy div:first-of-type:before {
+	left: 122px;
+}
+.desktop .item2panel .panelxy div:first-of-type:before {
+	left: 286px;
+}
+.desktop .item3panel .panelxy div:first-of-type:before {
+	left: 286px;
+}
+.desktop .item4panel .panelxy div:first-of-type:before {
+	left: 606px;
+}*/
+.desktop #mainnav .panelxy div.clearfloat:before {
+	display: none;
+}
+.desktop #mainnav .panelxy div.clear:before {
+	background: transparent !important;
+}
+.desktop #mainnav .panel-content h2, .desktop #mainnav .panel-content h2 a {
+	font-size: 16px;
+	line-height: 20px;
+	padding: 0px 0px 0px 20px;
+	margin: 10px 0px 0px 0px;
+	text-decoration: none;
+	/* border-radius: 0 8px 0 0; */
+}
+
+.desktop #mainnav .panel-content div h2:first-of-type {
+	margin-top: 0;
+}
+.desktop #mainnav .panel-content h2 a {
+	padding-left: 0; 	
+	-webkit-transition: all .5s ease;
+	-moz-transition: 	all .5s ease;
+	-ms-transition: 	all .5s ease;
+	transition: 		all .5s ease;
+	-webkit-appearance:none
+ }
+ .desktop #mainnav .panel-content h2:hover a {
+ 	padding-left: 5px;
+ }
+ .desktop #mainnav .panel-content h2 a:hover {
+	color: #fff;
+ }
+.desktop #mainnav .panel-content ul {
+	margin: 12px 0px 0px 20px;
+	padding: 0px 0px 0px 0px;
+	list-style-type: none;
+}
+.desktop #mainnav .panel-content ul li {
+	margin: 3px 0px 0px 0px;
+	padding: 3px 5px 3px 0px;
+	
+	-webkit-transition: all .3s ease;
+	-moz-transition: all .3s ease;
+	-ms-transition: all .3s ease;
+	transition: all .3s ease;
+}
+
+.desktop #mainnav .panel-content ul li a {
+	display: block;
+	font-size: 14px;
+	line-height: 18px;
+	text-decoration: none;
+}
+.desktop #mainnav .panel-content a:hover {
+	color: #581c20;
+}
+.desktop #mainnav .panel-content ul li:hover {
+	padding: 3px 0px 3px 5px;
+}
+
+@media only screen and (max-width:1045px){
+	.desktop #nav {
+	right: 0;
+	margin: 0;
+	}
+}
+
+/*-----------MAIN NAV MOBILE -----------------------------*/
+body.mobile #nav {
+	display: block;
+	max-height: 0;
+	padding-top: 0;
+	margin: 0;
+	overflow: hidden;
+	position: relative;
+	top: 0;
+	/* background-color: #fff; */
+	-webkit-box-shadow: 0px 0px 20px 0px rgba(84,102,112,0.31);
+	-moz-box-shadow: 0px 0px 20px 0px rgba(84,102,112,0.31);
+	box-shadow: 0px 0px 20px 0px rgba(84,102,112,0.31);
+	-webkit-transition: all .5s ease;
+	-moz-transition: 	all .5s ease;
+	-ms-transition: 	all .5s ease;
+	transition: 		all .5s ease;
+}
+
+body.mobile.opennav #nav {
+	background-color: #fff;
+	display: block;
+	max-height: 5000px;
+	height: auto;
+	/* overflow: visible; */
+}
+body.mobile #nav .inner-content {
+	width: 100%;
+	padding: 0;
+	/* height: 65px; */
+}
+.opennav.openob #nav {
+	max-height: 0;
+}
+body.mobile .menubutton > h2 {
+	font-family: 'Roboto', Arial, Helvetica, sans-serif;
+	display: block;
+	float: left;
+	font-size: 21px;
+	line-height: 33px;
+	color: #fff;
+	margin: 0;
+	padding: 0px;
+	text-transform: uppercase;
+	font-weight: normal;
+	padding-left: 35px;
+}
+
+.menubutton {
+	display: none;
+	float: left;
+	width: 100px;
+	height: 34px;
+	margin: 0;
+	padding: 8px 10px;
+	background: transparent;
+	cursor: pointer;
+	color: #fff;
+	text-decoration: none;
+	font-size: 16px;
+	line-height: 22px;
+	position: absolute;
+	top: 16px;
+	right: 5px;
+}
+.menubutton i {
+	display: block;
+	position: relative;
+}
+.menubutton i:before {
+	position: absolute;
+	top: 2px;
+	left: 0;
+	height: 100%;
+	width: 100%;
+	font-size: 27px;
+	color: #fff;
+}
+.mobile .menubutton {
+	display: block;
+}
+.mobile #mainnav {
+	max-height: 0px;
+	padding: 0;
+	margin: 0px 0 0 0;
+	-moz-transition: max-height 1s ease-in;
+	-ms-transition: max-height 1s ease-in;
+	transition: max-height 1s ease-in;
+}
+.mobile.opennav #mainnav {
+	max-height: 5000px;
+}
+body.mobile #mainnav ul.panelnav {
+	display: block;
+	margin: 0;
+	padding: 0;
+}
+body.mobile #mainnav ul.panelnav > li {
+	position: relative;
+	line-height: 0;
+	max-height: 46px;
+	overflow: hidden;
+	padding: 0;
+	background: rgba(255,255,255,1);
+	border-bottom: 1px solid #DADADA;
+}
+body.mobile #mainnav ul.panelnav > li.active {
+	max-height: 5000px;
+	background-color: #f0f0f0;
+	-webkit-transition: max-height 3s ease;
+	-moz-transition: max-height 3s ease;
+	-ms-transition: max-height 3s ease;
+	transition: max-height 3s ease;
+}
+body.mobile #mainnav ul.panelnav > li.active a.category {
+	color: #fff;
+	background-color: #581c20;
+}
+body.mobile #mainnav ul.panelnav > li.active:hover a.category {
+	color: #fff;
+}
+body.mobile #mainnav ul.panelnav > li a.category {
+	display: block;
+	padding: 12px 0 9px 16px;
+	line-height: 25px;
+	color: #581c20;
+	font-size: 20px;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+	overflow: hidden;
+	background-color: #fff;
+	text-decoration: none;
+}
+body.mobile #mainnav ul.panelnav > li a.category strong {
+	font-weight: normal;
+}
+body.mobile #mainnav .navpanel {
+	display: block;
+	width: 95%;
+	padding: 0 0 0 5%;
+	height: auto;
+}
+body.mobile #mainnav .panelxy div {
+	float: left;
+	padding: 10px 2% 2% 0%;
+	width: 29%;
+}
+body.mobile #mainnav .panel-content {
+	position: relative;
+	display: block;
+	padding: 0;
+	width: 100%;
+	height: 100%;
+}
+body.mobile #mainnav .panel-content h2, body.mobile #mainnav .panel-content h2 a {
+	font-size: 20px;
+	line-height: 22px;
+	padding: 10px 0px 2px 0px;
+	margin: 2px 0px 2px 0px;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+	overflow: hidden;
+	text-decoration: none;
+	/* text-transform: uppercase; */
+}
+body.mobile #mainnav .panel-content h2 a {
+	display: block;
+	padding: 0 !important;
+}
+body.mobile #mainnav .panel-content h2+ul {
+	margin: 10px 0px 0px 0px;
+}
+body.mobile #mainnav .panel-content ul {
+	margin: 0px 0px 0px 0px;
+	padding: 0px 0px 0px 0px;
+	list-style-type: none;
+}
+body.mobile #mainnav .panel-content ul li {
+	font-size: 11px;
+	line-height: 14px;
+	margin: 3px 0px 0px 0px;
+	padding: 4px 5px 4px 0px;
+	font-family: 'Roboto Light',Arial, Helvetica, sans-serif;
+	-webkit-transition: all .3s ease;
+	-moz-transition: all .3s ease;
+	-ms-transition: all .3s ease;
+	transition: all .3s ease;
+}
+body.mobile #mainnav .panel-content ul li a {
+	display: block;
+	font-size: 14px;
+	line-height: 16px;
+	text-decoration: none;
+}
+body.mobile #mainnav .panel-content a:hover {
+	color: #4f4c46;
+}
+#login-button {
+	display: none;
+	position: absolute;
+	/* visibility: hidden; */
+	opacity: 0;
+	border: 1px solid #fff;
+	top: 18px;
+	right: 143px;
+	height: 40px;
+	margin: 0;
+	padding: 0px 15px;
+	background-color: rgba(256,256,256,.4);
+	-webkit-transition: all .5s ease;
+	-moz-transition: 	all .5s ease;
+	-ms-transition: 	all .5s ease;
+	transition: 		all .5s ease;
+	z-index: 3000;
+}
+body.home.mobile #login-button {
+	opacity: 1;
+    display: block;
+	
+}
+body.openob #login-button {
+	background: #fff;
+	cursor: pointer;
+}
+body.openob #login-button h3, body.openob #login-button h3:before, .openob #login-button {
+	color: #ba8553;
+}
+
+#login-button h3 {
+	position: relative;
+	margin: 0;
+	font-size: 18px;
+	line-height: 50px;
+	padding: 0px 0 0 28px;
+	color: #fff;
+	font-family: 'Roboto', Arial, Helvetica, sans-serif;
+	font-weight: normal;
+	text-transform: uppercase;
+}
+
+
+#login-button h3:before {
+	font-family: 'fontAwesome';
+	content: "\f023";
+	position: absolute;
+	font-size: 23px;
+	line-height: 50px;
+	/* margin: 0 6px 0 0; */
+	top: 0;
+	left: 0px;
+	color: #fff;
+}
+#login-button h3, #login-button h3:before {
+	-webkit-transition: all .5s ease;
+	-moz-transition: 	all .5s ease;
+	-ms-transition: 	all .5s ease;
+	transition: 		all .5s ease;
+
+}
+body.mobile #login-button h3, body.mobile #login-button h3:before {
+	line-height: 40px;
+}
+@media only screen and (max-width:1250px){
+
+.desktop #mainnav ul.panelnav > li {
+	width: 126px;
+}
+.desktop #mainnav ul.panelnav li.menuitem3 {
+	width: 212px;
+}
+.desktop #mainnav {
+	width: 719px;
+}
+}
+
+@media only screen and (max-width:1016px){
+
+.mobile #homenavxy {
+	width: 80%;
+	margin: -20px auto 0 auto;
+}
+}
+@media only screen and (max-width:1000px){
+#topnavxy, #headerxy {
+	position: relative;
+}
+body.home #headerxy {
+	height: auto;
+}
+body.desktop #headerxy {
+	height: 135px;
+	top: 0;
+}
+body.mobile #headerxy {
+	/* position: relative; */
+	height: auto;
+	top: 0;
+	min-height: 164px;
+}
+#subpageContainer {
+	padding-top: 20px;
+}
+
+}
+@media only screen and (max-width:790px) {
+body.mobile #headerxy {
+		min-height: 150px;
+	}
+.mobile #homenavxy {
+	width: 95%;
+}
+}	
+@media only screen and (max-width:640px) {
+body.mobile #nav {
+	/*max-height: 45px;*/
+}
+body.mobile #nav > h2 {
+	line-height: 45px;
+}
+div.menubutton {
+	/* width: 39px; */
+	height: 30px;
+	padding: 6px 10px;
+}
+.menubutton span {
+	display: block;
+	background: #FFF;
+	height: 3px;
+	margin-top: 5px;
+	border-radius: 5px;
+	-moz-border-radius: 5px;
+}
+body.mobile #mainnav .navpanel {
+	width: 100%;
+	padding: 0;
+}
+body.mobile #mainnav .panelxy div {
+	float: none;
+	padding: 0;
+	width: 100%;
+	border-top: 1px solid #cccacb;
+}
+body.mobile #mainnav .item4panel .panelxy>div+div+div {
+	border-top: 0;
+}
+body.mobile #mainnav .panel-content ul li {
+	font-size: 16px;
+	line-height: 19px;
+	margin: 0px;
+	padding: 0px;
+	border-top: 1px solid #cecece;
+}
+body.mobile #mainnav .panel-content ul li a, body.mobile #mainnav .panel-content h2 a {
+	margin: 0px 0px 0px 0px;
+	padding: 10px 30px;
+	font-size: 16px;
+	line-height: 19px;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+	overflow: hidden;
+}
+body.mobile #mainnav .panel-content ul li a:hover {
+	background: rgba(255,255,255,.75);
+}
+body.mobile #mainnav .panel-content h2 {
+	color: #4a4a4a;
+	padding: 10px 0px 2px 16px;
+	margin: 2px 0px 2px 0px;
+    font-size: 18px;
+	line-height: 20px;
+}
+body.mobile .menubutton {
+	width: 24px;
+}
+body.mobile .menubutton > h2 {
+	display: none;
+}
+body.mobile #login-button {
+	right: 52px;
+}
+}
+@media only screen and (max-width:560px)/*Galaxy S, S2 Landscape*/{}
+@media only screen and (max-width:430px){
+	body.mobile #login-button {
+	padding: 0 8px;
+	height: 30px;
+	top: 20px;
+	/* right: 37%; */
+}
+#login-button h3 {
+	font-size: 16px;
+	padding-left: 20px;
+}
+body.mobile #login-button h3, body.mobile #login-button h3:before {
+	line-height: 30px;
+}
+#login-button h3:before {
+	font-size: 18px;
+}
+}
+@media only screen and (max-width:360px){
+body.mobile .menubutton {
+	/* top: 60px; */
+}
+}

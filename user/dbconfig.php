@@ -1,25 +1,38 @@
 <?php
 class Database
 {
-     
-    private $host;
-    private $db_name;
-    private $username;
-    private $password;
-    public $conn;
+	private $host;
+	private $db_name;
+	private $username;
+	private $password;
+	public $conn;
 
-    public function __construct()
+	public function __construct()
 	{
-		require_once dirname(__DIR__) . '/config.php';
-		global $APP_CONFIG;
+		// Absolute path from this file's location: /an/user/ -> /an/config.php
+		$configFile = dirname(__DIR__) . '/config.php';
+		if (!file_exists($configFile)) {
+			throw new Exception("Configuration file not found: $configFile");
+		}
+
+		// Include and capture variables – no reliance on globals
+		$defaultConfig = null;
+		$APP_CONFIG = null;
+		require $configFile;
+
+		// Default fallback (safe for local dev)
 		$db = [
 			'host' => '127.0.0.1',
 			'name' => 'fresh',
 			'username' => 'root',
 			'password' => '',
 		];
+
+		// Override with real configuration if present
 		if (isset($APP_CONFIG) && is_array($APP_CONFIG) && isset($APP_CONFIG['db']) && is_array($APP_CONFIG['db'])) {
 			$db = array_replace($db, $APP_CONFIG['db']);
+		} elseif (isset($defaultConfig) && is_array($defaultConfig) && isset($defaultConfig['db'])) {
+			$db = array_replace($db, $defaultConfig['db']);
 		}
 
 		$this->host = (string)$db['host'];
@@ -27,11 +40,10 @@ class Database
 		$this->username = (string)$db['username'];
 		$this->password = (string)$db['password'];
 	}
-     
-    public function dbConnection()
-	{
 
-	    $this->conn = null;
+	public function dbConnection()
+	{
+		$this->conn = null;
 		$hostsToTry = array_values(array_unique([$this->host, '127.0.0.1']));
 		$options = [
 			PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
@@ -56,6 +68,5 @@ class Database
 		}
 
 		return $this->conn;
-    }
+	}
 }
-?>

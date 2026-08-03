@@ -2,17 +2,17 @@
 
 $defaultConfig = [
 	'db' => [
-		'host' => 'localhost',
+		'host' => '127.0.0.1',
 		'username' => 'root',
 		'password' => '',
-		'name' => 'fresh2'
+		'name' => 'fisher2'
 	],
 	'smtp' => [
-		'host' => 'smtp.gmail.com',
-		'port' => 465,
+		'host' => '127.0.0.1',
+		'port' => 3306,
 		'secure' => 'ssl',
-		'username' => 'barfumehouse@gmail.com',
-		'password' => 'khtx evms npbw nbyf',
+		'username' => 'root',
+		'password' => '',
 		'from' => 'barfumehouse@gmail.com',
 		'from_name' => 'Fisher Wallet',
 		'reply_to' => 'barfumehouse@gmail.com'

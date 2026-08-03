@@ -189,6 +189,13 @@ $siteFaviconUrl = $sharedFaviconUrl;
       ['Security', 'Security-Center.php'],
       ['Contact', 'Contact-Us.php'],
     ];
+
+    $loginSection = trim((string)($site['login'] ?? 'user'), '/');
+    if ($loginSection === '') { $loginSection = 'user'; }
+    $clientActions = [
+      ['label' => 'Login', 'href' => app_url($loginSection . '/login.php'), 'variant' => 'primary'],
+      ['label' => 'Register', 'href' => app_url($loginSection . '/register.php'), 'variant' => 'secondary'],
+    ];
   ?>
 
   <div class="text-[11px] border-b border-white/10 bg-black/35 text-slate-300">
@@ -213,6 +220,13 @@ $siteFaviconUrl = $sharedFaviconUrl;
       <details class="md:hidden relative">
         <summary class="list-none cursor-pointer px-3 py-2 rounded-lg text-sm font-semibold border border-white/20 text-slate-100">Menu</summary>
         <nav class="absolute right-0 mt-2 w-80 max-w-[88vw] rounded-xl border border-white/15 p-4 bg-slate-950 text-slate-100 shadow-2xl">
+          <div class="grid grid-cols-2 gap-2 mb-3">
+            <?php foreach ($clientActions as $action): ?>
+              <a href="<?= htmlspecialchars((string)$action['href']) ?>" class="inline-flex justify-center rounded-lg px-3 py-2 text-sm font-semibold" style="background:<?= $action['variant'] === 'primary' ? 'var(--accent)' : 'transparent' ?>; color:<?= $action['variant'] === 'primary' ? '#0f172a' : '#e2e8f0' ?>; border:1px solid <?= $action['variant'] === 'primary' ? 'transparent' : 'rgba(255,255,255,0.25)' ?>;">
+                <?= htmlspecialchars((string)$action['label']) ?>
+              </a>
+            <?php endforeach; ?>
+          </div>
           <?php foreach ($primaryNav as $link): ?>
             <a class="block rounded-lg px-3 py-2 text-sm <?= nav_is_active((string)$link[1], $currentPage) ? 'font-semibold text-white bg-white/10' : 'text-slate-200 hover:bg-white/5' ?>" href="<?= htmlspecialchars($link[1]) ?>"><?= htmlspecialchars($link[0]) ?></a>
           <?php endforeach; ?>

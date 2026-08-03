@@ -18,6 +18,7 @@ require_once __DIR__ . '/config.php';
 // ── Active theme resolution ──────────────────────────────────────────
 $theme = 'theme1'; // safe fallback
 
+/** @var mysqli $conn */
 $themeRow = $conn->query(
     "SELECT `value` FROM site_settings WHERE `key` = 'theme' LIMIT 1"
 );
@@ -59,7 +60,13 @@ if (
     strncmp($realPage, $realDir . DIRECTORY_SEPARATOR, strlen($realDir) + 1) === 0 &&
     is_file($realPage)
 ) {
+    // Make relative includes inside theme files resolve against that theme directory.
+    $oldCwd = getcwd();
+    chdir($realDir);
     include $realPage;
+    if ($oldCwd !== false) {
+        chdir($oldCwd);
+    }
 } else {
     http_response_code(404);
     echo '<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><title>404</title></head>'

@@ -1,5 +1,6 @@
 <?php
 require_once __DIR__ . '/config.php';
+$conn = $GLOBALS['conn'] ?? ($conn ?? null);
 
 // Dynamic site favicon endpoint (admin-controlled)
 if (isset($_GET['type']) && (string)$_GET['type'] === 'favicon') {
@@ -60,27 +61,13 @@ if ($rawPath === '' || strpos($rawPath, '..') !== false || strpos($rawPath, "\0"
     exit('Bad request');
 }
 
-$allowedPrefixes = [
-    'css/',
-    'js/',
-    'img/',
-    'fonts/',
-    'assets/',
-    'images/',
-    'js.locatorsearch.com/',
-    'maxcdn.bootstrapcdn.com/',
-    'static.ctctcdn.com/',
-    'www.google-analytics.com/',
+// Serve only non-executable static files.
+$pathExt = strtolower((string)pathinfo($rawPath, PATHINFO_EXTENSION));
+$allowedExts = [
+    'css', 'js', 'json', 'png', 'jpg', 'jpeg', 'gif', 'svg', 'webp', 'ico',
+    'woff', 'woff2', 'ttf', 'otf', 'eot', 'map', 'txt', 'pdf',
 ];
-
-$allowed = false;
-foreach ($allowedPrefixes as $prefix) {
-    if (str_starts_with($rawPath, $prefix)) {
-        $allowed = true;
-        break;
-    }
-}
-if (!$allowed) {
+if ($pathExt === '' || !in_array($pathExt, $allowedExts, true)) {
     http_response_code(403);
     exit('Forbidden');
 }

@@ -14,11 +14,12 @@ if ($id > 0) {
 }
 
 if (isset($_POST['delete']) && $id > 0) {
-    if ($reg_user->del($id)) {
-        $deleteuser = $reg_user->runQuery("DELETE FROM alerts WHERE id = '$id'");
-        $deleteuser->execute();
+  try {
+    $deleteuser = $reg_user->runQuery("DELETE FROM alerts WHERE id = :id");
+    $deleteuser->execute([':id' => $id]);
         header("Location: credit_debit_list.php?success");
         exit();
+  } catch (Throwable $e) {
     }
     header("Location: credit_debit_list.php?error");
     exit();

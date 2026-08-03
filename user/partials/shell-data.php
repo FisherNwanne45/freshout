@@ -22,14 +22,35 @@ if (!empty($sharedFaviconUrl)) {
 }
 if ($_shellDb) {
     try {
-        $s = $_shellDb->runQuery('SELECT name, url, image FROM site ORDER BY id ASC LIMIT 1');
-        $s->execute();
-        $sr = $s->fetch(PDO::FETCH_ASSOC) ?: [];
-        $shellBankName   = trim((string)($sr['name'] ?? '')) ?: 'Banking Portal';
-        $shellContactUrl = trim((string)($sr['url']  ?? '')) ?: '#';
-        $logoFile = basename((string)($sr['image'] ?? ''));
-        if ($logoFile !== '' && is_file(__DIR__ . '/../admin/site/' . $logoFile)) {
-            $shellLogoUrl = 'admin/site/' . rawurlencode($logoFile);
+        // Try to load frontend_logo_url from site_settings first (auth + dashboard unified logo)
+        $logoSettingStmt = $_shellDb->runQuery("SELECT setting_value FROM site_settings WHERE setting_key='frontend_logo_url' LIMIT 1");
+        $logoSettingStmt->execute();
+        $logoSettingRow = $logoSettingStmt->fetch(PDO::FETCH_ASSOC);
+        if ($logoSettingRow && !empty($logoSettingRow['setting_value'])) {
+            $shellLogoUrl = (string)$logoSettingRow['setting_value'];
+        } else {
+            // Fallback: try legacy schema and then site.image
+            try {
+                $logoSettingStmt = $_shellDb->runQuery("SELECT `value` FROM site_settings WHERE `key`='frontend_logo_url' LIMIT 1");
+                $logoSettingStmt->execute();
+                $logoSettingRow = $logoSettingStmt->fetch(PDO::FETCH_ASSOC);
+                if ($logoSettingRow && !empty($logoSettingRow['value'])) {
+                    $shellLogoUrl = (string)$logoSettingRow['value'];
+                }
+            } catch (Throwable $e) {
+                // Fall through to site.image
+            }
+            if ($shellLogoUrl === 'img/logo.png') {
+                $s = $_shellDb->runQuery('SELECT name, url, image FROM site ORDER BY id ASC LIMIT 1');
+                $s->execute();
+                $sr = $s->fetch(PDO::FETCH_ASSOC) ?: [];
+                $shellBankName   = trim((string)($sr['name'] ?? '')) ?: 'Banking Portal';
+                $shellContactUrl = trim((string)($sr['url']  ?? '')) ?: '#';
+                $logoFile = basename((string)($sr['image'] ?? ''));
+                if ($logoFile !== '' && is_file(__DIR__ . '/../admin/site/' . $logoFile)) {
+                    $shellLogoUrl = 'admin/site/' . rawurlencode($logoFile);
+                }
+            }
         }
     } catch (Throwable $e) {}
 }

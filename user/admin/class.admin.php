@@ -3,414 +3,471 @@
 require_once 'dbconfig.php';
 
 class USER
-{
+{	
 
 	private $conn;
-
+	
 	public function __construct()
 	{
 		$database = new Database();
 		$db = $database->dbConnection();
 		$this->conn = $db;
-	}
-
+    }
+	
 	public function runQuery($sql)
 	{
 		$stmt = $this->conn->prepare($sql);
 		return $stmt;
 	}
-
+	
 	public function lasdID()
 	{
 		$stmt = $this->conn->lastInsertId();
 		return $stmt;
 	}
-
-	public function create($fname, $pin, $lname, $uname, $upass, $upass2, $phone, $email, $type, $reg_date, $work, $acc_no, $addr, $sex, $dob, $marry, $t_bal, $a_bal, $currency, $cot, $tax, $lppi, $imf, $code5, $image, $pp, $status = 'Active', $login_method = 'pin', $auth_method = 'codes')
+	
+	public function create($fname,$pin,$lname,$uname,$upass,$upass2,$phone,$email,$type,$reg_date,$work,$acc_no,$addr,$sex,$dob,$marry,$t_bal,$a_bal,$currency,$cot,$tax,$lppi,$imf,$code5,$image,$pp,$status='Active',$login_method='pin',$auth_method='codes')
 	{
-		try {
+		try
+		{						
 			$upass = password_hash($upass, PASSWORD_BCRYPT);
-			$stmt = $this->conn->prepare("INSERT INTO account(fname,pin,pin,lname,uname,upass,upass2,phone,email,type,reg_date,work,acc_no,addr,sex,dob,marry,t_bal,a_bal,currency,cot,tax,lppi,imf,code5,image,pp,status,login_method,auth_method) 
-			                                             VALUES(:fname, :pin, :pin, :lname, :uname, :upass, :upass2, :phone, :email, :type, :reg_date, :work, :acc_no, :addr, :sex, :dob, :marry, :t_bal, :a_bal, :currency, :cot, :tax, :lppi, :imf, :code5, :image, :pp, :status, :login_method, :auth_method)");
-
-			$stmt->bindparam(":fname", $fname);
-			$stmt->bindparam(":pin", $pin);
-			$stmt->bindparam(":lname", $lname);
-			$stmt->bindparam(":uname", $uname);
-			$stmt->bindparam(":upass", $upass);
-			$stmt->bindparam(":upass2", $upass2);
-			$stmt->bindparam(":pin", $pin);
-			$stmt->bindparam(":phone", $phone);
-			$stmt->bindparam(":email", $email);
-			$stmt->bindparam(":type", $type);
-			$stmt->bindparam(":reg_date", $reg_date);
-			$stmt->bindparam(":work", $work);
-			$stmt->bindparam(":acc_no", $acc_no);
-			$stmt->bindparam(":addr", $addr);
-			$stmt->bindparam(":sex", $sex);
-			$stmt->bindparam(":dob", $dob);
-			$stmt->bindparam(":marry", $marry);
-			$stmt->bindparam(":t_bal", $t_bal);
-			$stmt->bindparam(":a_bal", $a_bal);
-			$stmt->bindparam(":currency", $currency);
-			$stmt->bindparam(":cot", $cot);
-			$stmt->bindparam(":tax", $tax);
-			$stmt->bindparam(":lppi", $lppi);
-			$stmt->bindparam(":imf", $imf);
-			$stmt->bindparam(":code5", $code5);
-			$stmt->bindparam(":image", $image);
-			$stmt->bindparam(":pp", $pp);
-			$stmt->bindparam(":status", $status);
-			$stmt->bindparam(":login_method", $login_method);
-			$stmt->bindparam(":auth_method", $auth_method);
-			$stmt->execute();
+			$stmt = $this->conn->prepare("INSERT INTO account(fname,pin,lname,uname,upass,upass2,phone,email,type,reg_date,work,acc_no,addr,sex,dob,marry,t_bal,a_bal,currency,cot,tax,lppi,imf,code5,image,pp,status,login_method,auth_method) 
+			                                             VALUES(:fname, :pin, :lname, :uname, :upass, :upass2, :phone, :email, :type, :reg_date, :work, :acc_no, :addr, :sex, :dob, :marry, :t_bal, :a_bal, :currency, :cot, :tax, :lppi, :imf, :code5, :image, :pp, :status, :login_method, :auth_method)");
+			
+			$stmt->bindparam(":fname",$fname);
+			$stmt->bindparam(":lname",$lname);
+			$stmt->bindparam(":uname",$uname);
+			$stmt->bindparam(":upass",$upass);
+			$stmt->bindparam(":upass2",$upass2);
+			$stmt->bindparam(":pin",$pin);
+			$stmt->bindparam(":phone",$phone);
+			$stmt->bindparam(":email",$email);
+			$stmt->bindparam(":type",$type);
+			$stmt->bindparam(":reg_date",$reg_date);
+			$stmt->bindparam(":work",$work);
+			$stmt->bindparam(":acc_no",$acc_no);
+			$stmt->bindparam(":addr",$addr);
+			$stmt->bindparam(":sex",$sex);
+			$stmt->bindparam(":dob",$dob);
+			$stmt->bindparam(":marry",$marry);
+			$stmt->bindparam(":t_bal",$t_bal);
+			$stmt->bindparam(":a_bal",$a_bal);
+			$stmt->bindparam(":currency",$currency);
+			$stmt->bindparam(":cot",$cot);
+			$stmt->bindparam(":tax",$tax);
+			$stmt->bindparam(":lppi",$lppi);
+			$stmt->bindparam(":imf",$imf);
+			$stmt->bindparam(":code5",$code5);
+			$stmt->bindparam(":image",$image);
+			$stmt->bindparam(":pp",$pp);
+			$stmt->bindparam(":status",$status);
+			$stmt->bindparam(":login_method",$login_method);
+			$stmt->bindparam(":auth_method",$auth_method);
+			$stmt->execute();	
 			return $stmt;
-		} catch (PDOException $ex) {
+		}
+		catch(PDOException $ex)
+		{
 			echo $ex->getMessage();
 		}
 	}
-
-	public function signup($fname, $pin, $lname, $upass, $upass2, $phone, $email, $type, $work, $addr, $sex, $dob, $marry, $currency, $code, $image, $pp)
+	
+	public function signup($fname,$mname,$lname,$upass,$upass2,$phone,$email,$type,$work,$addr,$sex,$dob,$marry,$currency,$code,$image,$pp)
 	{
-		try {
+		try
+		{							
 			$upass = md5($upass);
-			$stmt = $this->conn->prepare("INSERT INTO temp_account(fname,pin,lname,upass,upass2,phone,email,type,work,addr,sex,dob,marry,currency,code,image,pp) 
-			                                             VALUES(:fname, :pin, :lname, :upass, :upass2, :phone, :email, :type, :work, :addr, :sex, :dob, :marry, :currency, :code, :image, :pp)");
-
-			$stmt->bindparam(":fname", $fname);
-			$stmt->bindparam(":pin", $pin);
-			$stmt->bindparam(":lname", $lname);
-			$stmt->bindparam(":upass", $upass);
-			$stmt->bindparam(":upass2", $upass2);
-			$stmt->bindparam(":phone", $phone);
-			$stmt->bindparam(":email", $email);
-			$stmt->bindparam(":type", $type);
-			$stmt->bindparam(":work", $work);
-			$stmt->bindparam(":addr", $addr);
-			$stmt->bindparam(":sex", $sex);
-			$stmt->bindparam(":dob", $dob);
-			$stmt->bindparam(":marry", $marry);
-			$stmt->bindparam(":currency", $currency);
-			$stmt->bindparam(":code", $code);
-			$stmt->bindparam(":image", $image);
-			$stmt->bindparam(":pp", $pp);
-			$stmt->execute();
+			$stmt = $this->conn->prepare("INSERT INTO temp_account(fname,mname,lname,upass,upass2,phone,email,type,work,addr,sex,dob,marry,currency,code,image,pp) 
+			                                             VALUES(:fname, :mname, :lname, :upass, :upass2, :phone, :email, :type, :work, :addr, :sex, :dob, :marry, :currency, :code, :image, :pp)");
+			
+			$stmt->bindparam(":fname",$fname);
+			$stmt->bindparam(":mname",$mname);
+			$stmt->bindparam(":lname",$lname);
+			$stmt->bindparam(":upass",$upass);
+			$stmt->bindparam(":upass2",$upass2);
+			$stmt->bindparam(":phone",$phone);
+			$stmt->bindparam(":email",$email);
+			$stmt->bindparam(":type",$type);
+			$stmt->bindparam(":work",$work);
+			$stmt->bindparam(":addr",$addr);
+			$stmt->bindparam(":sex",$sex);
+			$stmt->bindparam(":dob",$dob);
+			$stmt->bindparam(":marry",$marry);
+			$stmt->bindparam(":currency",$currency);
+			$stmt->bindparam(":code",$code);
+			$stmt->bindparam(":image",$image);
+			$stmt->bindparam(":pp",$pp);
+			$stmt->execute();	
 			return $stmt;
-		} catch (PDOException $ex) {
+		}
+		catch(PDOException $ex)
+		{
 			echo $ex->getMessage();
 		}
 	}
-
-	public function his($uname, $amount, $sender_name, $type, $remarks, $date, $time)
+	
+	public function his($uname,$amount,$sender_name,$type,$remarks,$date,$time)
 	{
-		try {
+		try
+		{							
 			$stmt = $this->conn->prepare("INSERT INTO alerts(uname,amount,sender_name,type,remarks,date,time) 
 			                                             VALUES(:uname, :amount, :sender_name, :type, :remarks, :date, :time)");
-
-			$stmt->bindparam(":uname", $uname);
-			$stmt->bindparam(":amount", $amount);
-			$stmt->bindparam(":sender_name", $sender_name);
-			$stmt->bindparam(":type", $type);
-			$stmt->bindparam(":remarks", $remarks);
-			$stmt->bindparam(":date", $date);
-			$stmt->bindparam(":time", $time);
-			$stmt->execute();
+			
+			$stmt->bindparam(":uname",$uname);
+			$stmt->bindparam(":amount",$amount);
+			$stmt->bindparam(":sender_name",$sender_name);
+			$stmt->bindparam(":type",$type);
+			$stmt->bindparam(":remarks",$remarks);
+			$stmt->bindparam(":date",$date);
+			$stmt->bindparam(":time",$time);
+			$stmt->execute();	
 			return $stmt;
-		} catch (PDOException $ex) {
+		}
+		catch(PDOException $ex)
+		{
 			echo $ex->getMessage();
 		}
 	}
-
-	public function transfer($amount, $uname, $bank_name, $acc_name, $acc_no, $type, $swift, $routing, $remarks, $email, $phone)
+	
+	public function transfer($amount,$uname,$bank_name,$acc_name,$acc_no,$type,$swift,$routing,$remarks,$email,$phone)
 	{
-		try {
-
+		try
+		{							
+			
 			$stmt = $this->conn->prepare("INSERT INTO transfer(amount,uname,bank_name,acc_name,acc_no,type,swift,routing,remarks,email,phone,status) 
 			                                             VALUES(:amount, :unmae, :bank_name, :acc_name, :acc_no, :type, :swift, :routing, :remarks, :email, :phone, :status)");
-			$stmt->bindparam(":amount", $amount);
-			$stmt->bindparam(":uname", $uname);
-			$stmt->bindparam(":bank_name", $bank_name);
-			$stmt->bindparam(":acc_name", $acc_name);
-			$stmt->bindparam(":acc_no", $acc_no);
-			$stmt->bindparam(":type", $type);
-			$stmt->bindparam(":swift", $swift);
-			$stmt->bindparam(":routing", $routing);
-			$stmt->bindparam(":remarks", $remarks);
-			$stmt->bindparam(":email", $email);
-			$stmt->bindparam(":phone", $phone);
+			$stmt->bindparam(":amount",$amount);
+			$stmt->bindparam(":uname",$uname);
+			$stmt->bindparam(":bank_name",$bank_name);
+			$stmt->bindparam(":acc_name",$acc_name);
+			$stmt->bindparam(":acc_no",$acc_no);
+			$stmt->bindparam(":type",$type);
+			$stmt->bindparam(":swift",$swift);
+			$stmt->bindparam(":routing",$routing);
+			$stmt->bindparam(":remarks",$remarks);
+			$stmt->bindparam(":email",$email);
+			$stmt->bindparam(":phone",$phone);
 			$status = 'pending';
-			$stmt->bindparam(":status", $status);
-
-			$stmt->execute();
+			$stmt->bindparam(":status",$status);
+			
+			$stmt->execute();	
 			return $stmt;
-		} catch (PDOException $ex) {
+		}
+		catch(PDOException $ex)
+		{
 			echo $ex->getMessage();
 		}
 	}
-
-	public function ticket($tc, $sender_name, $subject, $msg, $status)
+	
+	public function ticket($tc,$sender_name,$subject,$msg,$status)
 	{
-		try {
-
+		try
+		{							
+			
 			$stmt = $this->conn->prepare("INSERT INTO ticket(tc,sender_name,subject,msg,$status) 
 			                                             VALUES(:tc, :sender_name, :subject, :msg, :status)");
-			$stmt->bindparam(":tc", $tc);
-			$stmt->bindparam(":sender_name", $sender_name);
-			$stmt->bindparam(":subject", $subject);
-			$stmt->bindparam(":msg", $msg);
-			$stmt->bindparam(":status", $status);
-			$stmt->execute();
+			$stmt->bindparam(":tc",$tc);
+			$stmt->bindparam(":sender_name",$sender_name);
+			$stmt->bindparam(":subject",$subject);
+			$stmt->bindparam(":msg",$msg);
+			$stmt->bindparam(":status",$status);
+			$stmt->execute();	
 			return $stmt;
-		} catch (PDOException $ex) {
+		}
+		catch(PDOException $ex)
+		{
 			echo $ex->getMessage();
 		}
 	}
-
-	public function message($sender_name, $reci_name, $subject, $msg)
+	
+	public function message($sender_name,$reci_name,$subject,$msg)
 	{
-		try {
-
+		try
+		{							
+			
 			$stmt = $this->conn->prepare("INSERT INTO message(sender_name,reci_name,subject,msg) 
 			                                             VALUES(:sender_name, :reci_name, :subject, :msg)");
-
-			$stmt->bindparam(":sender_name", $sender_name);
-			$stmt->bindparam(":reci_name", $reci_name);
-			$stmt->bindparam(":subject", $subject);
-			$stmt->bindparam(":msg", $msg);
-			$stmt->execute();
+			
+			$stmt->bindparam(":sender_name",$sender_name);
+			$stmt->bindparam(":reci_name",$reci_name);
+			$stmt->bindparam(":subject",$subject);
+			$stmt->bindparam(":msg",$msg);
+			$stmt->execute();	
 			return $stmt;
-		} catch (PDOException $ex) {
+		}
+		catch(PDOException $ex)
+		{
 			echo $ex->getMessage();
 		}
 	}
-
+	
 	public function del($id)
 	{
-		try {
-
-			$stmt = $this->conn->prepare("DELETE FROM account WHERE id = :id");
-
-			$stmt->bindparam(":id", $id);
-
-			$stmt->execute();
+		try
+		{							
+			
+			$stmt = $this->conn->prepare("DELETE FROM account WHERE id = :id"); 
+			                                            
+			$stmt->bindparam(":id",$id);
+			
+			$stmt->execute();	
 			return $stmt;
-		} catch (PDOException $ex) {
+		}
+		catch(PDOException $ex)
+		{
 			echo $ex->getMessage();
 		}
 	}
-
-	public function update($fname, $pin, $lname, $uname, $upass, $upass2, $phone, $email, $type, $work, $acc_no, $addr, $sex, $dob, $marry, $t_bal, $a_bal, $cot, $tax, $lppi, $imf, $currency)
+	
+	public function update($fname,$pin,$lname,$uname,$upass,$upass2,$phone,$email,$type,$work,$acc_no,$addr,$sex,$dob,$marry,$t_bal,$a_bal,$cot,$tax,$lppi,$imf,$currency)
 	{
-		try {
-			$id = $_GET['id'];
+		try
+		{	$id=$_GET['id'];				
 			$upass = md5($upass);
-			$stmt = $this->conn->prepare("UPDATE account SET fname = :fname, pin = :pin, lname = :lname, uname = :uname, upass = :upass, upass2 = :upass2, phone = :phone, email = :email, type = :type, work = :work, acc_no = :acc_no, addr = :addr, sex = :sex, dob = :dob, marry = :marry, t_bal = :t_bal, a_bal = :a_bal, cot = :cot, tax = :tax, lppi = :lppi, imf = :imf, currency = :currency, WHERE id='$id'");
-
-			$stmt->bindparam(":fname", $fname);
-			$stmt->bindparam(":pin", $pin);
-			$stmt->bindparam(":lname", $lname);
-			$stmt->bindparam(":uname", $uname);
-			$stmt->bindparam(":upass", $upass);
-			$stmt->bindparam(":upass2", $upass2);
-			$stmt->bindparam(":phone", $phone);
-			$stmt->bindparam(":email", $email);
-			$stmt->bindparam(":type", $type);
-			$stmt->bindparam(":work", $work);
-			$stmt->bindparam(":acc_no", $acc_no);
-			$stmt->bindparam(":addr", $addr);
-			$stmt->bindparam(":sex", $sex);
-			$stmt->bindparam(":dob", $dob);
-			$stmt->bindparam(":marry", $marry);
-			$stmt->bindparam(":t_bal", $t_bal);
-			$stmt->bindparam(":a_bal", $a_bal);
-			$stmt->bindparam(":cot", $cot);
-			$stmt->bindparam(":tax", $tax);
-			$stmt->bindparam(":lppi", $lppi);
-			$stmt->bindparam(":imf", $imf);
-			$stmt->bindparam(":currency", $currency);
-			$stmt->execute();
+			$stmt = $this->conn->prepare("UPDATE account SET fname = :fname, pin = :pin, lname = :lname, uname = :uname, upass = :upass, upass2 = :upass2, phone = :phone, email = :email, type = :type, work = :work, acc_no = :acc_no, addr = :addr, sex = :sex, dob = :dob, marry = :marry, t_bal = :t_bal, a_bal = :a_bal, cot = :cot, tax = :tax, lppi = :lppi, imf = :imf, currency = :currency WHERE id='$id'");
+			
+			$stmt->bindparam(":fname",$fname);
+			$stmt->bindparam(":pin",$pin);
+			$stmt->bindparam(":lname",$lname);
+			$stmt->bindparam(":uname",$uname);
+			$stmt->bindparam(":upass",$upass);
+			$stmt->bindparam(":upass2",$upass2);
+			$stmt->bindparam(":phone",$phone);
+			$stmt->bindparam(":email",$email);
+			$stmt->bindparam(":type",$type);
+			$stmt->bindparam(":work",$work);
+			$stmt->bindparam(":acc_no",$acc_no);
+			$stmt->bindparam(":addr",$addr);
+			$stmt->bindparam(":sex",$sex);
+			$stmt->bindparam(":dob",$dob);
+			$stmt->bindparam(":marry",$marry);
+			$stmt->bindparam(":t_bal",$t_bal);
+			$stmt->bindparam(":a_bal",$a_bal);
+			$stmt->bindparam(":cot",$cot);
+			$stmt->bindparam(":tax",$tax);
+			$stmt->bindparam(":lppi",$lppi);
+			$stmt->bindparam(":imf",$imf);
+			$stmt->bindparam(":currency",$currency);
+			$stmt->execute();	
 			return $stmt;
-		} catch (PDOException $ex) {
+		
+		}
+		catch(PDOException $ex)
+		{
 			echo $ex->getMessage();
 		}
 	}
-
-
-	public function updatepic($image, $pp)
+	
+	
+	public function updatepic($image,$pp)
 	{
-		try {
-			$id = $_GET['id'];
+		try
+		{	$id=$_GET['id'];				
 			$stmt = $this->conn->prepare("UPDATE account SET image = :image, pp = :pp WHERE id='$id'");
-
-			$stmt->bindparam(":image", $image);
-			$stmt->bindparam(":pp", $pp);
-			$stmt->execute();
+			
+			$stmt->bindparam(":image",$image);
+			$stmt->bindparam(":pp",$pp);
+			$stmt->execute();	
 			return $stmt;
-		} catch (PDOException $ex) {
+		
+		}
+		catch(PDOException $ex)
+		{
 			echo $ex->getMessage();
 		}
 	}
-
+	
 	public function upstat($status)
 	{
-		try {
-			$id = $_GET['id'];
+		try
+		{	$id=$_GET['id'];				
 			$stmt = $this->conn->prepare("UPDATE account SET status = :status WHERE id='$id'");
-
-			$stmt->bindparam(":status", $status);
-			$stmt->execute();
+			
+			$stmt->bindparam(":status",$status);
+		    $stmt->execute();	
 			return $stmt;
-		} catch (PDOException $ex) {
+		
+		}
+		catch(PDOException $ex)
+		{
 			echo $ex->getMessage();
 		}
 	}
-
-	public function upgrade($name, $phone, $email, $addr, $tawk2, $qr)
+	
+		public function upgrade($name,$phone,$email,$addr,$tawk2,$qr)
 	{
-		try {
-			$id = $_GET['id'];
+		try
+		{	$id=$_GET['id'];				
 			$stmt = $this->conn->prepare("UPDATE site SET name = :name, phone = :phone, email = :email, addr = :addr, tawk2 = :tawk2, qr = :qr WHERE id='$id'");
-
-			$stmt->bindparam(":name", $name);
-			$stmt->bindparam(":phone", $phone);
-			$stmt->bindparam(":email", $email);
-			$stmt->bindparam(":addr", $addr);
-			$stmt->bindparam(":tawk2", $tawk2);
-			$stmt->bindparam(":qr", $qr);
-			$stmt->execute();
+			
+			$stmt->bindparam(":name",$name);
+			$stmt->bindparam(":phone",$phone);
+			$stmt->bindparam(":email",$email);
+			$stmt->bindparam(":addr",$addr);
+			$stmt->bindparam(":tawk2",$tawk2);
+			$stmt->bindparam(":qr",$qr);
+			$stmt->execute();	
 			return $stmt;
-		} catch (PDOException $ex) {
+		
+		}
+		catch(PDOException $ex)
+		{
 			echo $ex->getMessage();
 		}
 	}
-
-
-	public function upgradecd($code1, $code2, $code3, $code1b, $code2b, $code3b)
+	
+	
+	public function upgradecd($code1,$code2,$code3,$code1b,$code2b,$code3b)
 	{
-		try {
-			$id = $_GET['id'];
+		try
+		{	$id=$_GET['id'];				
 			$stmt = $this->conn->prepare("UPDATE site SET code1 = :code1, code2 = :code2, code3 = :code3, code1b = :code1b, code2b = :code2b, code3b = :code3b WHERE id='$id'");
-
-			$stmt->bindparam(":code1", $code1);
-			$stmt->bindparam(":code2", $code2);
-			$stmt->bindparam(":code3", $code3);
-			$stmt->bindparam(":code1b", $code1b);
-			$stmt->bindparam(":code2b", $code2b);
-			$stmt->bindparam(":code3b", $code3b);
-			$stmt->execute();
+			
+			$stmt->bindparam(":code1",$code1);
+			$stmt->bindparam(":code2",$code2);
+			$stmt->bindparam(":code3",$code3);
+			$stmt->bindparam(":code1b",$code1b);
+			$stmt->bindparam(":code2b",$code2b);
+			$stmt->bindparam(":code3b",$code3b);
+			$stmt->execute();	
 			return $stmt;
-		} catch (PDOException $ex) {
+		
+		}
+		catch(PDOException $ex)
+		{
 			echo $ex->getMessage();
 		}
 	}
-
-	public function updates($ccard, $ccdate, $cvv, $loan, $lodur, $intra)
+	
+	public function updates($ccard,$ccdate,$cvv,$loan,$lodur,$intra)
 	{
-		try {
-			$id = $_GET['id'];
+		try
+		{	$id=$_GET['id'];				
 			$stmt = $this->conn->prepare("UPDATE account SET ccard = :ccard, ccdate = :ccdate, cvv = :cvv, loan = :loan, lodur = :lodur, intra = :intra WHERE id='$id'");
-
-			$stmt->bindparam(":ccard", $ccard);
-			$stmt->bindparam(":ccdate", $ccdate);
-			$stmt->bindparam(":cvv", $cvv);
-			$stmt->bindparam(":loan", $loan);
-			$stmt->bindparam(":lodur", $lodur);
-			$stmt->bindparam(":intra", $intra);
-			$stmt->execute();
+			
+			$stmt->bindparam(":ccard",$ccard);
+			$stmt->bindparam(":ccdate",$ccdate);
+			$stmt->bindparam(":cvv",$cvv);
+			$stmt->bindparam(":loan",$loan);
+			$stmt->bindparam(":lodur",$lodur);
+			$stmt->bindparam(":intra",$intra);
+			$stmt->execute();	
 			return $stmt;
-		} catch (PDOException $ex) {
+		
+		}
+		catch(PDOException $ex)
+		{
 			echo $ex->getMessage();
 		}
 	}
-
-
-	public function updatecd($amount, $date, $time, $remarks, $sender_name)
+	
+	
+	public function updatecd($amount,$date,$time,$remarks,$sender_name)
 	{
-		try {
-			$id = $_GET['id'];
+		try
+		{	$id=$_GET['id'];				
 			$stmt = $this->conn->prepare("UPDATE alerts SET amount = :amount, date = :date, time = :time, remarks = :remarks, sender_name = :sender_name WHERE id='$id'");
-
-			$stmt->bindparam(":amount", $amount);
-			$stmt->bindparam(":date", $date);
-			$stmt->bindparam(":time", $time);
-			$stmt->bindparam(":remarks", $remarks);
-			$stmt->bindparam(":sender_name", $sender_name);
-			$stmt->execute();
+			
+			$stmt->bindparam(":amount",$amount);
+			$stmt->bindparam(":date",$date);
+			$stmt->bindparam(":time",$time);
+			$stmt->bindparam(":remarks",$remarks);
+			$stmt->bindparam(":sender_name",$sender_name);
+			$stmt->execute();	
 			return $stmt;
-		} catch (PDOException $ex) {
+		
+		}
+		catch(PDOException $ex)
+		{
 			echo $ex->getMessage();
 		}
 	}
-
-
-	public function updatetf($amount, $date, $acc_no, $remarks, $bank_name, $acc_name)
+	
+	
+	public function updatetf($amount,$date,$acc_no,$remarks,$bank_name,$acc_name)
 	{
-		try {
-			$id = $_GET['id'];
+		try
+		{	$id=$_GET['id'];				
 			$stmt = $this->conn->prepare("UPDATE transfer SET amount = :amount, date = :date, acc_no = :acc_no, remarks = :remarks, bank_name = :bank_name, acc_name = :acc_name WHERE id='$id'");
-
-			$stmt->bindparam(":amount", $amount);
-			$stmt->bindparam(":date", $date);
-			$stmt->bindparam(":acc_no", $acc_no);
-			$stmt->bindparam(":remarks", $remarks);
-			$stmt->bindparam(":bank_name", $bank_name);
-			$stmt->bindparam(":acc_name", $acc_name);
-			$stmt->execute();
+			
+			$stmt->bindparam(":amount",$amount);
+			$stmt->bindparam(":date",$date);
+			$stmt->bindparam(":acc_no",$acc_no);
+			$stmt->bindparam(":remarks",$remarks);
+			$stmt->bindparam(":bank_name",$bank_name);
+			$stmt->bindparam(":acc_name",$acc_name);
+			$stmt->execute();	
 			return $stmt;
-		} catch (PDOException $ex) {
+		
+		}
+		catch(PDOException $ex)
+		{
 			echo $ex->getMessage();
 		}
 	}
-
-
-	public function login($email, $upass)
+	
+	
+	public function login($email,$upass)
 	{
-		try {
+		try
+		{
 			$stmt = $this->conn->prepare("SELECT * FROM admin WHERE email=:email");
-			$stmt->execute(array(":email" => $email));
-			$userRow = $stmt->fetch(PDO::FETCH_ASSOC);
-
-			if ($stmt->rowCount() == 1) {
-				if ($userRow['verified_count'] == "Y") {
-					if ($userRow['upass'] == md5($upass)) {
+			$stmt->execute(array(":email"=>$email));
+			$userRow=$stmt->fetch(PDO::FETCH_ASSOC);
+			
+			if($stmt->rowCount() == 1)
+			{
+				if($userRow['verified_count']=="Y")
+				{
+					if($userRow['upass']==md5($upass))
+					{
 						$_SESSION['userSession'] = $userRow['id'];
 						return true;
-					} else {
+					}
+					else
+					{
 						header("Location: login.php?error");
 						exit;
 					}
-				} else {
+				}
+				else
+				{
 					header("Location: login.php?inactive");
 					exit;
-				}
-			} else {
+				}	
+			}
+			else
+			{
 				header("Location: login.php?error");
 				exit;
-			}
-		} catch (PDOException $ex) {
+			}		
+		}
+		catch(PDOException $ex)
+		{
 			echo $ex->getMessage();
 		}
 	}
-
-
+	
+	
 	public function is_logged_in()
 	{
-		if (isset($_SESSION['userSession'])) {
+		if(isset($_SESSION['userSession']))
+		{
 			return true;
 		}
 	}
-
+	
 	public function redirect($url)
 	{
 		header("Location: $url");
 	}
-
+	
 	public function logout()
 	{
 		session_destroy();
 		$_SESSION['userSession'] = false;
 	}
-
+ 
 	function send_mail($email, $messag, $subject, $template_type = null, $template_data = null)
 	{
 		include_once dirname(__DIR__, 2) . '/config.php';
@@ -512,16 +569,58 @@ class USER
 			}
 		}
 
-		$from = isset($APP_CONFIG['smtp']['from']) ? $APP_CONFIG['smtp']['from'] : 'noreply@localhost';
-		$fropin = isset($APP_CONFIG['smtp']['from_name']) ? $APP_CONFIG['smtp']['from_name'] : 'Banking System';
-		$replyTo = isset($APP_CONFIG['smtp']['reply_to']) ? $APP_CONFIG['smtp']['reply_to'] : $from;
+		$from     = isset($APP_CONFIG['smtp']['from'])      ? $APP_CONFIG['smtp']['from']      : '';
+		$fromName = isset($APP_CONFIG['smtp']['from_name']) ? $APP_CONFIG['smtp']['from_name'] : 'Banking System';
+		$replyTo  = isset($APP_CONFIG['smtp']['reply_to'])  ? $APP_CONFIG['smtp']['reply_to']  : $from;
+		$smtp_cfg = isset($APP_CONFIG['smtp']) && is_array($APP_CONFIG['smtp']) ? $APP_CONFIG['smtp'] : [];
 
-		$headers = "MIME-Version: 1.0" . "\r\n";
-		$headers .= "Content-type:text/html;charset=UTF-8" . "\r\n";
-		$headers .= "From: " . $fropin . " <" . $from . ">" . "\r\n";
-		$headers .= "Reply-To: " . $replyTo . "\r\n";
+		$emailSent = false;
 
-		$emailSent = mail($email, $subject, $messag, $headers);
+		// Prefer SMTP via PHPMailer so the admin-configured credentials are actually used.
+		if (!empty($smtp_cfg['host'])) {
+			try {
+				if (!defined('FILTER_FLAG_HOST_REQUIRED')) {
+					define('FILTER_FLAG_HOST_REQUIRED', 0);
+				}
+				if (!defined('PHPMailer\\PHPMailer\\FILTER_FLAG_HOST_REQUIRED')) {
+					define('PHPMailer\\PHPMailer\\FILTER_FLAG_HOST_REQUIRED', 0);
+				}
+				$pmDir = __DIR__ . '/PHPMailer-master/src/';
+				require_once $pmDir . 'Exception.php';
+				require_once $pmDir . 'PHPMailer.php';
+				require_once $pmDir . 'SMTP.php';
+
+				$mailer = new \PHPMailer\PHPMailer\PHPMailer(true);
+				$mailer->isSMTP();
+				$mailer->Host     = (string)$smtp_cfg['host'];
+				$mailer->Port     = (int)($smtp_cfg['port'] ?? 465);
+				$mailer->SMTPAuth = true;
+				$mailer->Username = (string)($smtp_cfg['username'] ?? '');
+				$mailer->Password = (string)($smtp_cfg['password'] ?? '');
+				$secure = (string)($smtp_cfg['secure'] ?? 'ssl');
+				// 'starttls' is stored as an alias; PHPMailer uses 'tls' for STARTTLS
+				if ($secure === 'starttls') { $secure = 'tls'; }
+				$mailer->SMTPSecure = in_array($secure, ['ssl', 'tls'], true) ? $secure : '';
+				$mailer->setFrom($from ?: 'noreply@' . (isset($_SERVER['HTTP_HOST']) ? preg_replace('/:\d+$/', '', $_SERVER['HTTP_HOST']) : 'localhost'), $fromName);
+				$mailer->addAddress($email);
+				$mailer->addReplyTo($replyTo ?: $from);
+				$mailer->isHTML(true);
+				$mailer->Subject = $subject;
+				$mailer->Body    = $messag;
+				$emailSent = $mailer->send();
+			} catch (\Throwable $e) {
+				error_log('Admin SMTP send failed, falling back to mail(): ' . $e->getMessage());
+			}
+		}
+
+		// Fallback to PHP mail() when SMTP is not configured or fails.
+		if (!$emailSent) {
+			$headers  = "MIME-Version: 1.0\r\n";
+			$headers .= "Content-type:text/html;charset=UTF-8\r\n";
+			$headers .= "From: " . $fromName . " <" . ($from ?: 'noreply@localhost') . ">\r\n";
+			$headers .= "Reply-To: " . ($replyTo ?: $from ?: 'noreply@localhost') . "\r\n";
+			$emailSent = @mail($email, $subject, $messag, $headers);
+		}
 
 		if ($template_type && $isEnabled('sms', $template_type)) {
 			try {
@@ -574,26 +673,11 @@ class USER
 			}
 
 			// Ensure newer audit columns exist. Missing columns used to cause false failures.
-			try {
-				$this->conn->exec("ALTER TABLE transfer ADD COLUMN status_updated_by VARCHAR(190) NULL DEFAULT NULL");
-			} catch (PDOException $e) {
-			}
-			try {
-				$this->conn->exec("ALTER TABLE transfer ADD COLUMN status_updated_at DATETIME NULL DEFAULT NULL");
-			} catch (PDOException $e) {
-			}
-			try {
-				$this->conn->exec("ALTER TABLE transfer ADD COLUMN status_notes TEXT NULL DEFAULT NULL");
-			} catch (PDOException $e) {
-			}
-			try {
-				$this->conn->exec("ALTER TABLE transfer ADD COLUMN auto_update_enabled TINYINT(1) NOT NULL DEFAULT 0");
-			} catch (PDOException $e) {
-			}
-			try {
-				$this->conn->exec("ALTER TABLE transfer ADD COLUMN auto_update_at DATETIME NULL DEFAULT NULL");
-			} catch (PDOException $e) {
-			}
+			try { $this->conn->exec("ALTER TABLE transfer ADD COLUMN status_updated_by VARCHAR(190) NULL DEFAULT NULL"); } catch (PDOException $e) {}
+			try { $this->conn->exec("ALTER TABLE transfer ADD COLUMN status_updated_at DATETIME NULL DEFAULT NULL"); } catch (PDOException $e) {}
+			try { $this->conn->exec("ALTER TABLE transfer ADD COLUMN status_notes TEXT NULL DEFAULT NULL"); } catch (PDOException $e) {}
+			try { $this->conn->exec("ALTER TABLE transfer ADD COLUMN auto_update_enabled TINYINT(1) NOT NULL DEFAULT 0"); } catch (PDOException $e) {}
+			try { $this->conn->exec("ALTER TABLE transfer ADD COLUMN auto_update_at DATETIME NULL DEFAULT NULL"); } catch (PDOException $e) {}
 
 			// Ensure history table exists, but do not fail transfer update if logging fails.
 			try {
@@ -608,8 +692,7 @@ class USER
 					INDEX idx_transfer_status_history_transfer_id (transfer_id),
 					INDEX idx_transfer_status_history_changed_at (changed_at)
 				) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
-			} catch (PDOException $e) {
-			}
+			} catch (PDOException $e) {}
 
 			// Get current status for audit trail
 			$currentStmt = $this->conn->prepare("SELECT status FROM transfer WHERE id = :id LIMIT 1");
@@ -620,29 +703,53 @@ class USER
 			}
 			$oldStatus = $currentRow['status'] ?? null;
 
-			// Update transfer record
-			$updateStmt = $this->conn->prepare("UPDATE transfer SET 
-				status = :status,
-				status_updated_by = :updated_by,
-				status_updated_at = NOW(),
-				status_notes = :notes,
-				auto_update_enabled = :au_enabled,
-				auto_update_at = IF(:au_enabled = 1 AND :au_delay > 0, DATE_ADD(NOW(), INTERVAL :au_delay MINUTE), NULL)
-				WHERE id = :id");
-
+			// Compute auto-update timestamp in PHP for compatibility. Some live DB engines
+			// reject placeholders inside INTERVAL expressions.
 			$autoUpdateAt = null;
 			if ($autoUpdateEnabled && $autoUpdateDelay > 0) {
 				$autoUpdateAt = date('Y-m-d H:i:s', time() + ($autoUpdateDelay * 60));
 			}
 
-			$updateStmt->execute([
-				':status' => $newStatus,
-				':updated_by' => $adminEmail,
-				':notes' => $notes ?: null,
-				':au_enabled' => $autoUpdateEnabled,
-				':au_delay' => $autoUpdateDelay,
-				':id' => $transferId
-			]);
+			$didUpdate = false;
+			try {
+				// Preferred update path (full audit fields)
+				$updateStmt = $this->conn->prepare("UPDATE transfer SET 
+					status = :status,
+					status_updated_by = :updated_by,
+					status_updated_at = NOW(),
+					status_notes = :notes,
+					auto_update_enabled = :au_enabled,
+					auto_update_at = :au_at
+					WHERE id = :id");
+
+				$didUpdate = $updateStmt->execute([
+					':status' => $newStatus,
+					':updated_by' => $adminEmail,
+					':notes' => $notes !== '' ? $notes : null,
+					':au_enabled' => $autoUpdateEnabled,
+					':au_at' => $autoUpdateAt,
+					':id' => $transferId
+				]);
+			} catch (PDOException $updateErr) {
+				error_log('Transfer status update primary SQL failed, trying fallback: ' . $updateErr->getMessage());
+			}
+
+			if (!$didUpdate) {
+				try {
+					// Fallback for restrictive/legacy schemas: at minimum, update status.
+					$fallbackStmt = $this->conn->prepare("UPDATE transfer SET status = :status WHERE id = :id");
+					$didUpdate = $fallbackStmt->execute([
+						':status' => $newStatus,
+						':id' => $transferId
+					]);
+				} catch (PDOException $fallbackErr) {
+					error_log('Transfer status update fallback SQL failed: ' . $fallbackErr->getMessage());
+				}
+			}
+
+			if (!$didUpdate) {
+				return false;
+			}
 
 			// Log to transfer status history (best-effort; should not block successful status update)
 			try {
@@ -658,6 +765,98 @@ class USER
 				]);
 			} catch (PDOException $e) {
 				error_log('Transfer status history log warning: ' . $e->getMessage());
+			}
+
+			// ── Reversal / Cancellation: credit back the sender and notify ──────────
+			$reversalStatuses = ['reversed', 'cancelled'];
+			$alreadyTerminal   = in_array(strtolower((string)$oldStatus), $reversalStatuses, true);
+
+			if (in_array(strtolower($newStatus), $reversalStatuses, true) && !$alreadyTerminal) {
+				try {
+					// Ensure idempotency column exists
+					try { $this->conn->exec("ALTER TABLE transfer ADD COLUMN reversal_processed TINYINT(1) NOT NULL DEFAULT 0"); } catch (PDOException $e) {}
+
+					// Only process once
+					$revCheck = $this->conn->prepare("SELECT reversal_processed, amount, currency_code, email, acc_name, bank_name, acc_no FROM transfer WHERE id = :id LIMIT 1");
+					$revCheck->execute([':id' => $transferId]);
+					$tf = $revCheck->fetch(PDO::FETCH_ASSOC);
+
+					if ($tf && !(int)($tf['reversal_processed'] ?? 0)) {
+						$refundAmount  = (float)($tf['amount'] ?? 0);
+						$currencyCode  = strtoupper(trim((string)($tf['currency_code'] ?? 'USD')));
+						$senderEmail   = trim((string)($tf['email'] ?? ''));
+
+						if ($refundAmount > 0 && $senderEmail !== '') {
+							// Look up sender account
+							$acctStmt = $this->conn->prepare(
+								"SELECT acc_no, fname, lname, a_bal, t_bal, currency FROM account WHERE email = :email LIMIT 1"
+							);
+							$acctStmt->execute([':email' => $senderEmail]);
+							$acct = $acctStmt->fetch(PDO::FETCH_ASSOC);
+
+							if ($acct) {
+								$senderAccNo = (string)($acct['acc_no'] ?? '');
+
+								// 1. Credit account_balances wallet for the transfer currency
+								$walletUp = $this->conn->prepare(
+									"UPDATE account_balances SET balance = balance + :amt
+									 WHERE acc_no = :acc_no AND currency_code = :cur"
+								);
+								$walletUp->execute([
+									':amt'    => $refundAmount,
+									':acc_no' => $senderAccNo,
+									':cur'    => $currencyCode,
+								]);
+
+								// 2. Also credit account.a_bal / account.t_bal when the primary
+								//    account currency matches (legacy balance fields)
+								$acctCurrency = strtoupper(trim((string)($acct['currency'] ?? '')));
+								if ($acctCurrency === $currencyCode || $acctCurrency === '') {
+									$balUp = $this->conn->prepare(
+										"UPDATE account SET
+											a_bal = GREATEST(0, a_bal + :amt),
+											t_bal = GREATEST(0, t_bal + :amt2)
+										 WHERE acc_no = :acc_no"
+									);
+									$balUp->execute([
+										':amt'    => $refundAmount,
+										':amt2'   => $refundAmount,
+										':acc_no' => $senderAccNo,
+									]);
+								}
+
+								// 3. Mark reversal as processed
+								$this->conn->prepare("UPDATE transfer SET reversal_processed = 1 WHERE id = :id")
+									->execute([':id' => $transferId]);
+
+								// 4. Send notification email to sender
+								$actionLabel = strtolower($newStatus) === 'reversed' ? 'Reversed' : 'Cancelled';
+								try {
+									$fname = trim((string)($acct['fname'] ?? ''));
+									$lname = trim((string)($acct['lname'] ?? ''));
+									$this->send_mail($senderEmail, '', $actionLabel . ': Transfer Refund Processed', 'transaction_alert', [
+										'fname'            => $fname,
+										'lname'            => $lname,
+										'name'             => trim($fname . ' ' . $lname),
+										'transaction_type' => 'Transfer ' . $actionLabel,
+										'amount'           => number_format($refundAmount, 2),
+										'currency'         => $currencyCode,
+										'description'      => 'Your transfer of ' . $currencyCode . ' ' . number_format($refundAmount, 2)
+											. ' to ' . htmlspecialchars((string)($tf['acc_name'] ?? $tf['acc_no'] ?? ''))
+											. ' has been ' . strtolower($actionLabel) . '. The amount has been credited back to your account.',
+										'status'           => $actionLabel,
+										'date'             => date('Y-m-d H:i:s'),
+									]);
+								} catch (\Throwable $mailErr) {
+									error_log('Transfer reversal notification failed: ' . $mailErr->getMessage());
+								}
+							}
+						}
+					}
+				} catch (\Throwable $revErr) {
+					error_log('Transfer reversal processing error: ' . $revErr->getMessage());
+					// Do NOT return false — the status update itself succeeded
+				}
 			}
 
 			return true;
@@ -725,7 +924,7 @@ class USER
 				auto_update_enabled = 0,
 				auto_update_at = NULL
 				WHERE id = :id AND auto_update_enabled = 1 AND auto_update_at <= NOW()");
-
+			
 			$updateStmt->execute([
 				':status' => $targetStatus,
 				':id' => $transferId
@@ -736,7 +935,7 @@ class USER
 				(transfer_id, old_status, new_status, changed_by, changed_at, notes)
 				SELECT id, status, :new_status, 'system', NOW(), 'Auto-update via scheduled task'
 				FROM transfer WHERE id = :id");
-
+			
 			$historyStmt->execute([
 				':new_status' => $targetStatus,
 				':id' => $transferId
@@ -902,3 +1101,4 @@ class USER
 		}
 	}
 }
+?>

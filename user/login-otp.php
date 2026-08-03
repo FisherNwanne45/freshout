@@ -4,6 +4,7 @@ session_start();
 require 'connectdb.php';
 require_once 'class.user.php';
 require_once '../config.php';
+$conn = $GLOBALS['conn'] ?? null;
 require_once __DIR__ . '/partials/auto-migrate.php';
 require_once __DIR__ . '/auth-theme.php';
 
@@ -35,6 +36,7 @@ $tawk = $site['tawk'] ?? '';
 $msg = '';
 $hasError = false;
 $isSuccess = false;
+$resentFlash = isset($_GET['resent']) ? 'A new OTP has been sent to your email.' : '';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (isset($_POST['resend_otp'])) {
@@ -45,8 +47,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 'otp' => $otp,
                 'expiry_min' => 10,
             ]);
-            $msg = 'A fresh OTP has been sent to your registered email.';
-            $isSuccess = true;
+            header('Location: login-otp.php?resent=1');
+            exit();
         } else {
             $msg = 'Unable to generate OTP at the moment. Please try again.';
             $hasError = true;
@@ -63,7 +65,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $hasError = true;
             } else {
                 $_SESSION['pin_verified'] = 'otp-verified';
-                $_SESSION['pin'] = 'otp-verified'; // backward compatibility during phased migration
                 header('Location: index.php');
                 exit();
             }
@@ -78,7 +79,6 @@ if ($fullName === '') {
 ?>
 <!doctype html>
 <html lang="en">
-
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -109,7 +109,6 @@ if ($fullName === '') {
             border: 1px solid <?= htmlspecialchars($hasError ? $palette['danger'] : $palette['border']) ?>;
             background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
         }
-
         #otp-wrapper #otp {
             display: block;
             width: 100%;
@@ -129,35 +128,30 @@ if ($fullName === '') {
             caret-color: <?= htmlspecialchars($palette['navy']) ?>;
             transition: border-color 0.15s, box-shadow 0.15s;
         }
-
         #otp-wrapper #otp::placeholder {
             color: <?= htmlspecialchars($palette['muted']) ?>;
             font-size: 1.7rem;
             letter-spacing: 0.62rem;
             font-weight: 500;
         }
-
         #otp-wrapper #otp:focus {
             border-color: <?= htmlspecialchars($palette['navy']) ?>;
             box-shadow: 0 0 0 4px <?= htmlspecialchars($palette['navy']) ?>1f;
             outline: none;
             background: #ffffff;
         }
-
         .auth-translator-light .gts-select {
             color: <?= htmlspecialchars($palette['navy']) ?>;
             background-color: #ffffff;
             border-color: <?= htmlspecialchars($palette['border']) ?>;
             background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none'%3E%3Cpath stroke='rgba(23,63,109,0.85)' stroke-linecap='round' stroke-linejoin='round' stroke-width='2.5' d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
         }
-
         .auth-translator-light .gts-select option {
             background: #ffffff;
             color: #0f172a;
         }
     </style>
 </head>
-
 <body class="min-h-screen bg-brand-light">
     <div class="relative mx-auto flex min-h-screen max-w-6xl items-center p-4 md:p-8">
         <div class="grid w-full overflow-hidden rounded-3xl bg-white shadow-2xl lg:grid-cols-2">
@@ -191,8 +185,13 @@ if ($fullName === '') {
                         <?php include_once dirname(__DIR__) . '/private/shared-translator.php'; ?>
                     </div>
 
+                    <?php if ($resentFlash !== ''): ?>
+                        <div class="mt-4 rounded-xl border border-green-200 bg-green-50 p-3 text-sm text-green-700" role="alert">
+                            <?= htmlspecialchars($resentFlash) ?>
+                        </div>
+                    <?php endif; ?>
                     <?php if ($msg !== ''): ?>
-                        <div class="mt-4 rounded-xl border p-3 text-sm <?= $isSuccess ? 'border-green-200 bg-green-50 text-green-700' : 'border-brand-danger/30 bg-red-50 text-brand-danger' ?>" role="alert" aria-live="assertive">
+                        <div class="mt-4 rounded-xl border p-3 text-sm <?= $hasError ? 'border-brand-danger/30 bg-red-50 text-brand-danger' : 'border-green-200 bg-green-50 text-green-700' ?>" role="alert" aria-live="assertive">
                             <?= htmlspecialchars($msg) ?>
                         </div>
                     <?php endif; ?>
@@ -209,20 +208,28 @@ if ($fullName === '') {
                                 pattern="\d{6}"
                                 placeholder="• • • • • •"
                                 autocomplete="off"
-                                required>
+                                required
+                            >
                         </div>
 
-                        <div class="mt-4 flex gap-3">
-                            <button type="submit" class="flex-1 rounded-xl border border-brand-border bg-white px-4 py-3 text-sm font-semibold text-brand-navy transition hover:bg-brand-light">
-                                Verify & Continue
-                            </button>
-                            <button type="submit" name="resend_otp" value="1" class="rounded-xl border border-brand-border px-4 py-3 text-sm font-medium text-brand-muted transition hover:bg-brand-light">
-                                Resend OTP
+                        <div class="mt-4 flex flex-col gap-3">
+                            <button type="submit" class="w-full rounded-xl border border-brand-border bg-white px-4 py-3 text-sm font-semibold text-brand-navy transition hover:bg-brand-light">
+                                Verify &amp; Continue
                             </button>
                         </div>
-
+                        </form>
+                        <div class="mt-3 text-center">
+                            <form method="post" id="resendForm">
+                                <input type="hidden" name="resend_otp" value="1">
+                                <p class="text-xs text-brand-muted mb-2">Didn&rsquo;t receive the code?</p>
+                                <button id="resendBtn" type="submit" disabled
+                                    class="text-sm font-medium text-brand-navy disabled:text-brand-muted disabled:cursor-not-allowed transition-colors">
+                                    Resend in <span id="resendCountdown">60</span>s
+                                </button>
+                            </form>
+                        </div>
                         <a href="logout.php" class="mt-3 inline-block text-xs text-brand-muted hover:text-brand-navy">Logout</a>
-                    </form>
+
                 </div>
             </section>
         </div>
@@ -231,12 +238,35 @@ if ($fullName === '') {
     <?= $tawk ?>
 
     <script>
-        const otpInput = document.getElementById('otp');
-        otpInput.addEventListener('input', () => {
-            otpInput.value = (otpInput.value || '').replace(/\D/g, '').slice(0, 6);
+    (function () {
+        var otpInput   = document.getElementById('otp');
+        var resendBtn  = document.getElementById('resendBtn');
+        var countdown  = document.getElementById('resendCountdown');
+        var secs = 60;
+
+        if (otpInput) {
+            otpInput.addEventListener('input', function () {
+                otpInput.value = (otpInput.value || '').replace(/\D/g, '').slice(0, 6);
+            });
+            otpInput.focus();
+        }
+
+        var tick = setInterval(function () {
+            secs--;
+            if (secs <= 0) {
+                clearInterval(tick);
+                resendBtn.disabled = false;
+                resendBtn.innerHTML = 'Resend OTP';
+            } else {
+                countdown.textContent = secs;
+            }
+        }, 1000);
+
+        document.getElementById('resendForm').addEventListener('submit', function () {
+            resendBtn.disabled = true;
+            resendBtn.textContent = 'Sending…';
         });
-        otpInput.focus();
+    }());
     </script>
 </body>
-
 </html>

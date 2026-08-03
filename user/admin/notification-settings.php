@@ -187,6 +187,9 @@ foreach ($notification_templates as $key => $meta) {
     $template_body_values[$key] = (string)ss_get($conn, 'notify_tpl_body_' . $key, '');
 }
 
+// Build server-side preview HTML for each template using sample data
+$template_previews = [];
+
 // Get site info
 $site = null;
 $res = $conn->query("SELECT * FROM site LIMIT 1");
@@ -209,6 +212,47 @@ if (function_exists('get_auth_color_scheme') && function_exists('get_auth_palett
     $palette = get_auth_palette($authScheme);
 }
 $bankName = $site ? htmlspecialchars($site['name']) : 'Secure Banking';
+
+$_previewDummyCtx = [
+    'bank_name'     => $bankName,
+    'support_email' => ($site['email'] ?? 'support@bank.com'),
+    'site_url'      => ((isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on') ? 'https' : 'http') . '://' . (isset($_SERVER['HTTP_HOST']) ? preg_replace('/:\d+$/', '', $_SERVER['HTTP_HOST']) : 'example.com'),
+];
+$_previewDummySamples = array_merge($_previewDummyCtx, [
+    'fname' => 'John', 'lname' => 'Doe', 'name' => 'John Doe',
+    'acc_no' => '0000001234', 'amount' => '1,250.00', 'currency' => 'USD',
+    'balance' => '8,450.00', 'description' => 'Monthly Transfer',
+    'date' => date('Y-m-d'), 'type_label' => 'Savings',
+    'reason' => 'Insufficient documentation', 'ticket_id' => '#TKT-00042',
+    'subject' => '', 'creation_date' => date('Y-m-d'),
+    'loan_id' => '#LOAN-00017', 'purpose' => 'Home Renovation',
+    'transaction_type' => 'Domestic Transfer', 'status' => 'Approved',
+    'otp' => '839271', 'expiry_min' => '10',
+    'email' => 'john.doe@example.com', 'phone' => '+1-555-0100',
+    'type' => 'Checking', 'work' => 'Software Engineer',
+    'addr' => '123 Main St', 'city' => 'Springfield', 'state' => 'IL',
+    'nation' => 'USA', 'zip' => '62701', 'uname' => 'john.doe',
+    'department' => 'General', 'comments' => 'This is a test inquiry from the contact form.',
+    'year' => date('Y'), 'today' => date('Y-m-d'),
+]);
+
+if (function_exists('notification_template_replace_tokens') && function_exists('notification_template_wrap_html')) {
+    foreach ($notification_templates as $_pKey => $_pMeta) {
+        $_pRawSubject = $template_subject_values[$_pKey] ?: ($notification_template_defaults[$_pKey]['subject'] ?? $_pMeta['default_subject'] ?? 'Preview');
+        $_pRawBody    = $template_body_values[$_pKey]    ?: ($notification_template_defaults[$_pKey]['body']    ?? '<p>No template body configured yet. Click <strong>Prepopulate Default Templates</strong> to load defaults.</p>');
+        $_previewDummySamples['subject'] = $_pRawSubject;
+        $_pSubject  = notification_template_replace_tokens($_pRawSubject, $_previewDummySamples);
+        $_pBody     = notification_template_replace_tokens($_pRawBody,    $_previewDummySamples);
+        $_pFullHtml = notification_template_wrap_html($_pSubject, $_pBody, $_previewDummyCtx);
+        $template_previews[$_pKey] = [
+            'name'    => $notification_templates[$_pKey]['name'] ?? $_pKey,
+            'subject' => $_pSubject,
+            'html'    => base64_encode($_pFullHtml),
+        ];
+    }
+}
+unset($_previewDummyCtx, $_previewDummySamples, $_pKey, $_pMeta, $_pRawSubject, $_pRawBody, $_pSubject, $_pBody, $_pFullHtml);
+
 $pageTitle = 'Notification Settings';
 require_once __DIR__ . '/partials/admin-shell-open.php';
 ?>
@@ -238,9 +282,18 @@ require_once __DIR__ . '/partials/admin-shell-open.php';
         <input type="hidden" name="active_tab" value="templates">
         <?php foreach($notification_templates as $key => $meta): ?>
         <div class="rounded-xl border border-gray-200 p-4">
-            <div class="mb-3">
-                <p class="text-sm font-semibold text-gray-800"><?= htmlspecialchars($meta['name'] ?? $key) ?></p>
-                <p class="text-xs text-gray-500"><?= htmlspecialchars($meta['description'] ?? '') ?></p>
+            <div class="mb-3 flex items-start justify-between gap-3">
+                <div>
+                    <p class="text-sm font-semibold text-gray-800"><?= htmlspecialchars($meta['name'] ?? $key) ?></p>
+                    <p class="text-xs text-gray-500"><?= htmlspecialchars($meta['description'] ?? '') ?></p>
+                </div>
+                <?php if (isset($template_previews[$key])): ?>
+                <button type="button" onclick="openTemplatePreview(<?= json_encode($key) ?>)"
+                    class="flex-shrink-0 inline-flex items-center gap-1.5 text-xs font-medium text-indigo-600 hover:text-indigo-800 border border-indigo-200 hover:border-indigo-400 bg-indigo-50 hover:bg-indigo-100 rounded-lg px-2.5 py-1.5 transition-colors">
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+                    Preview
+                </button>
+                <?php endif; ?>
             </div>
 
             <div class="grid grid-cols-1 gap-4">
@@ -287,5 +340,63 @@ require_once __DIR__ . '/partials/admin-shell-open.php';
     </form>
 </div>
 <?php endif; ?>
+
+<!-- ── Template Preview Modal ───────────────────────────────────── -->
+<div id="tpl-preview-modal" class="fixed inset-0 z-50 flex items-center justify-center" style="display:none !important;" aria-modal="true" role="dialog">
+    <div class="absolute inset-0 bg-black/60" style="backdrop-filter:blur(2px);" onclick="closeTemplatePreview()"></div>
+    <div class="relative z-10 flex flex-col bg-white rounded-xl shadow-2xl mx-4" style="width:min(720px,100%);max-height:90vh;">
+        <!-- header -->
+        <div class="flex items-start justify-between gap-4 px-5 py-3 border-b border-gray-200 flex-shrink-0">
+            <div class="min-w-0">
+                <p id="tpl-preview-name" class="font-semibold text-gray-800 text-sm truncate"></p>
+                <p class="text-xs text-gray-400 mt-0.5">Subject: <span id="tpl-preview-subject" class="text-gray-600"></span></p>
+            </div>
+            <button onclick="closeTemplatePreview()" class="flex-shrink-0 p-1.5 rounded-lg text-gray-400 hover:text-gray-700 hover:bg-gray-100 transition-colors" aria-label="Close">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+            </button>
+        </div>
+        <!-- note -->
+        <div class="px-5 py-2 bg-amber-50 border-b border-amber-100 text-xs text-amber-700 flex-shrink-0">
+            Rendered with sample placeholder data. Actual output depends on runtime values.
+        </div>
+        <!-- iframe -->
+        <div class="flex-1 overflow-hidden">
+            <iframe id="tpl-preview-frame" class="w-full border-0" style="height:520px;display:block;"></iframe>
+        </div>
+    </div>
+</div>
+
+<script>
+(function () {
+    const previews = <?= json_encode($template_previews, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) ?>;
+
+    window.openTemplatePreview = function (key) {
+        const data = previews[key];
+        if (!data) return;
+        document.getElementById('tpl-preview-name').textContent    = data.name;
+        document.getElementById('tpl-preview-subject').textContent = data.subject;
+        const frame = document.getElementById('tpl-preview-frame');
+        try { frame.srcdoc = atob(data.html); } catch(e) { frame.srcdoc = '<p>Preview unavailable.</p>'; }
+        const modal = document.getElementById('tpl-preview-modal');
+        modal.style.display = 'flex';
+        modal.style.removeProperty('display'); /* override !important hidden */
+        modal.classList.remove('hidden');
+        modal.style.display = 'flex';
+        document.body.style.overflow = 'hidden';
+    };
+
+    window.closeTemplatePreview = function () {
+        const modal = document.getElementById('tpl-preview-modal');
+        modal.style.setProperty('display', 'none', 'important');
+        modal.classList.add('hidden');
+        document.getElementById('tpl-preview-frame').srcdoc = '';
+        document.body.style.overflow = '';
+    };
+
+    document.addEventListener('keydown', function (e) {
+        if (e.key === 'Escape') window.closeTemplatePreview();
+    });
+}());
+</script>
 
 <?php require_once __DIR__ . '/partials/admin-shell-close.php'; ?>

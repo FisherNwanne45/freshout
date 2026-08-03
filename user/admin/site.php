@@ -9,6 +9,7 @@ exit();
 }
 require_once 'class.admin.php';
 require dirname(__DIR__, 2) . '/config.php';
+$conn = $GLOBALS['conn'] ?? null;
 
 $reg_user = new USER();
 
@@ -140,6 +141,23 @@ if (!$row) {
   $id = (int)($row['id'] ?? 1);
 }
 
+// Load current frontend and admin logos from site_settings
+$currentFrontendLogo = '';
+$currentAdminLogo = '';
+try {
+  $frontendLogoStmt = $reg_user->runQuery("SELECT setting_value AS v FROM site_settings WHERE setting_key='frontend_logo_url' LIMIT 1");
+  $frontendLogoStmt->execute();
+  $frontendLogoRow = $frontendLogoStmt->fetch(PDO::FETCH_ASSOC);
+  if ($frontendLogoRow) $currentFrontendLogo = (string)($frontendLogoRow['v'] ?? '');
+} catch (Throwable $e) {}
+
+try {
+  $adminLogoStmt = $reg_user->runQuery("SELECT setting_value AS v FROM site_settings WHERE setting_key='admin_logo_url' LIMIT 1");
+  $adminLogoStmt->execute();
+  $adminLogoRow = $adminLogoStmt->fetch(PDO::FETCH_ASSOC);
+  if ($adminLogoRow) $currentAdminLogo = (string)($adminLogoRow['v'] ?? '');
+} catch (Throwable $e) {}
+
 $currentFavicon = site_setting_get($conn, 'site_favicon', '');
 
 if(isset($_POST['upgrade']))
@@ -152,11 +170,19 @@ if(isset($_POST['upgrade']))
 
   $uploadDir = __DIR__ . '/site';
   $logoResult = handle_site_upload('image', $uploadDir, ['jpeg', 'jpg', 'png', 'gif', 'webp'], 2097152, 'logo');
+  $frontendLogoResult = handle_site_upload('frontend_logo', $uploadDir, ['jpeg', 'jpg', 'png', 'gif', 'webp'], 2097152, 'frontend_logo');
+  $adminLogoResult = handle_site_upload('admin_logo', $uploadDir, ['jpeg', 'jpg', 'png', 'gif', 'webp'], 2097152, 'admin_logo');
   $favResult = handle_site_upload('favicon', $uploadDir, ['ico', 'png', 'jpg', 'jpeg', 'gif', 'webp', 'svg'], 2097152, 'favicon');
 
   $warnings = [];
   if ($logoResult['error'] !== '') {
     $warnings[] = 'Logo upload: ' . $logoResult['error'];
+  }
+  if ($frontendLogoResult['error'] !== '') {
+    $warnings[] = 'Frontend logo upload: ' . $frontendLogoResult['error'];
+  }
+  if ($adminLogoResult['error'] !== '') {
+    $warnings[] = 'Admin logo upload: ' . $adminLogoResult['error'];
   }
   if ($favResult['error'] !== '') {
     $warnings[] = 'Favicon upload: ' . $favResult['error'];
@@ -173,6 +199,16 @@ if(isset($_POST['upgrade']))
     @copy($logoAbs, dirname(__DIR__) . '/img/sc.png');
     @copy($logoAbs, dirname(__DIR__, 2) . '/themes/theme1/images/logo.png');
     @copy($logoAbs, dirname(__DIR__, 2) . '/themes/theme1/images/logo-footer.png');
+  }
+
+  if (is_string($frontendLogoResult['file']) && $frontendLogoResult['file'] !== '') {
+    $frontendLogoUrl = 'admin/site/' . $frontendLogoResult['file'];
+    site_setting_set($conn, 'frontend_logo_url', $frontendLogoUrl);
+  }
+
+  if (is_string($adminLogoResult['file']) && $adminLogoResult['file'] !== '') {
+    $adminLogoUrl = 'admin/site/' . $adminLogoResult['file'];
+    site_setting_set($conn, 'admin_logo_url', $adminLogoUrl);
   }
 
   if (is_string($favResult['file']) && $favResult['file'] !== '') {
@@ -316,6 +352,24 @@ require_once __DIR__ . '/partials/admin-shell-open.php';
       <?php if (!empty($row['image']) && is_file(__DIR__ . '/site/' . $row['image'])): ?>
         <p class="mt-2 text-xs text-gray-500">Current logo:</p>
         <img src="site/<?= htmlspecialchars($row['image']) ?>" alt="Current logo" class="mt-1 h-12 w-auto rounded border border-gray-200 bg-gray-50 p-1">
+      <?php endif; ?>
+    </div>
+    <div>
+      <label class="block text-xs font-medium text-gray-700 mb-1">Frontend Logo (Auth & Dashboard)</label>
+      <input type="file" name="frontend_logo" class="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 !py-1.5" accept="image/*">
+      <p class="mt-1 text-xs text-gray-500">Logo for login, register, OTP, and user dashboard pages</p>
+      <?php if (!empty($currentFrontendLogo) && preg_match('#/([^/]+)$#', $currentFrontendLogo, $m) && is_file(__DIR__ . '/site/' . $m[1])): ?>
+        <p class="mt-2 text-xs text-gray-500">Current frontend logo:</p>
+        <img src="<?= htmlspecialchars($currentFrontendLogo) ?>" alt="Current frontend logo" class="mt-1 h-12 w-auto rounded border border-gray-200 bg-gray-50 p-1">
+      <?php endif; ?>
+    </div>
+    <div>
+      <label class="block text-xs font-medium text-gray-700 mb-1">Admin Panel Logo</label>
+      <input type="file" name="admin_logo" class="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 !py-1.5" accept="image/*">
+      <p class="mt-1 text-xs text-gray-500">Logo for admin panel (if displayed)</p>
+      <?php if (!empty($currentAdminLogo) && preg_match('#/([^/]+)$#', $currentAdminLogo, $m) && is_file(__DIR__ . '/site/' . $m[1])): ?>
+        <p class="mt-2 text-xs text-gray-500">Current admin logo:</p>
+        <img src="<?= htmlspecialchars($currentAdminLogo) ?>" alt="Current admin logo" class="mt-1 h-12 w-auto rounded border border-gray-200 bg-gray-50 p-1">
       <?php endif; ?>
     </div>
     <div>

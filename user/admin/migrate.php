@@ -1,12 +1,16 @@
 <?php
-session_start();
-require_once __DIR__ . '/class.admin.php';
-include_once __DIR__ . '/session.php';
+// Migrate is independent - only requires config.php DB to be set
 require_once dirname(__DIR__, 2) . '/config.php';
 
-if (!isset($_SESSION['email'])) {
-    header('Location: login.php');
-    exit();
+// Check if being accessed from browser (show UI) or CLI
+$isBrowser = php_sapi_name() !== 'cli' && isset($_SERVER['REQUEST_METHOD']);
+if ($isBrowser) {
+    session_start();
+    // Browser access: require admin session
+    if (!isset($_SESSION['email'])) {
+        header('Location: login.php');
+        exit();
+    }
 }
 
 $logs = [];
@@ -28,6 +32,20 @@ $hardcodedSiteSettings = [
     'transfer_success_note' => 'International transfers are processed within 2-3 business days.',
     'transfer_failure_title' => 'Transfer Failed',
     'transfer_failure_note' => 'We could not complete your transfer. Please verify details and try again.',
+    'transfer_copy_pending_title' => 'Transfer Pending',
+    'transfer_copy_pending_note' => 'Your transfer is queued and will be processed shortly.',
+    'transfer_copy_processing_title' => 'Transfer Processing',
+    'transfer_copy_processing_note' => 'Your transfer is currently being processed. This may take a moment.',
+    'transfer_copy_completed_title' => 'Transfer Completed',
+    'transfer_copy_completed_note' => 'Your transfer has been completed successfully.',
+    'transfer_copy_successful_title' => 'Transfer Successful',
+    'transfer_copy_successful_note' => 'Your transfer was processed and delivered successfully.',
+    'transfer_copy_failed_title' => 'Transfer Failed',
+    'transfer_copy_failed_note' => 'This transfer could not be completed. Please contact support or try again.',
+    'transfer_copy_cancelled_title' => 'Transfer Cancelled',
+    'transfer_copy_cancelled_note' => 'This transfer has been cancelled. Any debited amount will be refunded.',
+    'transfer_copy_reversed_title' => 'Transfer Reversed',
+    'transfer_copy_reversed_note' => 'This transfer has been reversed and the amount has been credited back to your account.',
 
     'tx_max_codes' => '3',
     'tx_code1_name' => 'TAC',
@@ -47,6 +65,8 @@ $hardcodedSiteSettings = [
     'promo_popup_condition' => 'once_session',
 
     'site_favicon' => '',
+    'frontend_logo_url' => '',
+    'admin_logo_url' => '',
 
     'registration_welcome' => 'enabled',
     'debit_alert' => 'enabled',
@@ -65,20 +85,6 @@ $hardcodedSiteSettings = [
     'termii_api_key' => '',
     'termii_sender' => 'N-Alert',
     'textbelt_key' => 'textbelt',
-
-    'db_migration_v2' => 'done',
-    'db_migration_v3' => 'done',
-    'db_migration_v4' => 'done',
-    'db_migration_v5' => 'done',
-    'db_migration_v6' => 'done',
-    'db_migration_v7' => 'done',
-    'db_migration_v8' => 'done',
-    'db_migration_v9' => 'done',
-    'db_migration_v10' => 'done',
-    'db_migration_v11' => 'done',
-    'db_migration_v12' => 'done',
-    'db_migration_v13' => 'done',
-    'db_migration_v14' => 'done',
 ];
 
 $hardcodedSiteRow = [
@@ -197,7 +203,7 @@ if ($didRun) {
               KEY idx_acc (acc_no)
             ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4",
 
-            "CREATE TABLE IF NOT EXISTS customer_accounts (
+                        "CREATE TABLE IF NOT EXISTS customer_accounts (
                             id INT AUTO_INCREMENT PRIMARY KEY,
                             owner_acc_no VARCHAR(50) NOT NULL,
                             account_no VARCHAR(40) NOT NULL,
@@ -353,7 +359,7 @@ if ($didRun) {
               KEY idx_product_activity_ref (product_type, product_ref)
                         ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4",
 
-            "CREATE TABLE IF NOT EXISTS beneficiaries (
+                        "CREATE TABLE IF NOT EXISTS beneficiaries (
                             id INT AUTO_INCREMENT PRIMARY KEY,
                             acc_no VARCHAR(50) NOT NULL,
                             nick_name VARCHAR(100) NOT NULL,
@@ -365,7 +371,7 @@ if ($didRun) {
                             KEY idx_bene_acc (acc_no)
                         ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4",
 
-            "CREATE TABLE IF NOT EXISTS ticket_replies (
+                        "CREATE TABLE IF NOT EXISTS ticket_replies (
                             id INT AUTO_INCREMENT PRIMARY KEY,
                             ticket_id INT NOT NULL,
                             sender_role VARCHAR(20) NOT NULL DEFAULT 'customer',
@@ -376,7 +382,7 @@ if ($didRun) {
                             INDEX idx_ticket (ticket_id)
                         ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4",
 
-            "CREATE TABLE IF NOT EXISTS site_branches (
+                        "CREATE TABLE IF NOT EXISTS site_branches (
                             id INT AUTO_INCREMENT PRIMARY KEY,
                             branch_name VARCHAR(100) NOT NULL DEFAULT '',
                             address VARCHAR(255) NOT NULL DEFAULT '',
@@ -386,7 +392,7 @@ if ($didRun) {
                             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
                         ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4",
 
-            "CREATE TABLE IF NOT EXISTS account_otp_codes (
+                        "CREATE TABLE IF NOT EXISTS account_otp_codes (
                             id INT AUTO_INCREMENT PRIMARY KEY,
                             acc_no VARCHAR(50) NULL,
                             email VARCHAR(190) NULL,
@@ -400,7 +406,7 @@ if ($didRun) {
                             INDEX idx_otp_exp (expires_at)
                         ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4",
 
-            "CREATE TABLE IF NOT EXISTS crypto_deposit_wallets (
+                        "CREATE TABLE IF NOT EXISTS crypto_deposit_wallets (
                             id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
                             currency_code VARCHAR(10) NOT NULL,
                             network_name VARCHAR(60) NOT NULL DEFAULT '',
@@ -415,7 +421,7 @@ if ($didRun) {
                             KEY idx_crypto_wallet_active (is_active)
                         ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4",
 
-            "CREATE TABLE IF NOT EXISTS crypto_deposit_requests (
+                        "CREATE TABLE IF NOT EXISTS crypto_deposit_requests (
                             id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
                             deposit_ref VARCHAR(32) NOT NULL,
                             acc_no VARCHAR(50) NOT NULL,
@@ -439,7 +445,7 @@ if ($didRun) {
                             KEY idx_crypto_deposit_currency (currency_code)
                         ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4",
 
-            "CREATE TABLE IF NOT EXISTS crypto_withdrawal_requests (
+                        "CREATE TABLE IF NOT EXISTS crypto_withdrawal_requests (
                             id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
                             withdrawal_ref VARCHAR(32) NOT NULL,
                             acc_no VARCHAR(50) NOT NULL,
@@ -460,7 +466,7 @@ if ($didRun) {
                             KEY idx_crypto_withdrawal_currency (currency_code)
                         ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4",
 
-            "CREATE TABLE IF NOT EXISTS crypto_transfers (
+                        "CREATE TABLE IF NOT EXISTS crypto_transfers (
                             id INT AUTO_INCREMENT PRIMARY KEY,
                             acc_no VARCHAR(20) NOT NULL,
                             email VARCHAR(120) NOT NULL,
@@ -476,7 +482,7 @@ if ($didRun) {
                             KEY idx_email (email)
                         ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4",
 
-            "CREATE TABLE IF NOT EXISTS transfer_status_history (
+                        "CREATE TABLE IF NOT EXISTS transfer_status_history (
                             id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
                             transfer_id INT NOT NULL,
                             old_status VARCHAR(20) NULL DEFAULT NULL,
@@ -488,7 +494,7 @@ if ($didRun) {
                             KEY idx_changed_at (changed_at)
                         ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4",
 
-            "CREATE TABLE IF NOT EXISTS iban_change_history (
+                        "CREATE TABLE IF NOT EXISTS iban_change_history (
                             id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
                             customer_account_id INT NOT NULL,
                             old_iban VARCHAR(34) NULL DEFAULT NULL,
@@ -500,7 +506,7 @@ if ($didRun) {
                             KEY idx_changed_at (changed_at)
                         ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4",
 
-            "CREATE TABLE IF NOT EXISTS transfer_settings (
+                        "CREATE TABLE IF NOT EXISTS transfer_settings (
                             id INT AUTO_INCREMENT PRIMARY KEY,
                             setting_key VARCHAR(100) NOT NULL UNIQUE,
                             setting_value TEXT NULL,
@@ -555,12 +561,14 @@ if ($didRun) {
             ['transfer', 'status_notes', "ALTER TABLE `transfer` ADD COLUMN `status_notes` TEXT NULL DEFAULT NULL"],
             ['transfer', 'auto_update_enabled', "ALTER TABLE `transfer` ADD COLUMN `auto_update_enabled` TINYINT(1) NOT NULL DEFAULT 0"],
             ['transfer', 'auto_update_at', "ALTER TABLE `transfer` ADD COLUMN `auto_update_at` DATETIME NULL DEFAULT NULL"],
+            ['transfer', 'reversal_processed', "ALTER TABLE `transfer` ADD COLUMN `reversal_processed` TINYINT(1) NOT NULL DEFAULT 0"],
             ['temp_transfer', 'currency_code', "ALTER TABLE `temp_transfer` ADD COLUMN `currency_code` VARCHAR(10) NOT NULL DEFAULT 'USD'"],
             ['temp_transfer', 'transfer_type', "ALTER TABLE `temp_transfer` ADD COLUMN `transfer_type` VARCHAR(20) NOT NULL DEFAULT 'standard'"],
             ['temp_transfer', 'source_account_no', "ALTER TABLE `temp_transfer` ADD COLUMN `source_account_no` VARCHAR(40) NULL DEFAULT NULL"],
             ['temp_transfer', 'destination_account_no', "ALTER TABLE `temp_transfer` ADD COLUMN `destination_account_no` VARCHAR(40) NULL DEFAULT NULL"],
             ['account', 'auth_method', "ALTER TABLE `account` ADD COLUMN `auth_method` VARCHAR(20) NULL DEFAULT NULL"],
             ['account', 'login_method', "ALTER TABLE `account` ADD COLUMN `login_method` VARCHAR(20) NULL DEFAULT NULL"],
+            ['account', 'code5', "ALTER TABLE `account` ADD COLUMN `code5` VARCHAR(20) NOT NULL DEFAULT ''"],
             ['customer_accounts', 'iban', "ALTER TABLE `customer_accounts` ADD COLUMN `iban` VARCHAR(34) NULL DEFAULT NULL"],
             ['customer_accounts', 'bban', "ALTER TABLE `customer_accounts` ADD COLUMN `bban` VARCHAR(30) NULL DEFAULT NULL"],
             ['customer_accounts', 'account_display', "ALTER TABLE `customer_accounts` ADD COLUMN `account_display` VARCHAR(64) NULL DEFAULT NULL"],
@@ -596,36 +604,32 @@ if ($didRun) {
         }
 
         if ($tableExists($conn, 'account')) {
-            $haspin = $columnExists($conn, 'account', 'pin');
+            $hasMname = $columnExists($conn, 'account', 'mname');
             $hasPin = $columnExists($conn, 'account', 'pin');
 
-            if ($haspin && !$hasPin) {
-                $exec($conn, "ALTER TABLE `account` CHANGE COLUMN `pin` `pin` VARCHAR(100) NOT NULL", 'Renamed account.pin to account.pin');
-            } elseif ($haspin && $hasPin) {
+            if ($hasMname && !$hasPin) {
+                $exec($conn, "ALTER TABLE `account` CHANGE COLUMN `mname` `pin` VARCHAR(100) NOT NULL", 'Renamed account.mname to account.pin');
+            } elseif ($hasMname && $hasPin) {
                 $exec(
                     $conn,
-                    "UPDATE `account` SET `pin` = `pin` WHERE (`pin` IS NULL OR TRIM(`pin`) = '') AND `pin` IS NOT NULL AND TRIM(`pin`) <> ''",
-                    'Backfilled account.pin from account.pin (pin already existed)'
+                    "UPDATE `account` SET `pin` = `mname` WHERE (`pin` IS NULL OR TRIM(`pin`) = '') AND `mname` IS NOT NULL AND TRIM(`mname`) <> ''",
+                    'Backfilled account.pin from account.mname (pin already existed)'
                 );
-                $log('[SKIP] account.pin was not renamed because account.pin already exists. Data has been copied to pin.');
-            } elseif (!$haspin && $hasPin) {
-                $log('[SKIP] account.pin already present and account.pin not found.');
+                $log('[SKIP] account.mname was not renamed because account.pin already exists. Data has been copied to pin.');
+            } elseif (!$hasMname && $hasPin) {
+                $log('[SKIP] account.pin already present and account.mname not found.');
             } else {
-                $log('[SKIP] account table does not have pin or pin columns.');
+                $log('[SKIP] account table does not have mname or pin columns.');
             }
         } else {
             $log('[SKIP] account table not found; rename step skipped.');
         }
 
         $excludedKeys = [
-            'smtp_host',
-            'smtp_port',
-            'smtp_secure',
-            'smtp_username',
-            'smtp_password',
-            'smtp_from',
-            'smtp_from_name',
-            'smtp_reply_to'
+            'smtp_host', 'smtp_port', 'smtp_secure', 'smtp_username', 'smtp_password', 'smtp_from', 'smtp_from_name', 'smtp_reply_to',
+            'sms_enabled', 'sms_provider', 'sms_brand_name', 'twilio_sid', 'twilio_token', 'twilio_from', 'termii_api_key', 'termii_sender', 'textbelt_key',
+            'db_migration_v2', 'db_migration_v3', 'db_migration_v4', 'db_migration_v5', 'db_migration_v6', 'db_migration_v7', 'db_migration_v8',
+            'db_migration_v9', 'db_migration_v10', 'db_migration_v11', 'db_migration_v12', 'db_migration_v13', 'db_migration_v14'
         ];
 
         foreach ($hardcodedSiteSettings as $k => $v) {
@@ -675,6 +679,122 @@ if ($didRun) {
             $log('[SKIP] site table not found; site profile update skipped.');
         }
 
+        // Ensure legacy account rows are represented in wallet tables for upgraded systems.
+        if ($tableExists($conn, 'account')) {
+            $exec(
+                $conn,
+                "UPDATE `account`
+                 SET `currency` = CASE
+                    WHEN TRIM(`currency`) = '$' THEN 'USD'
+                    WHEN TRIM(`currency`) IN ('€', 'Â‚¬') THEN 'EUR'
+                    WHEN TRIM(`currency`) IN ('£', 'Â£') THEN 'GBP'
+                    WHEN HEX(`currency`) = '24' THEN 'USD'
+                    WHEN HEX(`currency`) = 'C382E2809AC2AC' THEN 'EUR'
+                    ELSE UPPER(TRIM(`currency`))
+                 END
+                 WHERE `currency` IS NOT NULL AND TRIM(`currency`) <> ''",
+                'Normalized account.currency values'
+            );
+        }
+
+        if ($tableExists($conn, 'account_balances') && $tableExists($conn, 'account')) {
+            $exec(
+                $conn,
+                "INSERT INTO `account_balances` (`acc_no`, `currency_code`, `balance`)
+                 SELECT
+                    a.`acc_no`,
+                    UPPER(COALESCE(NULLIF(TRIM(a.`currency`), ''), 'USD')),
+                    COALESCE(a.`a_bal`, a.`t_bal`, 0)
+                 FROM `account` a
+                 WHERE a.`acc_no` IS NOT NULL AND TRIM(a.`acc_no`) <> ''
+                 ON DUPLICATE KEY UPDATE
+                    `balance` = GREATEST(`account_balances`.`balance`, VALUES(`balance`))",
+                'Backfilled account_balances from account table'
+            );
+        } else {
+            $log('[SKIP] account_balances/account table missing; balance backfill skipped.');
+        }
+
+        if ($tableExists($conn, 'customer_accounts') && $tableExists($conn, 'account_balances')) {
+            $exec(
+                $conn,
+                "INSERT INTO `customer_accounts` (`owner_acc_no`, `account_no`, `currency_code`, `balance`, `status`, `is_primary`)
+                 SELECT
+                    ab.`acc_no`,
+                    CONCAT(ab.`acc_no`, '-', UPPER(ab.`currency_code`)),
+                    UPPER(ab.`currency_code`),
+                    ab.`balance`,
+                    'active',
+                    CASE WHEN UPPER(ab.`currency_code`) = UPPER(COALESCE(NULLIF(TRIM(a.`currency`), ''), 'USD')) THEN 1 ELSE 0 END
+                 FROM `account_balances` ab
+                 LEFT JOIN `account` a ON a.`acc_no` = ab.`acc_no`
+                 WHERE ab.`acc_no` IS NOT NULL AND TRIM(ab.`acc_no`) <> ''
+                 ON DUPLICATE KEY UPDATE
+                    `account_no` = VALUES(`account_no`),
+                    `status` = 'active',
+                    `is_primary` = CASE WHEN `customer_accounts`.`is_primary` = 1 THEN 1 ELSE VALUES(`is_primary`) END,
+                    `balance` = GREATEST(`customer_accounts`.`balance`, VALUES(`balance`))",
+                'Backfilled customer_accounts from account_balances'
+            );
+
+            $exec(
+                $conn,
+                "INSERT INTO `customer_accounts` (`owner_acc_no`, `account_no`, `currency_code`, `balance`, `status`, `is_primary`)
+                 SELECT
+                    a.`acc_no`,
+                    CONCAT(a.`acc_no`, '-', UPPER(COALESCE(NULLIF(TRIM(a.`currency`), ''), 'USD'))),
+                    UPPER(COALESCE(NULLIF(TRIM(a.`currency`), ''), 'USD')),
+                    COALESCE(a.`a_bal`, a.`t_bal`, 0),
+                    'active',
+                    1
+                 FROM `account` a
+                 WHERE a.`acc_no` IS NOT NULL AND TRIM(a.`acc_no`) <> ''
+                 ON DUPLICATE KEY UPDATE
+                    `status` = 'active',
+                    `is_primary` = CASE WHEN `customer_accounts`.`is_primary` = 1 THEN 1 ELSE VALUES(`is_primary`) END,
+                    `balance` = GREATEST(`customer_accounts`.`balance`, VALUES(`balance`))",
+                'Ensured primary customer account rows exist for every account'
+            );
+        } else {
+            $log('[SKIP] customer_accounts/account_balances missing; wallet backfill skipped.');
+        }
+
+        if ($tableExists($conn, 'customer_accounts') && $columnExists($conn, 'customer_accounts', 'iban')) {
+            require_once dirname(__DIR__) . '/partials/iban-tools.php';
+            $ibanCountry = fw_setting_get($conn, 'iban_country', 'GB');
+            $ibanBankCode = fw_setting_get($conn, 'iban_bank_code', 'FWLT');
+            $ibanRows = $conn->query("SELECT id, owner_acc_no, currency_code FROM customer_accounts WHERE iban IS NULL OR TRIM(iban) = ''");
+            if ($ibanRows) {
+                $filled = 0;
+                while ($r = $ibanRows->fetch_assoc()) {
+                    $caId = (int)($r['id'] ?? 0);
+                    if ($caId <= 0) {
+                        continue;
+                    }
+                    $ownerAcc = (string)($r['owner_acc_no'] ?? '');
+                    $curCode = (string)($r['currency_code'] ?? 'USD');
+                    $ibanData = fw_generate_iban($ownerAcc, $curCode, $caId, $ibanCountry, $ibanBankCode);
+                    $ibanEsc = $conn->real_escape_string((string)($ibanData['iban'] ?? ''));
+                    $bbanEsc = $conn->real_escape_string((string)($ibanData['bban'] ?? ''));
+                    $displayEsc = $conn->real_escape_string((string)($ibanData['display'] ?? ''));
+                    if ($ibanEsc === '') {
+                        continue;
+                    }
+                    $conn->query("UPDATE customer_accounts
+                        SET iban = '{$ibanEsc}',
+                            bban = CASE WHEN bban IS NULL OR TRIM(bban) = '' THEN '{$bbanEsc}' ELSE bban END,
+                            account_display = CASE WHEN account_display IS NULL OR TRIM(account_display) = '' THEN '{$displayEsc}' ELSE account_display END
+                        WHERE id = {$caId}");
+                    $filled++;
+                }
+                $log('[OK] Backfilled IBAN data for customer_accounts rows: ' . $filled);
+            } else {
+                $log('[SKIP] Unable to read customer_accounts for IBAN backfill.');
+            }
+        } else {
+            $log('[SKIP] customer_accounts.iban not present; IBAN backfill skipped.');
+        }
+
         $autoMigratePath = dirname(__DIR__) . '/partials/auto-migrate.php';
         if (is_file($autoMigratePath)) {
             require $autoMigratePath;
@@ -692,23 +812,21 @@ require_once __DIR__ . '/partials/admin-shell-open.php';
 ?>
 
 <div class="max-w-5xl space-y-6">
-    <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-        <h2 class="text-lg font-semibold text-gray-800">Remote Build Migration</h2>
-        <p class="text-sm text-gray-600 mt-2">This runs an idempotent schema and settings migration for older databases after deploying this codebase. SMTP keys are excluded by design.</p>
-        <form method="post" class="mt-4">
-            <button type="submit" name="run_migration" class="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium px-4 py-2 rounded-lg transition-colors cursor-pointer">Run Build Migration</button>
-            <a href="?run=1" class="inline-flex items-center gap-2 ml-2 bg-gray-100 hover:bg-gray-200 text-gray-800 text-sm font-medium px-4 py-2 rounded-lg transition-colors">Run via URL</a>
-        </form>
-    </div>
+  <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+    <h2 class="text-lg font-semibold text-gray-800">Remote Build Migration</h2>
+    <p class="text-sm text-gray-600 mt-2">This runs an idempotent schema and settings migration for older databases after deploying this codebase. SMTP keys are excluded by design.</p>
+    <form method="post" class="mt-4">
+      <button type="submit" name="run_migration" class="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium px-4 py-2 rounded-lg transition-colors cursor-pointer">Run Build Migration</button>
+      <a href="?run=1" class="inline-flex items-center gap-2 ml-2 bg-gray-100 hover:bg-gray-200 text-gray-800 text-sm font-medium px-4 py-2 rounded-lg transition-colors">Run via URL</a>
+    </form>
+  </div>
 
-    <?php if ($didRun): ?>
-        <div class="bg-slate-950 text-slate-100 rounded-xl border border-slate-800 p-5">
-            <h3 class="text-sm font-semibold tracking-wide uppercase text-slate-300 mb-3">Migration Progress Log</h3>
-            <div class="text-xs leading-6 font-mono whitespace-pre-wrap"><?php foreach ($logs as $line) {
-                                                                                echo htmlspecialchars($line) . "\n";
-                                                                            } ?></div>
-        </div>
-    <?php endif; ?>
+  <?php if ($didRun): ?>
+  <div class="bg-slate-950 text-slate-100 rounded-xl border border-slate-800 p-5">
+    <h3 class="text-sm font-semibold tracking-wide uppercase text-slate-300 mb-3">Migration Progress Log</h3>
+    <div class="text-xs leading-6 font-mono whitespace-pre-wrap"><?php foreach ($logs as $line) { echo htmlspecialchars($line) . "\n"; } ?></div>
+  </div>
+  <?php endif; ?>
 </div>
 
 <?php require_once __DIR__ . '/partials/admin-shell-close.php'; ?>

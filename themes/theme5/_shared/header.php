@@ -184,6 +184,14 @@ $siteFaviconUrl = $sharedFaviconUrl;
   </script>
 </head>
 <body class="min-h-screen font-brand">
+  <?php
+    $loginSection = trim((string)($site['login'] ?? 'user'), '/');
+    if ($loginSection === '') { $loginSection = 'user'; }
+    $clientActions = [
+      ['label' => 'Login', 'href' => app_url($loginSection . '/login.php'), 'variant' => 'primary'],
+      ['label' => 'Register', 'href' => app_url($loginSection . '/register.php'), 'variant' => 'secondary'],
+    ];
+  ?>
   <div class="text-[11px] border-b" style="background:color-mix(in srgb, var(--primary2) 88%, #0f172a); border-color:color-mix(in srgb, var(--line) 35%, #0f172a); color:#e2e8f0">
     <div class="max-w-7xl mx-auto px-4 py-2 flex items-center justify-between gap-3">
       <p class="truncate">Client Advisory Desk: <?= htmlspecialchars((string)($site['phone'] ?? '')) ?></p>
@@ -231,6 +239,13 @@ $siteFaviconUrl = $sharedFaviconUrl;
     <details class="md:hidden border-t" style="border-color:var(--line)">
       <summary class="list-none cursor-pointer px-4 py-3 text-sm font-semibold" style="color:var(--ink)">Menu</summary>
       <nav class="px-4 pb-4 space-y-2">
+        <div class="grid grid-cols-2 gap-2 mb-2">
+          <?php foreach ($clientActions as $action): ?>
+            <a href="<?= htmlspecialchars((string)$action['href']) ?>" class="inline-flex justify-center rounded-lg px-3 py-2 text-sm font-semibold" style="background:<?= $action['variant'] === 'primary' ? 'linear-gradient(135deg,var(--primary2),var(--primary))' : 'transparent' ?>; color:<?= $action['variant'] === 'primary' ? '#ffffff' : 'var(--ink)' ?>; border:1px solid <?= $action['variant'] === 'primary' ? 'transparent' : 'var(--line)' ?>;">
+              <?= htmlspecialchars((string)$action['label']) ?>
+            </a>
+          <?php endforeach; ?>
+        </div>
         <a href="index.php" class="block rounded-lg px-3 py-2 text-sm font-semibold" style="color:var(--ink)">Home</a>
         <?php foreach ($navColumns as $group => $links): ?>
           <p class="text-xs font-bold uppercase tracking-[0.15em] mt-2 mb-1" style="color:var(--muted)"><?= htmlspecialchars($group) ?></p>

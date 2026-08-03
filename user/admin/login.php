@@ -2,25 +2,30 @@
 
 session_start();
 
- require('connectdb.php');
+ $connection = $GLOBALS['connection'] ?? null;
+ require_once 'connectdb.php';
  require_once 'class.admin.php';
+
+if (!($connection instanceof mysqli)) {
+  $connection = $GLOBALS['connection'] ?? null;
+}
 //3. If the form is submitted or not.
 //3.1 If the form is submitted
 if (isset($_POST['uname']) and isset($_POST['upass'])){
 //3.1.1 Assigning posted values to variables.
-$uname = $_POST['uname'];
+$login = trim((string)$_POST['uname']);
 $upass = $_POST['upass'];
 $upass = md5($upass);
 //3.1.2 Checking the values are existing in the database or not
-$stmt = $connection->prepare("SELECT * FROM admin WHERE uname=? AND upass=?");
-$stmt->bind_param("ss", $uname, $upass);
+$stmt = $connection->prepare("SELECT * FROM admin WHERE (uname=? OR email=?) AND upass=? LIMIT 1");
+$stmt->bind_param("sss", $login, $login, $upass);
 $stmt->execute();
 $result = $stmt->get_result();
 $count = $result->num_rows;
 //3.1.2 If the posted values are equal to the database values, then session will be created for the user.
 if ($count == 1){
 $row = $result->fetch_assoc();
-$_SESSION['uname'] = $uname;
+$_SESSION['uname'] = $row['uname'];
 $_SESSION['email'] = $row['email'];
 }else{
 //3.1.3 If the login credentials doesn't match, he will be shown with an error message.
@@ -67,14 +72,14 @@ include_once dirname(__DIR__, 2) . '/private/shared-favicon-url.php';
       <?php if(isset($msg)) echo $msg; ?>
       <form method="POST" class="space-y-4">
         <div>
-          <label class="block text-xs font-medium text-gray-700 mb-1">Username</label>
+          <label class="block text-xs font-medium text-gray-700 mb-1">Username or Email</label>
           <div class="relative">
             <span class="absolute inset-y-0 left-3 flex items-center text-gray-400 pointer-events-none">
               <i class="fa-solid fa-user text-sm"></i>
             </span>
             <input type="text" name="uname" autofocus required
               class="w-full pl-9 pr-3 py-2.5 rounded-lg border border-gray-300 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-              placeholder="admin">
+              placeholder="admin or admin@example.com">
           </div>
         </div>
         <div>

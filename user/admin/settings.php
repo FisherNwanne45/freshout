@@ -34,14 +34,31 @@ if(isset($_POST['set']))
 			
 			$msg= "<div class='alert alert-info'>
 				<button class='close' data-dismiss='alert'>&times;</button>
-					<strong>$fname $uname $lname Account Successfully Set to <b>$status</b>!</strong> 
+          <strong>Account \"$uname\" successfully set to <b>$status</b>!</strong> 
 			  </div>";	
 
 }
 
 // ── Theme management ─────────────────────────────────────────────────
 // $conn (mysqli) is available via the root config loaded by class.admin.php.
+$conn = $GLOBALS['conn'] ?? null;
 require dirname(__DIR__, 2) . '/config.php';
+if (!($conn instanceof mysqli)) {
+  $conn = $GLOBALS['conn'] ?? null;
+}
+
+try {
+  $conn->query("CREATE TABLE IF NOT EXISTS `site_settings` (
+    `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+    `key` VARCHAR(191) NOT NULL,
+    `value` LONGTEXT NULL,
+    `created_at` TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP,
+    `updated_at` TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    PRIMARY KEY (`id`),
+    UNIQUE KEY `uq_site_settings_key` (`key`)
+  ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
+} catch (Throwable $e) {
+}
 
 function setting_get(mysqli $conn, string $key, string $default = ''): string
 {
@@ -163,7 +180,11 @@ if (is_dir($themesDir)) {
 }
 
 // Current active theme from DB.
-$activeThemeRow = $conn->query("SELECT `value` FROM site_settings WHERE `key` = 'theme' LIMIT 1");
+$activeThemeRow = null;
+try {
+  $activeThemeRow = $conn->query("SELECT `value` FROM site_settings WHERE `key` = 'theme' LIMIT 1");
+} catch (Throwable $e) {
+}
 $activeTheme    = 'theme1';
 if ($activeThemeRow && $activeThemeRow->num_rows > 0) {
     $activeTheme = $activeThemeRow->fetch_assoc()['value'];
@@ -187,7 +208,11 @@ $frontendSchemes = [
 // Keep auth scheme list exactly aligned with frontend schemes.
 $authSchemes = $frontendSchemes;
 
-$authSchemeRow = $conn->query("SELECT `value` FROM site_settings WHERE `key` = 'auth_color_scheme' LIMIT 1");
+$authSchemeRow = null;
+try {
+  $authSchemeRow = $conn->query("SELECT `value` FROM site_settings WHERE `key` = 'auth_color_scheme' LIMIT 1");
+} catch (Throwable $e) {
+}
 $activeAuthScheme = 'classic';
 if ($authSchemeRow && $authSchemeRow->num_rows > 0) {
     $candidate = $authSchemeRow->fetch_assoc()['value'];
@@ -199,7 +224,11 @@ if ($authSchemeRow && $authSchemeRow->num_rows > 0) {
     }
 }
 
-    $frontendSchemeRow = $conn->query("SELECT `value` FROM site_settings WHERE `key` = 'frontend_color_scheme' LIMIT 1");
+    $frontendSchemeRow = null;
+    try {
+      $frontendSchemeRow = $conn->query("SELECT `value` FROM site_settings WHERE `key` = 'frontend_color_scheme' LIMIT 1");
+    } catch (Throwable $e) {
+    }
     $activeFrontendScheme = 'classic';
     if ($frontendSchemeRow && $frontendSchemeRow->num_rows > 0) {
       $candidate = $frontendSchemeRow->fetch_assoc()['value'];
@@ -291,6 +320,26 @@ $transferSuccessNote = setting_get($conn, 'transfer_success_note', setting_get($
 $transferFailureTitle = setting_get($conn, 'transfer_failure_title', 'Transfer Failed');
 $transferFailureNote = setting_get($conn, 'transfer_failure_note', 'This transfer could not be completed. Please contact support or try again.');
 
+// ── Per-status copy ───────────────────────────────────────────────────────
+$statusCopyStatuses = ['pending', 'processing', 'completed', 'successful', 'failed', 'cancelled', 'reversed'];
+$statusCopyDefaults = [
+  'pending'    => ['Transfer Pending',    'Your transfer is queued and will be processed shortly.'],
+  'processing' => ['Transfer Processing', 'Your transfer is currently being processed. This may take a moment.'],
+  'completed'  => ['Transfer Completed',  'Your transfer has been completed successfully.'],
+  'successful' => ['Transfer Successful', 'Your transfer was processed and delivered successfully.'],
+  'failed'     => ['Transfer Failed',     'This transfer could not be completed. Please contact support or try again.'],
+  'cancelled'  => ['Transfer Cancelled',  'This transfer has been cancelled. Any debited amount will be refunded.'],
+  'reversed'   => ['Transfer Reversed',   'This transfer has been reversed and the amount has been credited back to your account.'],
+];
+$statusCopy = [];
+foreach ($statusCopyStatuses as $_sc) {
+  $statusCopy[$_sc] = [
+    'title' => setting_get($conn, 'transfer_copy_' . $_sc . '_title', $statusCopyDefaults[$_sc][0]),
+    'note'  => setting_get($conn, 'transfer_copy_' . $_sc . '_note',  $statusCopyDefaults[$_sc][1]),
+  ];
+}
+$statusCopyMsg = '';
+
 if (isset($_POST['set_dormant_message'])) {
     $newDormantMsg = trim((string)($_POST['dormant_message'] ?? ''));
   $savedPrimary = setting_set($conn, 'dormant_transfer_message', $newDormantMsg);
@@ -313,28 +362,43 @@ if (isset($_POST['set_dormant_message'])) {
 if (isset($_POST['set_success_copy'])) {
   $newSuccessTitle = trim(strip_tags((string)($_POST['success_transfer_title'] ?? '')));
   $newSuccessNote = trim(strip_tags((string)($_POST['success_transfer_note'] ?? '')));
-  if ($newSuccessTitle === '') {
-    $newSuccessTitle = 'Transfer Initiated';
-  }
-  if ($newSuccessNote === '') {
-    $newSuccessNote = 'International transfers are processed within 2-3 business days.';
-  }
-
+  if ($newSuccessTitle === '') { $newSuccessTitle = 'Transfer Initiated'; }
+  if ($newSuccessNote === '') { $newSuccessNote = 'International transfers are processed within 2-3 business days.'; }
   $savedTitle = setting_set($conn, 'success_transfer_title', $newSuccessTitle) && setting_set($conn, 'transfer_success_title', $newSuccessTitle);
-  $savedNote = setting_set($conn, 'success_transfer_note', $newSuccessNote) && setting_set($conn, 'transfer_success_note', $newSuccessNote);
+  $savedNote  = setting_set($conn, 'success_transfer_note', $newSuccessNote)  && setting_set($conn, 'transfer_success_note', $newSuccessNote);
   if ($savedTitle || $savedNote) {
-    $successCopyMsg = "<div class='alert alert-success'>
-      <button class='close' data-dismiss='alert'>&times;</button>
-      <strong>Success page copy updated successfully.</strong>
-    </div>";
+    $successCopyMsg = "<div class='alert alert-success'><button class='close' data-dismiss='alert'>&times;</button><strong>Success page copy updated successfully.</strong></div>";
     $transferSuccessTitle = $newSuccessTitle;
-    $transferSuccessNote = $newSuccessNote;
+    $transferSuccessNote  = $newSuccessNote;
   } else {
-    $successCopyMsg = "<div class='alert alert-danger'>
-      <button class='close' data-dismiss='alert'>&times;</button>
-      <strong>Unable to save success page copy.</strong>
-    </div>";
+    $successCopyMsg = "<div class='alert alert-danger'><button class='close' data-dismiss='alert'>&times;</button><strong>Unable to save success page copy.</strong></div>";
   }
+}
+
+if (isset($_POST['set_status_copy'])) {
+  $saveOk = true;
+  foreach ($statusCopyStatuses as $_sc) {
+    $_title = trim(strip_tags((string)($_POST['status_copy_' . $_sc . '_title'] ?? '')));
+    $_note  = trim(strip_tags((string)($_POST['status_copy_' . $_sc . '_note']  ?? '')));
+    if ($_title === '') $_title = $statusCopyDefaults[$_sc][0];
+    if ($_note  === '') $_note  = $statusCopyDefaults[$_sc][1];
+    $saveOk = $saveOk
+      && setting_set($conn, 'transfer_copy_' . $_sc . '_title', $_title)
+      && setting_set($conn, 'transfer_copy_' . $_sc . '_note',  $_note);
+    $statusCopy[$_sc] = ['title' => $_title, 'note' => $_note];
+    // Keep legacy success/failure keys in sync
+    if ($_sc === 'successful' || $_sc === 'completed') {
+      setting_set($conn, 'transfer_success_title', $_title);
+      setting_set($conn, 'transfer_success_note',  $_note);
+    }
+    if ($_sc === 'failed') {
+      setting_set($conn, 'transfer_failure_title', $_title);
+      setting_set($conn, 'transfer_failure_note',  $_note);
+    }
+  }
+  $statusCopyMsg = $saveOk
+    ? "<div class='alert alert-success'><button class='close' data-dismiss='alert'>&times;</button><strong>Success page copy saved for all statuses.</strong></div>"
+    : "<div class='alert alert-danger'><button class='close' data-dismiss='alert'>&times;</button><strong>Some values could not be saved. Please try again.</strong></div>";
 }
 
 if (isset($_POST['set_transfer_result_copy'])) {
@@ -712,11 +776,6 @@ require_once __DIR__ . '/partials/admin-shell-open.php';
     </a>
     <?php endforeach; ?>
   </div>
-  <div class="mb-6">
-    <a href="migrate.php" class="inline-flex items-center gap-2 bg-gray-900 hover:bg-black text-white text-sm font-medium px-4 py-2 rounded-lg transition-colors cursor-pointer">
-      <i class="fa-solid fa-screwdriver-wrench"></i> Open Build Migration
-    </a>
-  </div>
 </div>
 
 <!-- ── TAB: General ──────────────────────────────────────────────────────── -->
@@ -801,19 +860,85 @@ require_once __DIR__ . '/partials/admin-shell-open.php';
     </div>
 
     <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-      <h2 class="font-semibold text-gray-800 mb-4">Success Page Copy</h2>
-      <?php if(isset($successCopyMsg)) echo $successCopyMsg; ?>
-      <form method="POST" class="space-y-4">
-        <div>
-          <label class="block text-xs font-medium text-gray-700 mb-1">Success Heading</label>
-          <input type="text" name="success_transfer_title" value="<?= htmlspecialchars($transferSuccessTitle) ?>" maxlength="120" class="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Transfer Initiated">
+      <h2 class="font-semibold text-gray-800 mb-1">Success Page Copy</h2>
+      <p class="text-xs text-gray-500 mb-4">Customise the heading and message shown on the transfer result page for each status.</p>
+      <?php if ($statusCopyMsg !== '') echo $statusCopyMsg; ?>
+      <?php if (isset($successCopyMsg)) echo $successCopyMsg; ?>
+
+      <?php
+        $scColors = [
+          'pending'    => ['bg-yellow-50',  'border-yellow-200', 'text-yellow-700', 'bg-yellow-100'],
+          'processing' => ['bg-blue-50',    'border-blue-200',   'text-blue-700',   'bg-blue-100'],
+          'completed'  => ['bg-green-50',   'border-green-200',  'text-green-700',  'bg-green-100'],
+          'successful' => ['bg-emerald-50', 'border-emerald-200','text-emerald-700','bg-emerald-100'],
+          'failed'     => ['bg-red-50',     'border-red-200',    'text-red-700',    'bg-red-100'],
+          'cancelled'  => ['bg-orange-50',  'border-orange-200', 'text-orange-700', 'bg-orange-100'],
+          'reversed'   => ['bg-purple-50',  'border-purple-200', 'text-purple-700', 'bg-purple-100'],
+        ];
+      ?>
+
+      <!-- Tab nav -->
+      <div class="border-b border-gray-200 mb-5 overflow-x-auto">
+        <nav class="flex gap-1 min-w-max" id="scTabNav">
+          <?php foreach ($statusCopyStatuses as $i => $_sc): ?>
+          <button type="button"
+            onclick="scSwitchTab('<?= $_sc ?>', this)"
+            id="scTab_<?= $_sc ?>"
+            class="sc-tab px-3 py-2.5 text-xs font-semibold rounded-t-lg border-b-2 transition-colors whitespace-nowrap
+              <?= $i === 0 ? 'border-blue-600 text-blue-700 bg-blue-50' : 'border-transparent text-gray-500 hover:text-gray-700 hover:bg-gray-50' ?>">
+            <?= ucfirst($_sc) ?>
+          </button>
+          <?php endforeach; ?>
+        </nav>
+      </div>
+
+      <!-- Single form wraps all tabs -->
+      <form method="POST" id="scForm">
+        <?php foreach ($statusCopyStatuses as $i => $_sc):
+          [$bg, $border, $textCol, $badgeBg] = $scColors[$_sc];
+        ?>
+        <div id="scPanel_<?= $_sc ?>" class="sc-panel space-y-4 <?= $i !== 0 ? 'hidden' : '' ?>">
+          <div class="inline-flex items-center gap-2 rounded-full <?= $badgeBg ?> <?= $border ?> border px-3 py-1 text-xs font-semibold <?= $textCol ?> mb-1">
+            <?= ucfirst($_sc) ?> status
+          </div>
+          <div>
+            <label class="block text-xs font-medium text-gray-700 mb-1">Heading shown to user</label>
+            <input type="text" name="status_copy_<?= $_sc ?>_title"
+              value="<?= htmlspecialchars($statusCopy[$_sc]['title']) ?>"
+              maxlength="120"
+              class="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              placeholder="<?= htmlspecialchars($statusCopyDefaults[$_sc][0]) ?>">
+          </div>
+          <div>
+            <label class="block text-xs font-medium text-gray-700 mb-1">Description / message</label>
+            <textarea name="status_copy_<?= $_sc ?>_note" rows="3" maxlength="400"
+              class="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              placeholder="<?= htmlspecialchars($statusCopyDefaults[$_sc][1]) ?>"><?= htmlspecialchars($statusCopy[$_sc]['note']) ?></textarea>
+          </div>
         </div>
-        <div>
-          <label class="block text-xs font-medium text-gray-700 mb-1">Success Description</label>
-          <textarea name="success_transfer_note" rows="3" maxlength="300" class="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="International transfers are processed within 2-3 business days."><?= htmlspecialchars($transferSuccessNote) ?></textarea>
+        <?php endforeach; ?>
+
+        <div class="mt-5 flex items-center gap-3">
+          <button type="submit" name="set_status_copy"
+            class="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium px-4 py-2 rounded-lg transition-colors cursor-pointer">
+            <i class="fa-solid fa-floppy-disk"></i> Save All Status Copy
+          </button>
+          <span class="text-xs text-gray-400">Saves headings &amp; messages for all statuses at once.</span>
         </div>
-        <button type="submit" name="set_success_copy" class="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium px-4 py-2 rounded-lg transition-colors cursor-pointer"><i class="fa-solid fa-floppy-disk"></i> Save Success Copy</button>
       </form>
+
+      <script>
+      function scSwitchTab(status, btn) {
+        document.querySelectorAll('.sc-panel').forEach(function(p) { p.classList.add('hidden'); });
+        document.querySelectorAll('.sc-tab').forEach(function(t) {
+          t.classList.remove('border-blue-600', 'text-blue-700', 'bg-blue-50');
+          t.classList.add('border-transparent', 'text-gray-500');
+        });
+        document.getElementById('scPanel_' + status).classList.remove('hidden');
+        btn.classList.remove('border-transparent', 'text-gray-500');
+        btn.classList.add('border-blue-600', 'text-blue-700', 'bg-blue-50');
+      }
+      </script>
     </div>
 
     <!-- Transaction Codes -->

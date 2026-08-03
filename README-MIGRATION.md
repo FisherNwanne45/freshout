@@ -28,7 +28,7 @@ It ensures key newer tables exist:
 - `robo_profiles`
 - `product_activity`
 
-It also executes built-in `user/partials/auto-migrate.php` steps (v2-v14) for additional incremental changes.
+It also executes built-in `user/partials/auto-migrate.php` steps (v2-v15) for additional incremental changes.
 
 ### 2) Account column upgrade (`mname` -> `pin`)
 
@@ -103,4 +103,4 @@ Newer system expects:
 - `site_settings` for most admin controls
 - `pin` workflow compatibility
 - currency/account/product tables used by newer pages and features
-- incremental migration flags (`db_migration_v*`)
+- incremental migration flags (`db_migration_v*`), including v15 for transfer reversal idempotency and per-status success page copy defaults

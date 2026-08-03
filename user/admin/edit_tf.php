@@ -68,7 +68,13 @@ if(isset($_POST['update_status']) && isset($row)){
     
     if ($newStatus) {
         if ($reg_user->updateTransferStatus($id, $newStatus, $_SESSION['email'], $statusNotes, $autoUpdate, $autoUpdateDelay)) {
-            $successMsg = 'Transfer status updated successfully.';
+            $reversalDone = in_array(strtolower($newStatus), ['reversed', 'cancelled'], true);
+            if ($reversalDone) {
+                $actionLabel = strtolower($newStatus) === 'reversed' ? 'Reversed' : 'Cancelled';
+                $successMsg = 'Transfer ' . strtolower($actionLabel) . '. The amount has been credited back to the sender\'s account and a notification email has been sent.';
+            } else {
+                $successMsg = 'Transfer status updated successfully.';
+            }
             $stmt = $reg_user->runQuery("SELECT * FROM transfer WHERE id = :id");
             $stmt->execute([':id' => $id]);
             $row = $stmt->fetch(PDO::FETCH_ASSOC);

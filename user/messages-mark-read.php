@@ -2,7 +2,7 @@
 session_start();
 header('Content-Type: application/json');
 
-if (!isset($_SESSION['acc_no']) || !isset($_SESSION['pin'])) {
+if (!isset($_SESSION['acc_no']) || !isset($_SESSION['pin_verified'])) {
     http_response_code(401);
     echo json_encode(['ok' => false, 'error' => 'unauthorized']);
     exit();

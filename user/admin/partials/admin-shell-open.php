@@ -10,9 +10,11 @@ if (!headers_sent()) {
 }
 
 $bankName = 'Admin Panel';
+// Initialized upfront so later blocks can safely reference it.
+$adminObj = null;
 // Fetch site name from DB
 try {
-    $adminObj = isset($reg_user) ? $reg_user : (isset($user_home) ? $user_home : null);
+  $adminObj = isset($reg_user) ? $reg_user : (isset($user_home) ? $user_home : null);
     if ($adminObj) {
         $__stct = $adminObj->runQuery("SELECT name FROM site WHERE id='20'");
         $__stct->execute();
@@ -41,7 +43,7 @@ function adminNavActiveAny(array $files, string $current): string {
 $acctPages = ['view_account.php','create_account.php','pending_accounts.php','update.php','edit_account.php','upload.php'];
 $txPages   = ['transfer_rec.php','credit_debit_list.php'];
 $lendPages = ['loan_applications.php', 'card_requests.php', 'crypto_operations.php', 'term_deposits.php', 'investment_accounts.php', 'robo_profiles.php'];
-$settPages = ['settings.php','site.php','smtp-settings.php','sms-settings.php','notification-settings.php'];
+$settPages = ['settings.php','site.php','smtp-settings.php','sms-settings.php','notification-settings.php','admin-profile.php'];
 $acctActive = in_array($currentPage, $acctPages);
 $txActive   = in_array($currentPage, $txPages);
 $lendActive = in_array($currentPage, $lendPages);
@@ -200,6 +202,9 @@ try {
           class="w-full flex items-center gap-3 px-3 py-2 rounded-lg transition-colors <?= $acctActive ? 'bg-slate-700 text-white' : 'text-slate-300 hover:bg-slate-700 hover:text-white' ?>">
           <i class="fa-solid fa-users w-4 text-center text-xs"></i>
           <span class="flex-1 text-left">Accounts</span>
+          <?php if ($pendingAccountsBadge > 0): ?>
+            <span class="nav-badge bg-amber-500 text-white mr-1"><?= (int)$pendingAccountsBadge ?></span>
+          <?php endif; ?>
           <i id="nav-accounts-arrow" class="fa-solid fa-chevron-down text-xs nav-arrow <?= $acctActive ? 'open' : '' ?>"></i>
         </button>
         <div id="nav-accounts" class="<?= $acctActive ? '' : 'hidden' ?> pl-10 mt-0.5 space-y-0.5">
@@ -289,6 +294,7 @@ try {
           <a href="site.php?id=20"            class="block px-3 py-1.5 rounded-lg text-xs transition-colors <?= adminNavActive('site.php',                  $currentPage) ?>">Site Info</a>
           <a href="smtp-settings.php"         class="block px-3 py-1.5 rounded-lg text-xs transition-colors <?= adminNavActive('smtp-settings.php',         $currentPage) ?>">SMTP Settings</a>
           <a href="sms-settings.php"          class="block px-3 py-1.5 rounded-lg text-xs transition-colors <?= adminNavActive('sms-settings.php',          $currentPage) ?>">SMS Gateway</a>
+          <a href="admin-profile.php"         class="block px-3 py-1.5 rounded-lg text-xs transition-colors <?= adminNavActive('admin-profile.php',         $currentPage) ?>">Admin Profile</a>
           <a href="notification-settings.php" class="block px-3 py-1.5 rounded-lg text-xs transition-colors <?= adminNavActive('notification-settings.php',  $currentPage) ?>">Notifications</a>
         </div>
       </div>

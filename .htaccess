@@ -1,4 +1,4 @@
-#RewriteEngine On
+RewriteEngine On
 #RewriteBase /freshout/
 
 # Disable directory listings
@@ -16,6 +16,12 @@ RewriteRule ^\.htaccess$   - [F,L]
 
 # ── [THEME_REWRITE_START] ─────────────────────────────────────────────
 # Active theme: theme1
+# Generic static asset requests (including root files like favicon/manifest
+# and nested legacy paths such as weather/... or translate.google.com/...).
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule ^([A-Za-z0-9_@%./-]+\.(css|js|json|png|jpe?g|gif|svg|webp|ico|woff2?|ttf|otf|eot|map|txt|pdf))$ asset.php?path=$1 [L,QSA,NC]
+
 # Static asset directories — resolved at runtime by asset.php.
 RewriteRule ^(css|js|img|fonts|assets|images|js\.locatorsearch\.com|maxcdn\.bootstrapcdn\.com|static\.ctctcdn\.com|www\.google-analytics\.com)/(.*)$ asset.php?path=$1/$2 [L,QSA]
 

@@ -193,3 +193,63 @@ function get_auth_palette(string $scheme): array
 
     return $palettes[$scheme];
 }
+
+function get_frontend_logo_url($conn): string
+{
+    if (!($conn instanceof mysqli)) {
+        return '';
+    }
+
+    $candidate = null;
+    try {
+        $res = $conn->query("SELECT setting_value AS v FROM site_settings WHERE setting_key='frontend_logo_url' LIMIT 1");
+        if ($res && $res->num_rows > 0) {
+            $row = $res->fetch_assoc();
+            $candidate = $row['v'] ?? null;
+        }
+    } catch (Throwable $e) {
+    }
+
+    if ($candidate === null) {
+        try {
+            $res = $conn->query("SELECT `value` AS v FROM site_settings WHERE `key`='frontend_logo_url' LIMIT 1");
+            if ($res && $res->num_rows > 0) {
+                $row = $res->fetch_assoc();
+                $candidate = $row['v'] ?? null;
+            }
+        } catch (Throwable $e) {
+        }
+    }
+
+    return is_string($candidate) && $candidate !== '' ? htmlspecialchars($candidate) : '';
+}
+
+function get_admin_logo_url($conn): string
+{
+    if (!($conn instanceof mysqli)) {
+        return '';
+    }
+
+    $candidate = null;
+    try {
+        $res = $conn->query("SELECT setting_value AS v FROM site_settings WHERE setting_key='admin_logo_url' LIMIT 1");
+        if ($res && $res->num_rows > 0) {
+            $row = $res->fetch_assoc();
+            $candidate = $row['v'] ?? null;
+        }
+    } catch (Throwable $e) {
+    }
+
+    if ($candidate === null) {
+        try {
+            $res = $conn->query("SELECT `value` AS v FROM site_settings WHERE `key`='admin_logo_url' LIMIT 1");
+            if ($res && $res->num_rows > 0) {
+                $row = $res->fetch_assoc();
+                $candidate = $row['v'] ?? null;
+            }
+        } catch (Throwable $e) {
+        }
+    }
+
+    return is_string($candidate) && $candidate !== '' ? htmlspecialchars($candidate) : '';
+}

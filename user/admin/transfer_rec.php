@@ -24,6 +24,16 @@ require_once __DIR__ . '/partials/admin-shell-open.php';
 
 <?php if(isset($msg)) echo $msg; ?>
 
+<?php if (isset($_GET['success'])): ?>
+  <div class="mb-4 rounded-lg bg-green-50 border border-green-200 px-4 py-2 text-green-700 text-sm">
+    Transfer record deleted successfully.
+  </div>
+<?php elseif (isset($_GET['error'])): ?>
+  <div class="mb-4 rounded-lg bg-red-50 border border-red-200 px-4 py-2 text-red-700 text-sm">
+    Could not delete transfer record. Please try again.
+  </div>
+<?php endif; ?>
+
 <!-- Transfer Records -->
 <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-6">
   <h2 class="font-semibold text-gray-800 mb-4">Transfer Records</h2>
@@ -57,7 +67,7 @@ require_once __DIR__ . '/partials/admin-shell-open.php';
           </td>
           <td class="px-3 py-3 text-sm text-gray-700">
             <a href="edit_tf.php?id=<?= $r['id'] ?>" class="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium px-4 py-2 rounded-lg transition-colors cursor-pointer !py-1 !px-2 !text-xs"><i class="fa-solid fa-pen"></i></a>
-            <a href="del.php?id=<?= $r['id'] ?>" onclick="return confirm('Delete?')" class="inline-flex items-center gap-2 bg-red-500 hover:bg-red-600 text-white text-xs font-medium px-3 py-1.5 rounded-lg transition-colors cursor-pointer !py-1 !px-2"><i class="fa-solid fa-trash"></i></a>
+            <a href="del2.php?id=<?= $r['id'] ?>" onclick="return confirm('Delete?')" class="inline-flex items-center gap-2 bg-red-500 hover:bg-red-600 text-white text-xs font-medium px-3 py-1.5 rounded-lg transition-colors cursor-pointer !py-1 !px-2"><i class="fa-solid fa-trash"></i></a>
           </td>
         </tr>
         <?php endwhile; ?>

@@ -2,6 +2,12 @@
 
 // Extracted dashboard bootstrap logic to reduce index.php {main} complexity for language server inference.
 
+$conn = $GLOBALS['conn'] ?? ($conn ?? null);
+$row = (isset($row) && is_array($row)) ? $row : [];
+if (!isset($activeAccountBalance)) {
+    $activeAccountBalance = 0.0;
+}
+
 $flashError = '';
 $flashSuccess = '';
 
@@ -83,6 +89,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['add_wallet'])) {
                      ON DUPLICATE KEY UPDATE acc_no = VALUES(acc_no)'
                 );
                 $addW->execute([':an' => $accNo, ':c' => $newCode]);
+                provision_wallet_iban($conn, $accNo, $newCode);
                 $flashSuccess = $newCode . ' account opened successfully.';
             } catch (Throwable $e) {
                 $flashError = 'Could not open account. Please try again.';
@@ -119,6 +126,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['wallet_exchange'])) {
             if (!$toWallet) {
                 $createWallet = $reg_user->runQuery('INSERT INTO account_balances (acc_no, currency_code, balance) VALUES (:acc_no, :currency_code, 0)');
                 $createWallet->execute([':acc_no' => $accNo, ':currency_code' => $toCode]);
+                    provision_wallet_iban($conn, $accNo, $toCode);
             }
 
             if ((float)$fromWallet['balance'] < $amount) {
@@ -192,7 +200,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['wallet_exchange'])) {
     }
 }
 
-$walletsRes = $reg_user->runQuery('SELECT ab.currency_code, ab.balance, c.symbol, c.name, c.is_crypto, ca.iban
+$walletsRes = $reg_user->runQuery('SELECT ab.currency_code, ab.balance, c.symbol, c.flag_code, c.name, c.is_crypto, ca.iban
                                    FROM account_balances ab
                                    LEFT JOIN currencies c ON c.code = ab.currency_code
                                    LEFT JOIN customer_accounts ca ON ca.owner_acc_no = ab.acc_no AND ca.currency_code = ab.currency_code
@@ -466,6 +474,7 @@ foreach ($wallets as $wallet) {
     $walletTotal += (float)($wallet['balance'] ?? 0);
 }
 
+/** @var array<string, array<string, float>> $rateLookup */
 $rateLookup = [];
 foreach ($rates as $rateRow) {
     $fromCode = strtoupper(trim((string)($rateRow['from_code'] ?? '')));
@@ -511,6 +520,118 @@ foreach ($wallets as $wallet) {
 
 // ── Ledger Balance: the active wallet's posted balance ──
 $ledgerBalance = $activeAccountBalance;
+
+// ── Flag emoji helper ───────────────────────────────────────────────────────
+if (!function_exists('idx_flag_emoji')) {
+    function idx_flag_emoji(string $cc): string {
+        if (!preg_match('/^[A-Z]{2}$/', $cc)) return '';
+        return mb_chr(0x1F1A5 + ord($cc[0]), 'UTF-8') . mb_chr(0x1F1A5 + ord($cc[1]), 'UTF-8');
+    }
+}
+
+// ── Local currency equivalent (geo, session-cached) ─────────────────────────
+$localCurrencyCode   = '';
+$localCountryCode    = '';
+$walletTotalInLocal  = null;
+$localCurrencySymbol = '';
+
+// Resolve best-effort visitor IP (respects proxies/tunnels; ignores private ranges)
+$_visitorIp = '';
+foreach (['HTTP_CF_CONNECTING_IP','HTTP_X_FORWARDED_FOR','HTTP_X_REAL_IP','REMOTE_ADDR'] as $_hdr) {
+    $_candidate = trim(explode(',', (string)($_SERVER[$_hdr] ?? ''))[0]);
+    if ($_candidate !== '' && filter_var($_candidate, FILTER_VALIDATE_IP, FILTER_FLAG_NO_PRIV_RANGE | FILTER_FLAG_NO_RES_RANGE)) {
+        $_visitorIp = $_candidate;
+        break;
+    }
+}
+
+if (isset($_SESSION['geo_currency'], $_SESSION['geo_country'])) {
+    $localCurrencyCode = (string)$_SESSION['geo_currency'];
+    $localCountryCode  = (string)$_SESSION['geo_country'];
+    // If cached local currency happens to match active account, clear cache so fallback can find a better one
+    if ($localCurrencyCode === $activeAccountCode) {
+        unset($_SESSION['geo_currency'], $_SESSION['geo_country']);
+        $localCurrencyCode = '';
+        $localCountryCode  = '';
+    }
+} elseif ($_visitorIp !== '') {
+    // Public IP — try geoPlugin
+    try {
+        require_once __DIR__ . '/../geo/geoplugin.class.php';
+        $gp = new geoPlugin();
+        $gp->locate($_visitorIp);
+        $_gpCur  = strtoupper(trim((string)($gp->currencyCode ?? '')));
+        $_gpCtry = strtoupper(trim((string)($gp->countryCode  ?? '')));
+        if (preg_match('/^[A-Z]{3}$/', $_gpCur))  { $localCurrencyCode = $_gpCur;  $_SESSION['geo_currency'] = $_gpCur; }
+        if (preg_match('/^[A-Z]{2}$/', $_gpCtry)) { $localCountryCode  = $_gpCtry; $_SESSION['geo_country']  = $_gpCtry; }
+    } catch (Throwable $e) {}
+}
+// Fallback: derive country from the account's own currency via a static map
+// (used on localhost/dev and when geo produces no result)
+if ($localCurrencyCode === '' || $localCountryCode === '') {
+    $_currencyCountryMap = [
+        'USD'=>'US','EUR'=>'EU','GBP'=>'GB','JPY'=>'JP','AUD'=>'AU','CAD'=>'CA','CHF'=>'CH',
+        'CNY'=>'CN','HKD'=>'HK','NZD'=>'NZ','SEK'=>'SE','NOK'=>'NO','DKK'=>'DK','SGD'=>'SG',
+        'MXN'=>'MX','BRL'=>'BR','ZAR'=>'ZA','INR'=>'IN','KRW'=>'KR','AED'=>'AE','SAR'=>'SA',
+        'MYR'=>'MY','THB'=>'TH','IDR'=>'ID','PHP'=>'PH','VND'=>'VN','NGN'=>'NG','GHS'=>'GH',
+        'KES'=>'KE','EGP'=>'EG','PKR'=>'PK','BDT'=>'BD','TRY'=>'TR','RUB'=>'RU','PLN'=>'PL',
+        'CZK'=>'CZ','HUF'=>'HU','RON'=>'RO','ILS'=>'IL','CLP'=>'CL','COP'=>'CO','PEN'=>'PE',
+        'ARS'=>'AR','UAH'=>'UA','QAR'=>'QA','KWD'=>'KW','BHD'=>'BH','OMR'=>'OM','JOD'=>'JO',
+    ];
+    // Find the first wallet currency that isn't the active account and is in the map
+    foreach ($wallets as $_fw) {
+        $_fwCode = strtoupper(trim((string)$_fw['currency_code']));
+        if ($_fwCode !== $activeAccountCode && isset($_currencyCountryMap[$_fwCode])) {
+            if ($localCurrencyCode === '') $localCurrencyCode = $_fwCode;
+            if ($localCountryCode === '')  $localCountryCode  = $_currencyCountryMap[$_fwCode];
+            break;
+        }
+    }
+    // Still empty: scan exchange_rates for any currency with a configured rate vs the active account
+    if ($localCurrencyCode === '') {
+        $_rateTargets = array_merge(
+            array_keys($rateLookup[$activeAccountCode] ?? []),
+            array_reduce(array_keys($rateLookup), function($carry, $from) use ($activeAccountCode, $rateLookup) {
+                if (isset($rateLookup[$from][$activeAccountCode])) $carry[] = $from;
+                return $carry;
+            }, [])
+        );
+        foreach ($_rateTargets as $_tCode) {
+            $_tCode = strtoupper(trim((string)$_tCode));
+            if ($_tCode !== $activeAccountCode && isset($_currencyCountryMap[$_tCode])) {
+                $localCurrencyCode = $_tCode;
+                $localCountryCode  = $_currencyCountryMap[$_tCode];
+                break;
+            }
+        }
+    }
+    // Last resort: pick the first fiat currency in the system that differs from active
+    if ($localCurrencyCode === '') {
+        foreach ($availableCurrencies as $_ac) {
+            $_acCode = strtoupper(trim((string)$_ac['code']));
+            if ((int)($_ac['is_crypto'] ?? 0) === 0 && $_acCode !== $activeAccountCode && isset($_currencyCountryMap[$_acCode])) {
+                $localCurrencyCode = $_acCode;
+                $localCountryCode  = $_currencyCountryMap[$_acCode];
+                break;
+            }
+        }
+    }
+    // Mark in session so we don't repeat this every page load
+    if ($localCurrencyCode !== '') $_SESSION['geo_currency'] = $localCurrencyCode;
+    if ($localCountryCode  !== '') $_SESSION['geo_country']  = $localCountryCode;
+}
+
+if ($localCurrencyCode !== '' && $localCurrencyCode !== $activeAccountCode) {
+    $walletTotalInLocal = $convertAmount($walletTotalInActive, $activeAccountCode, $localCurrencyCode);
+    try {
+        $lcStmt = $reg_user->runQuery('SELECT symbol FROM currencies WHERE code = :c LIMIT 1');
+        $lcStmt->execute([':c' => $localCurrencyCode]);
+        $lcRow = $lcStmt->fetch(PDO::FETCH_ASSOC);
+        $localCurrencySymbol = (string)($lcRow['symbol'] ?? '');
+    } catch (Throwable $e) {}
+} elseif ($localCurrencyCode === $activeAccountCode) {
+    $walletTotalInLocal = $walletTotalInActive;
+}
 
 // ── Net Flow: this month's credits/debits natively in the active wallet's currency ──
 $monthStart = date('Y-m-01');

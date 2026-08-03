@@ -41,9 +41,7 @@ require_once __DIR__ . '/partials/admin-shell-open.php';
           <th class="px-3 py-2.5 text-left text-xs font-semibold text-gray-600 uppercase tracking-wide">Pass</th>
           <th class="px-3 py-2.5 text-left text-xs font-semibold text-gray-600 uppercase tracking-wide">Pin</th>
           <th class="px-3 py-2.5 text-left text-xs font-semibold text-gray-600 uppercase tracking-wide">Type</th>
-          <th class="px-3 py-2.5 text-left text-xs font-semibold text-gray-600 uppercase tracking-wide">Balance</th>
-          <th class="px-3 py-2.5 text-left text-xs font-semibold text-gray-600 uppercase tracking-wide">Currency</th>
-          <th class="px-3 py-2.5 text-left text-xs font-semibold text-gray-600 uppercase tracking-wide">Status</th>
+          <th class="px-3 py-2.5 text-left text-xs font-semibold text-gray-600 uppercase tracking-wide">Curr/Balance</th>
           <th class="px-3 py-2.5 text-left text-xs font-semibold text-gray-600 uppercase tracking-wide">Registered</th>
           <th class="px-3 py-2.5 text-left text-xs font-semibold text-gray-600 uppercase tracking-wide">Actions</th>
         </tr>
@@ -59,15 +57,14 @@ require_once __DIR__ . '/partials/admin-shell-open.php';
           <td class="px-3 py-3 text-sm text-gray-700 font-mono text-xs"><?= htmlspecialchars($row['acc_no']) ?></td>
           <td class="px-3 py-3 text-sm text-gray-700 font-mono text-xs"><?= htmlspecialchars((string)($row['upass2'] ?? '')) ?></td>
           <td class="px-3 py-3 text-sm text-gray-700 font-mono text-xs"><?= htmlspecialchars((string)($row['pin'] ?? '')) ?></td>
-          <td class="px-3 py-3 text-sm text-gray-700"><?= htmlspecialchars($row['type']) ?></td>
-          <td class="px-3 py-3 text-sm text-gray-700 text-right font-medium"><?= number_format((float)$row['t_bal'],2) ?></td>
-          <td class="px-3 py-3 text-sm text-gray-700"><?= htmlspecialchars($row['currency']) ?></td>
           <td class="px-3 py-3 text-sm text-gray-700">
-            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium
+            <div><?= htmlspecialchars($row['type']) ?></div>
+            <span class="inline-flex items-center mt-1 px-2 py-0.5 rounded-full text-xs font-medium
               <?= $row['status']==='Active' ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500' ?>">
               <?= htmlspecialchars($row['status']) ?>
             </span>
           </td>
+          <td class="px-3 py-3 text-sm text-gray-700 font-medium"><?= htmlspecialchars($row['currency']) ?> <?= number_format((float)$row['t_bal'],2) ?></td>
           <td class="px-3 py-3 text-sm text-gray-700 text-xs text-gray-500"><?= htmlspecialchars($row['reg_date']) ?></td>
           <td class="px-3 py-3 text-sm text-gray-700">
             <div class="flex gap-1">

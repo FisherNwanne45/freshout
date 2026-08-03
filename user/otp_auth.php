@@ -5,11 +5,18 @@ require_once 'class.user.php';
 require_once '../config.php';
 require_once __DIR__ . '/partials/auto-migrate.php';
 
+// Bind mysqli handle explicitly so static analysis and runtime both see it.
+$conn = $GLOBALS['conn'] ?? null;
+if (!($conn instanceof mysqli)) {
+    require_once '../config.php';
+    $conn = $GLOBALS['conn'] ?? null;
+}
+
 if (!isset($_SESSION['acc_no'])) {
     header('Location: login.php');
     exit();
 }
-if (!isset($_SESSION['pin'])) {
+if (!isset($_SESSION['pin_verified'])) {
     header('Location: passcode.php');
     exit();
 }
@@ -199,14 +206,14 @@ function completeTransferFromTemp(USER $reg_user, array $row, array $tempRow, my
 
         if ($destinationAccountNo !== '') {
             try {
-                $dest = $reg_user->runQuery(
-                    'SELECT ca.owner_acc_no, ca.currency_code, a.email, a.fname, a.lname, a.uname
+                                $dest = $reg_user->runQuery(
+                                        'SELECT ca.owner_acc_no, ca.currency_code, a.email, a.fname, a.lname, a.uname
                                          FROM customer_accounts ca
                                          LEFT JOIN account a ON a.acc_no = ca.owner_acc_no
                                          WHERE (ca.account_no = :account_no OR ca.iban = :iban)
                                              AND ca.status = :status
                                          LIMIT 1'
-                );
+                                );
                 $dest->execute([
                     ':account_no' => $destinationAccountNo,
                     ':iban' => $destinationAccountNo,
@@ -300,13 +307,13 @@ function completeTransferFromTemp(USER $reg_user, array $row, array $tempRow, my
                 'fname' => $row['fname'] ?? '',
                 'lname' => $row['lname'] ?? '',
                 'phone' => $row['phone'] ?? '',
-                'amount' => $amount,
+                'amount' => number_format((float)$amount, 2),
                 'currency' => $curCode,
                 'acc_name' => $beneficiaryName,
                 'bank' => $bankName,
                 'description' => 'Transfer initiated',
                 'date' => date('Y-m-d H:i:s'),
-                'balance' => $total,
+                'balance' => number_format((float)$total, 2),
             ]);
         } catch (Throwable $e) {
         }
@@ -327,6 +334,25 @@ function completeTransferFromTemp(USER $reg_user, array $row, array $tempRow, my
     exit();
 }
 
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['resend_otp'])) {
+    $newOtp = $reg_user->createOtp((string)($row['acc_no'] ?? ''), $email, 'transfer', 10);
+    if ($newOtp !== '') {
+        try {
+            $reg_user->send_mail($email, '', 'Your Transfer OTP', 'otp_code', [
+                'fname'      => $row['fname'] ?? '',
+                'otp'        => $newOtp,
+                'amount'     => $amount,
+                'currency'   => $currencyCode,
+                'expiry_min' => 10,
+            ]);
+        } catch (Throwable $e) {}
+    }
+    header('Location: otp_auth.php?resent=1');
+    exit();
+}
+
+$resentFlash = isset($_GET['resent']) ? 'A new OTP has been sent to your email.' : '';
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $otp = trim((string)($_POST['otp'] ?? ''));
     if ($otp === '') {
@@ -336,6 +362,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         if (!$otpValid) {
             $flashError = 'Invalid or expired OTP. Please try again.';
         } else {
+            if (trim((string)($row['auth_method'] ?? '')) === 'otp_codes') {
+                $_SESSION['transfer_first_factor_done'] = true;
+                header('Location: transfer-auth.php');
+                exit();
+            }
             completeTransferFromTemp($reg_user, $row, $tempRow, $conn);
         }
     }
@@ -368,16 +399,16 @@ require_once __DIR__ . '/partials/shell-open.php';
             <span class="text-lg font-bold text-brand-navy"><?= htmlspecialchars($currencyCode) ?> <?= number_format((float)$amount, 2) ?></span>
         </div>
         <?php if ($beneficiary !== ''): ?>
-            <div class="flex justify-between items-center mb-2">
-                <span class="text-sm text-brand-muted">Beneficiary</span>
-                <span class="text-sm font-semibold text-brand-navy"><?= htmlspecialchars($beneficiary) ?></span>
-            </div>
+        <div class="flex justify-between items-center mb-2">
+            <span class="text-sm text-brand-muted">Beneficiary</span>
+            <span class="text-sm font-semibold text-brand-navy"><?= htmlspecialchars($beneficiary) ?></span>
+        </div>
         <?php endif; ?>
         <?php if ($bankName !== ''): ?>
-            <div class="flex justify-between items-center mb-2">
-                <span class="text-sm text-brand-muted">Bank</span>
-                <span class="text-sm text-brand-navy"><?= htmlspecialchars($bankName) ?></span>
-            </div>
+        <div class="flex justify-between items-center mb-2">
+            <span class="text-sm text-brand-muted">Bank</span>
+            <span class="text-sm text-brand-navy"><?= htmlspecialchars($bankName) ?></span>
+        </div>
         <?php endif; ?>
         <div class="flex justify-between items-center">
             <span class="text-sm text-brand-muted">Type</span>
@@ -389,6 +420,11 @@ require_once __DIR__ . '/partials/shell-open.php';
         <h1 class="text-xl font-bold text-brand-navy mb-1">One-Time Password</h1>
         <p class="text-sm text-brand-muted mb-5">Enter the OTP sent to your registered email to authorise this transfer.</p>
 
+        <?php if ($resentFlash !== ''): ?>
+            <div class="mb-4 rounded-xl p-3 bg-green-50 border border-green-200 text-sm text-green-700">
+                <?= htmlspecialchars($resentFlash) ?>
+            </div>
+        <?php endif; ?>
         <?php if ($flashError !== ''): ?>
             <div class="mb-4 rounded-xl p-3 bg-red-50 border border-red-200 text-sm text-red-700">
                 <?= htmlspecialchars($flashError) ?>
@@ -408,6 +444,18 @@ require_once __DIR__ . '/partials/shell-open.php';
                 Verify OTP
             </button>
         </form>
+
+        <!-- Resend OTP -->
+        <div class="mt-5 text-center">
+            <form method="POST" id="resendForm">
+                <input type="hidden" name="resend_otp" value="1">
+                <p class="text-xs text-brand-muted mb-2">Didn&rsquo;t receive the code?</p>
+                <button id="resendBtn" type="submit" disabled
+                    class="text-sm font-medium text-brand-navy disabled:text-brand-muted disabled:cursor-not-allowed transition-colors">
+                    Resend in <span id="resendCountdown">60</span>s
+                </button>
+            </form>
+        </div>
     </div>
 
     <div class="mt-4 text-center">
@@ -416,24 +464,39 @@ require_once __DIR__ . '/partials/shell-open.php';
 </div>
 
 <script>
-    (function() {
-        var otpInput = document.getElementById('otp');
-        var form = document.getElementById('otpForm');
-        var submitBtn = document.getElementById('otpSubmitBtn');
+(function () {
+    var otpInput   = document.getElementById('otp');
+    var form       = document.getElementById('otpForm');
+    var submitBtn  = document.getElementById('otpSubmitBtn');
+    var resendBtn  = document.getElementById('resendBtn');
+    var countdown  = document.getElementById('resendCountdown');
+    var secs = 60;
 
-        if (otpInput) {
-            setTimeout(function() {
-                otpInput.focus();
-            }, 60);
-        }
+    if (otpInput) { setTimeout(function () { otpInput.focus(); }, 60); }
 
-        if (form && submitBtn) {
-            form.addEventListener('submit', function() {
-                submitBtn.disabled = true;
-                submitBtn.textContent = 'Verifying...';
-            });
+    if (form && submitBtn) {
+        form.addEventListener('submit', function () {
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Verifying…';
+        });
+    }
+
+    var tick = setInterval(function () {
+        secs--;
+        if (secs <= 0) {
+            clearInterval(tick);
+            resendBtn.disabled = false;
+            resendBtn.innerHTML = 'Resend OTP';
+        } else {
+            countdown.textContent = secs;
         }
-    }());
+    }, 1000);
+
+    document.getElementById('resendForm').addEventListener('submit', function () {
+        resendBtn.disabled = true;
+        resendBtn.textContent = 'Sending…';
+    });
+}());
 </script>
 
 <?php require_once __DIR__ . '/partials/shell-close.php'; ?>

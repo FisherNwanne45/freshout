@@ -118,13 +118,25 @@ if (!function_exists('notification_template_collect_tokens')) {
         };
 
         $tokens = [
-            'template_type' => $normalize($templateType),
-            'subject' => $normalize($subject),
-            'bank_name' => $normalize($context['bank_name'] ?? 'Banking System'),
-            'support_email' => $normalize($context['support_email'] ?? 'support@bank.com'),
-            'site_url' => $normalize($context['site_url'] ?? ''),
-            'year' => $normalize(date('Y')),
-            'today' => $normalize(date('Y-m-d')),
+            'template_type'    => $normalize($templateType),
+            'subject'          => $normalize($subject),
+            'bank_name'        => $normalize($context['bank_name'] ?? 'Banking System'),
+            'support_email'    => $normalize($context['support_email'] ?? 'support@bank.com'),
+            'site_url'         => $normalize($context['site_url'] ?? ''),
+            'year'             => $normalize(date('Y')),
+            'today'            => $normalize(date('Y-m-d')),
+            // Common tokens default to empty string so missing keys never render literally
+            'description'      => '',
+            'amount'           => '',
+            'balance'          => '',
+            'currency'         => '',
+            'date'             => '',
+            'acc_name'         => '',
+            'bank'             => '',
+            'transaction_type' => '',
+            'status'           => '',
+            'reason'           => '',
+            'acc_no'           => '',
         ];
 
         foreach ($templateData as $key => $value) {
@@ -174,26 +186,23 @@ if (!function_exists('notification_template_wrap_html')) {
             return $bodyContent;
         }
 
-        $bankName = htmlspecialchars((string)($context['bank_name'] ?? 'Banking System'), ENT_QUOTES, 'UTF-8');
-        $supportEmail = htmlspecialchars((string)($context['support_email'] ?? 'support@bank.com'), ENT_QUOTES, 'UTF-8');
-        $siteUrl = htmlspecialchars((string)($context['site_url'] ?? '#'), ENT_QUOTES, 'UTF-8');
+        $bankName    = htmlspecialchars((string)($context['bank_name'] ?? 'Banking System'), ENT_QUOTES, 'UTF-8');
         $subjectSafe = htmlspecialchars((string)$subject, ENT_QUOTES, 'UTF-8');
-        $year = date('Y');
+        $year        = date('Y');
 
         return "<!DOCTYPE html>\n"
             . "<html><head><meta charset=\"UTF-8\"><meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\"></head>\n"
             . "<body style=\"margin:0;background:#f5f7fa;font-family:Arial,sans-serif;color:#1f2937;\">\n"
             . "<table role=\"presentation\" width=\"100%\" cellpadding=\"0\" cellspacing=\"0\" style=\"background:#f5f7fa;padding:24px 0;\"><tr><td align=\"center\">\n"
             . "<table role=\"presentation\" width=\"600\" cellpadding=\"0\" cellspacing=\"0\" style=\"max-width:600px;background:#ffffff;border:1px solid #dbe3ee;border-radius:12px;overflow:hidden;\">\n"
-            . "<tr><td style=\"background:#0d1f3c;color:#ffffff;padding:20px 24px;font-size:20px;font-weight:700;\">{$bankName}</td></tr>\n"
+            . "<tr><td style=\"background:#0d1f3c;color:#ffffff;padding:20px 24px;font-size:20px;font-weight:700;text-align:center;\">{$bankName}</td></tr>\n"
             . "<tr><td style=\"padding:24px;\">\n"
             . "<h2 style=\"margin:0 0 16px;font-size:20px;color:#0d1f3c;\">{$subjectSafe}</h2>\n"
             . $bodyContent
             . "</td></tr>\n"
-            . "<tr><td style=\"padding:18px 24px;background:#f9fbff;border-top:1px solid #dbe3ee;color:#6b7280;font-size:12px;\">\n"
-            . "<div>Need help? <a href=\"mailto:{$supportEmail}\" style=\"color:#0d1f3c;text-decoration:none;\">{$supportEmail}</a></div>\n"
-            . "<div style=\"margin-top:4px;\"><a href=\"{$siteUrl}\" style=\"color:#0d1f3c;text-decoration:none;\">Visit website</a></div>\n"
-            . "<div style=\"margin-top:8px;\">&copy; {$year} {$bankName}</div>\n"
+            . "<tr><td style=\"padding:18px 24px;background:#f9fbff;border-top:1px solid #dbe3ee;color:#6b7280;font-size:11px;text-align:center;line-height:1.6;\">\n"
+            . "<div>This email was sent by <strong>{$bankName}</strong>. It may contain confidential information intended solely for the named recipient. If you received this message in error, please disregard it.</div>\n"
+            . "<div style=\"margin-top:8px;\">&copy; {$year} {$bankName}. All rights reserved.</div>\n"
             . "</td></tr></table></td></tr></table></body></html>";
     }
 }

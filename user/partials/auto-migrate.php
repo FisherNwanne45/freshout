@@ -2,7 +2,7 @@
 // ── Auto-Migration v9 ──────────────────────────────────────────────────────────
 // v2: currency_code + transfer_type + auth_method + crypto_transfers.
 // v3: login_method + database OTP table + legacy status normalization.
-// v4: account.pin column + pin/pin data backfill for phased rename.
+// v4: account.pin column + mname/pin data backfill for phased rename.
 // v5: real per-currency customer accounts + transfer source/destination account refs.
 // v6: currency normalization for legacy symbol values before account backfill.
 // v7: enforce currencies-table integrity for account_balances/customer_accounts.
@@ -11,10 +11,9 @@
 // v10: decimal temp_transfer amount + account type key cleanup.
 // v11: IBAN fields for customer_accounts and backfill.
 // v12: crypto treasury config + deposit/withdrawal request workflow.
+// v15: transfer reversal idempotency flag + per-status success-page copy defaults.
 // Safe to include on every request – skips if already applied.
-if (!isset($conn) || !($conn instanceof mysqli)) {
-    return;
-}
+if (!isset($conn) || !($conn instanceof mysqli)) { return; }
 require_once __DIR__ . '/iban-tools.php';
 
 $_ssKeyCol = 'setting_key';
@@ -34,23 +33,61 @@ try {
         $_ssKeyCol = 'key';
         $_ssValCol = 'value';
     }
-} catch (Throwable $e) {
-}
+} catch (Throwable $e) {}
 
-try {
-    $r = $conn->query("SELECT `" . $_ssValCol . "` AS migration_value FROM site_settings WHERE `" . $_ssKeyCol . "`='db_migration_v12' LIMIT 1");
-    if ($r && $r->num_rows > 0 && ($r->fetch_assoc()['migration_value'] ?? '') === 'done') {
-        return;
-    }
-} catch (Throwable $e) {
-}
-
-// Helper: does column exist?
+// Helper: does column exist? (defined early – used by v15 and later migrations)
 $_colExists = static function (mysqli $c, string $tbl, string $col): bool {
     $r = $c->query("SELECT COUNT(*) AS n FROM INFORMATION_SCHEMA.COLUMNS
                     WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='$tbl' AND COLUMN_NAME='$col'");
     return $r && (int)($r->fetch_assoc()['n'] ?? 0) > 0;
 };
+
+// ── Auto-Migration v15 ─────────────────────────────────────────────────────────
+// v15: add transfer.reversal_processed and ensure transfer_copy_* defaults exist.
+try {
+    $r15 = $conn->query("SELECT `" . $_ssValCol . "` AS migration_value FROM site_settings WHERE `" . $_ssKeyCol . "`='db_migration_v15' LIMIT 1");
+    if (!($r15 && $r15->num_rows > 0 && ($r15->fetch_assoc()['migration_value'] ?? '') === 'done')) {
+
+        if (!$_colExists($conn, 'transfer', 'reversal_processed')) {
+            $conn->query("ALTER TABLE `transfer` ADD COLUMN `reversal_processed` TINYINT(1) NOT NULL DEFAULT 0");
+        }
+
+        $_copyDefaults = [
+            'transfer_copy_pending_title'    => 'Transfer Pending',
+            'transfer_copy_pending_note'     => 'Your transfer is queued and will be processed shortly.',
+            'transfer_copy_processing_title' => 'Transfer Processing',
+            'transfer_copy_processing_note'  => 'Your transfer is currently being processed. This may take a moment.',
+            'transfer_copy_completed_title'  => 'Transfer Completed',
+            'transfer_copy_completed_note'   => 'Your transfer has been completed successfully.',
+            'transfer_copy_successful_title' => 'Transfer Successful',
+            'transfer_copy_successful_note'  => 'Your transfer was processed and delivered successfully.',
+            'transfer_copy_failed_title'     => 'Transfer Failed',
+            'transfer_copy_failed_note'      => 'This transfer could not be completed. Please contact support or try again.',
+            'transfer_copy_cancelled_title'  => 'Transfer Cancelled',
+            'transfer_copy_cancelled_note'   => 'This transfer has been cancelled. Any debited amount will be refunded.',
+            'transfer_copy_reversed_title'   => 'Transfer Reversed',
+            'transfer_copy_reversed_note'    => 'This transfer has been reversed and the amount has been credited back to your account.',
+        ];
+
+        foreach ($_copyDefaults as $_k => $_v) {
+            $_ks = $conn->real_escape_string($_k);
+            $_vs = $conn->real_escape_string($_v);
+            $conn->query(
+                "INSERT INTO site_settings (`" . $_ssKeyCol . "`, `" . $_ssValCol . "`) " .
+                "SELECT '" . $_ks . "', '" . $_vs . "' FROM DUAL " .
+                "WHERE NOT EXISTS (SELECT 1 FROM site_settings WHERE `" . $_ssKeyCol . "`='" . $_ks . "' LIMIT 1)"
+            );
+        }
+
+        $conn->query(
+            "INSERT INTO site_settings (`" . $_ssKeyCol . "`, `" . $_ssValCol . "`) VALUES ('db_migration_v15','done') " .
+            "ON DUPLICATE KEY UPDATE `" . $_ssValCol . "`='done'"
+        );
+    }
+} catch (Throwable $e) {}
+
+// Do not short-circuit the entire file based on one migration marker.
+// Each block below is idempotent and has its own gate (v10-v14).
 
 $_alters = [
     ['transfer',      'currency_code', "ALTER TABLE `transfer`      ADD COLUMN `currency_code` VARCHAR(10) NOT NULL DEFAULT 'USD'"],
@@ -67,10 +104,7 @@ $_alters = [
 ];
 foreach ($_alters as [$tbl, $col, $sql]) {
     if (!$_colExists($conn, $tbl, $col)) {
-        try {
-            $conn->query($sql);
-        } catch (Throwable $e) {
-        }
+        try { $conn->query($sql); } catch (Throwable $e) {}
     }
 }
 
@@ -89,8 +123,7 @@ try {
         KEY idx_owner (`owner_acc_no`),
         KEY idx_currency (`currency_code`)
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
-} catch (Throwable $e) {
-}
+} catch (Throwable $e) {}
 
 // ── Auto-Migration v12 ─────────────────────────────────────────────────────────
 // v12: crypto deposit wallet config + user crypto deposit/withdrawal requests.
@@ -160,11 +193,10 @@ try {
 
         $conn->query(
             "INSERT INTO site_settings (`" . $_ssKeyCol . "`, `" . $_ssValCol . "`) VALUES ('db_migration_v12','done') " .
-                "ON DUPLICATE KEY UPDATE `" . $_ssValCol . "`='done'"
+            "ON DUPLICATE KEY UPDATE `" . $_ssValCol . "`='done'"
         );
     }
-} catch (Throwable $e) {
-}
+} catch (Throwable $e) {}
 
 // Normalize symbol-based legacy currencies into ISO codes.
 try {
@@ -173,8 +205,7 @@ try {
     $conn->query("UPDATE account SET currency = 'GBP' WHERE TRIM(currency) IN ('£', 'Â£')");
     $conn->query("UPDATE account SET currency = UPPER(TRIM(currency)) WHERE currency IS NOT NULL");
     $conn->query("UPDATE account SET currency = 'USD' WHERE currency IS NULL OR TRIM(currency) = '' OR UPPER(TRIM(currency)) NOT REGEXP '^[A-Z0-9]{2,10}$'");
-} catch (Throwable $e) {
-}
+} catch (Throwable $e) {}
 
 try {
     $conn->query("UPDATE account_balances SET currency_code = 'USD' WHERE TRIM(currency_code) = '$'");
@@ -187,8 +218,7 @@ try {
     $conn->query("UPDATE account_balances
                   SET currency_code = 'USD'
                   WHERE UPPER(TRIM(currency_code)) NOT IN (SELECT code FROM currencies)");
-} catch (Throwable $e) {
-}
+} catch (Throwable $e) {}
 
 try {
     $conn->query("UPDATE customer_accounts SET currency_code = 'USD' WHERE TRIM(currency_code) = '$'");
@@ -206,8 +236,7 @@ try {
     $conn->query("DELETE ca FROM customer_accounts ca
                   JOIN customer_accounts u ON u.owner_acc_no = ca.owner_acc_no AND u.currency_code = 'USD'
                   WHERE HEX(ca.currency_code) = '24'");
-} catch (Throwable $e) {
-}
+} catch (Throwable $e) {}
 
 try {
     $conn->query("CREATE TABLE IF NOT EXISTS `crypto_transfers` (
@@ -225,8 +254,7 @@ try {
         KEY idx_acc (`acc_no`),
         KEY idx_email (`email`)
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
-} catch (Throwable $e) {
-}
+} catch (Throwable $e) {}
 
 try {
     $conn->query("CREATE TABLE IF NOT EXISTS `account_otp_codes` (
@@ -242,8 +270,7 @@ try {
         KEY idx_otp_email (`email`, `purpose`, `otp_code`, `used_at`),
         KEY idx_otp_exp (`expires_at`)
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
-} catch (Throwable $e) {
-}
+} catch (Throwable $e) {}
 
 // Backfill real per-currency accounts from existing wallet rows.
 try {
@@ -262,16 +289,14 @@ try {
             balance = VALUES(balance),
             status = 'active',
             is_primary = VALUES(is_primary)");
-} catch (Throwable $e) {
-}
+} catch (Throwable $e) {}
 
 // Keep legacy account_balances in sync while old pages still depend on it.
 try {
     $conn->query("INSERT INTO account_balances (acc_no, currency_code, balance)
                   SELECT owner_acc_no, currency_code, balance FROM customer_accounts
                   ON DUPLICATE KEY UPDATE balance = VALUES(balance)");
-} catch (Throwable $e) {
-}
+} catch (Throwable $e) {}
 
 // Ensure every user has at least one primary customer account from account table.
 try {
@@ -290,8 +315,7 @@ try {
             balance = VALUES(balance),
             status = 'active',
             is_primary = CASE WHEN customer_accounts.is_primary = 1 THEN 1 ELSE VALUES(is_primary) END");
-} catch (Throwable $e) {
-}
+} catch (Throwable $e) {}
 
 // Normalize legacy status values that encoded login method.
 try {
@@ -305,30 +329,22 @@ try {
         SET login_method = 'pin'
         WHERE (login_method IS NULL OR TRIM(login_method) = '')");
 
-    // pin -> pin backfill and reverse fill for compatibility.
+    // Forward-only data migration: old mname values become pin values when pin is empty.
     $conn->query("UPDATE account
-                SET pin = pin
-                WHERE (pin IS NULL OR TRIM(pin) = '')
-                    AND pin IS NOT NULL
-                    AND TRIM(pin) <> ''");
-
-    $conn->query("UPDATE account
-                SET pin = pin
-                WHERE (pin IS NULL OR TRIM(pin) = '')
-                    AND pin IS NOT NULL
-                    AND TRIM(pin) <> ''");
-} catch (Throwable $e) {
-}
+            SET pin = mname
+            WHERE (pin IS NULL OR TRIM(pin) = '')
+                AND mname IS NOT NULL
+                AND TRIM(mname) <> ''");
+} catch (Throwable $e) {}
 
 try {
     foreach (['db_migration_v2', 'db_migration_v3', 'db_migration_v4', 'db_migration_v5', 'db_migration_v6', 'db_migration_v7', 'db_migration_v8', 'db_migration_v9'] as $__mk) {
         $conn->query(
             "INSERT INTO site_settings (`" . $_ssKeyCol . "`, `" . $_ssValCol . "`) VALUES ('" . $__mk . "','done') " .
-                "ON DUPLICATE KEY UPDATE `" . $_ssValCol . "`='done'"
+            "ON DUPLICATE KEY UPDATE `" . $_ssValCol . "`='done'"
         );
     }
-} catch (Throwable $e) {
-}
+} catch (Throwable $e) {}
 
 // ── Auto-Migration v10 ─────────────────────────────────────────────────────────
 // v10: temp_transfer.amount INT → DECIMAL(20,8) so fractional amounts are stored
@@ -349,11 +365,10 @@ try {
 
         $conn->query(
             "INSERT INTO site_settings (`" . $_ssKeyCol . "`, `" . $_ssValCol . "`) VALUES ('db_migration_v10','done') " .
-                "ON DUPLICATE KEY UPDATE `" . $_ssValCol . "`='done'"
+            "ON DUPLICATE KEY UPDATE `" . $_ssValCol . "`='done'"
         );
     }
-} catch (Throwable $e) {
-}
+} catch (Throwable $e) {}
 
 // ── Auto-Migration v11 ─────────────────────────────────────────────────────────
 // v11: Treat acc_no as internal customer ID while adding IBAN fields on
@@ -420,11 +435,10 @@ try {
 
         $conn->query(
             "INSERT INTO site_settings (`" . $_ssKeyCol . "`, `" . $_ssValCol . "`) VALUES ('db_migration_v11','done') " .
-                "ON DUPLICATE KEY UPDATE `" . $_ssValCol . "`='done'"
+            "ON DUPLICATE KEY UPDATE `" . $_ssValCol . "`='done'"
         );
     }
-} catch (Throwable $e) {
-}
+} catch (Throwable $e) {}
 
 // ── Auto-Migration v13 ─────────────────────────────────────────────────────────
 // v13: Transfer status management + IBAN editing capability by admins.
@@ -503,11 +517,10 @@ try {
 
         $conn->query(
             "INSERT INTO site_settings (`" . $_ssKeyCol . "`, `" . $_ssValCol . "`) VALUES ('db_migration_v13','done') " .
-                "ON DUPLICATE KEY UPDATE `" . $_ssValCol . "`='done'"
+            "ON DUPLICATE KEY UPDATE `" . $_ssValCol . "`='done'"
         );
     }
-} catch (Throwable $e) {
-}
+} catch (Throwable $e) {}
 
 // ── Auto-Migration v14 ─────────────────────────────────────────────────────────
 // v14: Normalize transfer.status and set default to pending.
@@ -521,8 +534,7 @@ try {
 
         $conn->query(
             "INSERT INTO site_settings (`" . $_ssKeyCol . "`, `" . $_ssValCol . "`) VALUES ('db_migration_v14','done') " .
-                "ON DUPLICATE KEY UPDATE `" . $_ssValCol . "`='done'"
+            "ON DUPLICATE KEY UPDATE `" . $_ssValCol . "`='done'"
         );
     }
-} catch (Throwable $e) {
-}
+} catch (Throwable $e) {}

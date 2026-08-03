@@ -10,17 +10,21 @@ exit();
 }
 $reg_user = new USER();
 
-
-$account = $reg_user->runQuery("SELECT * FROM account");
-$account->execute();
-$stmt = $reg_user->runQuery("SELECT * FROM message ORDER BY id DESC LIMIT 200");
-$stmt->execute();
+// Safe message deletion — operates only on the message table
+if (isset($_POST['delete_message_id'])) {
+    $del_id = (int)$_POST['delete_message_id'];
+    if ($del_id > 0) {
+        $del_stmt = $reg_user->runQuery("DELETE FROM message WHERE id = :id");
+        $del_stmt->bindParam(':id', $del_id, PDO::PARAM_INT);
+        $del_stmt->execute();
+    }
+    header('Location: messages.php');
+    exit();
+}
 
 if(isset($_POST['message']))
 {
-	
 	$sender_name = trim($_POST['sender_name']);
-	$sender_name = strip_tags($sender_name);
 	$sender_name = htmlspecialchars($sender_name);
 	
 	$reci_name = trim($_POST['reci_name']);
@@ -55,6 +59,11 @@ if(isset($_POST['message']))
 			echo "Sorry, Message was not sent";
 		}		
 }
+$account = $reg_user->runQuery("SELECT * FROM account");
+$account->execute();
+$stmt = $reg_user->runQuery("SELECT * FROM message ORDER BY id DESC LIMIT 200");
+$stmt->execute();
+
 $pageTitle = 'Messages';
 require_once __DIR__ . '/partials/admin-shell-open.php';
 ?>
@@ -104,7 +113,10 @@ require_once __DIR__ . '/partials/admin-shell-open.php';
             <td class="px-3 py-3 text-sm text-gray-700"><?= htmlspecialchars($row['subject']) ?></td>
             <td class="px-3 py-3 text-sm text-gray-700 text-xs text-gray-500"><?= htmlspecialchars($row['date']) ?></td>
             <td class="px-3 py-3 text-sm text-gray-700">
-              <a href="del2.php?id=<?= $row['id'] ?>" onclick="return confirm('Delete message?')" class="inline-flex items-center gap-2 bg-red-500 hover:bg-red-600 text-white text-xs font-medium px-3 py-1.5 rounded-lg transition-colors cursor-pointer !py-1 !px-2"><i class="fa-solid fa-trash"></i></a>
+              <form method="POST" onsubmit="return confirm('Delete this message permanently?')" style="display:inline;">
+                <input type="hidden" name="delete_message_id" value="<?= (int)$row['id'] ?>">
+                <button type="submit" class="inline-flex items-center gap-1 bg-red-500 hover:bg-red-600 text-white text-xs font-medium px-2 py-1 rounded-lg transition-colors cursor-pointer"><i class="fa-solid fa-trash"></i></button>
+              </form>
             </td>
           </tr>
           <?php endwhile; ?>

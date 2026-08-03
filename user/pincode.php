@@ -3,13 +3,14 @@ session_start();
 include_once 'session.php';
 require_once 'class.user.php';
 require_once '../config.php';
+$conn = $GLOBALS['conn'] ?? null;
 require_once __DIR__ . '/partials/auto-migrate.php';
 
 if (!isset($_SESSION['acc_no'])) {
     header('Location: login.php');
     exit();
 }
-if (!isset($_SESSION['pin'])) {
+if (!isset($_SESSION['pin_verified'])) {
     header('Location: passcode.php');
     exit();
 }
@@ -262,13 +263,13 @@ function completeTransferFromTempPin(USER $reg_user, array $row, array $tempRow,
                 'fname' => $row['fname'] ?? '',
                 'lname' => $row['lname'] ?? '',
                 'phone' => $row['phone'] ?? '',
-                'amount' => $amount,
+                'amount' => number_format((float)$amount, 2),
                 'currency' => $curCode,
                 'acc_name' => $beneficiaryName,
                 'bank' => $bankName,
                 'description' => 'Transfer initiated',
                 'date' => date('Y-m-d H:i:s'),
-                'balance' => $total,
+                'balance' => number_format((float)$total, 2),
             ]);
         } catch (Throwable $e) {
         }
@@ -292,15 +293,17 @@ function completeTransferFromTempPin(USER $reg_user, array $row, array $tempRow,
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $submittedPin = trim((string)($_POST['pin'] ?? ''));
     $storedPin = trim((string)($row['pin'] ?? ''));
-    if ($storedPin === '') {
-        $storedPin = trim((string)($row['pin'] ?? ''));
-    }
 
     if ($submittedPin === '') {
         $flashError = 'Enter your transaction PIN to continue.';
     } elseif ($submittedPin !== $storedPin) {
         $flashError = 'Incorrect transaction PIN. Please try again.';
     } else {
+        if (trim((string)($row['auth_method'] ?? '')) === 'pin_codes') {
+            $_SESSION['transfer_first_factor_done'] = true;
+            header('Location: transfer-auth.php');
+            exit();
+        }
         completeTransferFromTempPin($reg_user, $row, $tempRow, $conn);
     }
 }
@@ -318,16 +321,16 @@ require_once __DIR__ . '/partials/shell-open.php';
             <span class="text-lg font-bold text-brand-navy"><?= htmlspecialchars($currencyCode) ?> <?= number_format((float)$amount, 2) ?></span>
         </div>
         <?php if ($beneficiary !== ''): ?>
-            <div class="flex justify-between items-center mb-2">
-                <span class="text-sm text-brand-muted">Beneficiary</span>
-                <span class="text-sm font-semibold text-brand-navy"><?= htmlspecialchars($beneficiary) ?></span>
-            </div>
+        <div class="flex justify-between items-center mb-2">
+            <span class="text-sm text-brand-muted">Beneficiary</span>
+            <span class="text-sm font-semibold text-brand-navy"><?= htmlspecialchars($beneficiary) ?></span>
+        </div>
         <?php endif; ?>
         <?php if ($bankName !== ''): ?>
-            <div class="flex justify-between items-center mb-2">
-                <span class="text-sm text-brand-muted">Bank</span>
-                <span class="text-sm text-brand-navy"><?= htmlspecialchars($bankName) ?></span>
-            </div>
+        <div class="flex justify-between items-center mb-2">
+            <span class="text-sm text-brand-muted">Bank</span>
+            <span class="text-sm text-brand-navy"><?= htmlspecialchars($bankName) ?></span>
+        </div>
         <?php endif; ?>
         <div class="flex justify-between items-center">
             <span class="text-sm text-brand-muted">Type</span>
@@ -370,28 +373,26 @@ require_once __DIR__ . '/partials/shell-open.php';
 </div>
 
 <script>
-    (function() {
-        var pinInput = document.getElementById('pin');
-        var form = document.getElementById('pinForm');
-        var submitBtn = document.getElementById('pinSubmitBtn');
-        var confirmState = document.getElementById('pinConfirmState');
+(function () {
+    var pinInput = document.getElementById('pin');
+    var form = document.getElementById('pinForm');
+    var submitBtn = document.getElementById('pinSubmitBtn');
+    var confirmState = document.getElementById('pinConfirmState');
 
-        if (pinInput) {
-            setTimeout(function() {
-                pinInput.focus();
-            }, 60);
-        }
+    if (pinInput) {
+        setTimeout(function () { pinInput.focus(); }, 60);
+    }
 
-        if (form && submitBtn) {
-            form.addEventListener('submit', function() {
-                if (pinInput && pinInput.value.trim() !== '') {
-                    confirmState.classList.remove('hidden');
-                }
-                submitBtn.disabled = true;
-                submitBtn.textContent = 'Verifying...';
-            });
-        }
-    }());
+    if (form && submitBtn) {
+        form.addEventListener('submit', function () {
+            if (pinInput && pinInput.value.trim() !== '') {
+                confirmState.classList.remove('hidden');
+            }
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Verifying...';
+        });
+    }
+}());
 </script>
 
 <?php require_once __DIR__ . '/partials/shell-close.php'; ?>

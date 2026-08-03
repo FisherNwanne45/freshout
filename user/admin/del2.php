@@ -19,11 +19,12 @@ if ($id > 0) {
 }
 
 if (isset($_POST['delete']) && $id > 0) {
-    if ($reg_user->del($id)) {
-        $deleteuser = $reg_user->runQuery("DELETE FROM transfer WHERE id = '$id'");
-        $deleteuser->execute();
+  try {
+    $deleteuser = $reg_user->runQuery("DELETE FROM transfer WHERE id = :id");
+    $deleteuser->execute([':id' => $id]);
         header("Location: transfer_rec.php?success");
         exit();
+  } catch (Throwable $e) {
     }
 
     header("Location: transfer_rec.php?error");

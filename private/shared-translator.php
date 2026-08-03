@@ -64,6 +64,17 @@ $_gtsNameMap = [
 ];
 $_gtsCodes = array_filter(array_map('trim', explode(',', $_gtsLangs)));
 ?>
+<script>
+(function () {
+  if (document.querySelector('link[data-gts-fa="1"]')) return;
+  if (document.querySelector('link[href*="font-awesome"],link[href*="fontawesome"]')) return;
+  var fa = document.createElement('link');
+  fa.rel = 'stylesheet';
+  fa.href = 'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css';
+  fa.setAttribute('data-gts-fa', '1');
+  document.head.appendChild(fa);
+}());
+</script>
 <style>
 /* Pre-hide Google injected widget UI to prevent caret/arrow flash on slow loads */
 #google_translate_element,
@@ -87,8 +98,9 @@ iframe.skiptranslate {
 }
 </style>
 <div class="gts-wrap">
-  <select id="gts-select" class="gts-select" onchange="gtsSwitch(this.value)" aria-label="Select language" style="appearance:none!important;-webkit-appearance:none!important;-moz-appearance:none!important;overflow:hidden!important;background-image:url('data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%2212%22 height=%2212%22 viewBox=%220 0 24 24%22 fill=%22none%22%3E%3Cpath stroke=%22rgba(255,255,255,0.75)%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22 stroke-width=%222.5%22 d=%22M6 9l6 6 6-6%22/%3E%3C/svg%3E')!important;background-repeat:no-repeat!important;background-position:right 9px center!important;padding-right:28px!important;">
-    <option value="">&#127760; Language</option>
+  <span class="gts-icon" aria-hidden="true"><i class="fa fa-language"></i></span>
+  <select id="gts-select" class="gts-select" onchange="gtsSwitch(this.value)" aria-label="Select language" style="appearance:none!important;-webkit-appearance:none!important;-moz-appearance:none!important;overflow:hidden!important;background-image:url('data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%2212%22 height=%2212%22 viewBox=%220 0 24 24%22 fill=%22none%22%3E%3Cpath stroke=%22rgba(15,23,42,0.75)%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22 stroke-width=%222.5%22 d=%22M6 9l6 6 6-6%22/%3E%3C/svg%3E')!important;background-repeat:no-repeat!important;background-position:right 9px center!important;padding-right:28px!important;">
+    <option value="">Language</option>
     <?php foreach ($_gtsCodes as $_gtsCode): ?>
       <option value="en|<?= htmlspecialchars($_gtsCode) ?>"><?= htmlspecialchars($_gtsNameMap[$_gtsCode] ?? strtoupper($_gtsCode)) ?></option>
     <?php endforeach; ?>
@@ -236,9 +248,39 @@ function gtsApplyLanguage(lang, onFail){
   // Sync selector to the active translation cookie on load
   function gtsSync(){
     var lang = gtsReadPreferredLang();
-    if(!lang) return;
+    var val = lang ? ('en|' + lang) : '';
     var sel = document.getElementById('gts-select');
-    if(sel) sel.value = 'en|' + lang;
+    var mobileSel = document.getElementById('gts-select-mobile');
+    if(sel) sel.value = val;
+    if(mobileSel) mobileSel.value = val;
+  }
+
+  // Ensure translator remains visible on mobile even when nav containers are collapsed.
+  function gtsEnsureMobileMount(){
+    if (!window.matchMedia('(max-width: 900px)').matches) {
+      return;
+    }
+    if (document.getElementById('gts-mobile-wrap')) {
+      return;
+    }
+
+    var sourceWrap = document.querySelector('.gts-wrap');
+    if (!sourceWrap || !document.body) {
+      return;
+    }
+
+    var clone = sourceWrap.cloneNode(true);
+    clone.id = 'gts-mobile-wrap';
+    clone.classList.add('gts-mobile-wrap');
+
+    var cloneSelect = clone.querySelector('#gts-select');
+    if (cloneSelect) {
+      cloneSelect.id = 'gts-select-mobile';
+      cloneSelect.onchange = function () { gtsSwitch(this.value); };
+    }
+
+    document.body.appendChild(clone);
+    gtsSync();
   }
   // Hide the Google banner frame that appears when a translation is active
   function gtsSuppressBanner(){
@@ -263,11 +305,12 @@ function gtsApplyLanguage(lang, onFail){
     gtsSuppressInjectedUi();
   }
   if(document.readyState==='loading'){
-    document.addEventListener('DOMContentLoaded',function(){ gtsSync(); gtsSuppressBanner(); gtsSuppressInjectedUi(); });
+    document.addEventListener('DOMContentLoaded',function(){ gtsSync(); gtsEnsureMobileMount(); gtsSuppressBanner(); gtsSuppressInjectedUi(); });
   } else {
-    gtsSync(); gtsSuppressBanner(); gtsSuppressInjectedUi();
+    gtsSync(); gtsEnsureMobileMount(); gtsSuppressBanner(); gtsSuppressInjectedUi();
   }
-  new MutationObserver(function(){ gtsSuppressBanner(); gtsSuppressInjectedUi(); }).observe(document.documentElement,{childList:true,subtree:true,attributes:true});
+  window.addEventListener('resize', gtsEnsureMobileMount);
+  new MutationObserver(function(){ gtsEnsureMobileMount(); gtsSuppressBanner(); gtsSuppressInjectedUi(); }).observe(document.documentElement,{childList:true,subtree:true,attributes:true});
   setInterval(function(){ gtsSuppressBanner(); gtsSuppressInjectedUi(); },250);
 }());
 </script>
@@ -275,20 +318,28 @@ function gtsApplyLanguage(lang, onFail){
 
 <style>
 /* ── Custom language selector ─────────────────────────── */
-.gts-wrap { display:inline-flex; align-items:center; vertical-align:middle; }
+.gts-wrap { display:inline-flex; align-items:center; vertical-align:middle; position:relative; }
+.gts-icon {
+  position: absolute;
+  left: 10px;
+  color: #334155;
+  font-size: 12px;
+  line-height: 1;
+  pointer-events: none;
+}
 .gts-select {
   appearance: none !important;
   -webkit-appearance: none !important;
   -moz-appearance: none !important;
-  background-color: rgba(255,255,255,0.10);
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none'%3E%3Cpath stroke='rgba(255,255,255,0.75)' stroke-linecap='round' stroke-linejoin='round' stroke-width='2.5' d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+  background-color: #ffffff;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none'%3E%3Cpath stroke='rgba(15,23,42,0.75)' stroke-linecap='round' stroke-linejoin='round' stroke-width='2.5' d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
   background-repeat: no-repeat;
   background-position: right 9px center;
   background-size: 12px;
-  border: 1px solid rgba(255,255,255,0.28);
-  color: #ffffff;
+  border: 1px solid #cbd5e1;
+  color: #0f172a;
   border-radius: 999px;
-  padding: 5px 28px 5px 12px;
+  padding: 5px 28px 5px 30px;
   font-size: 11.5px;
   font-weight: 600;
   line-height: 1.4;
@@ -317,12 +368,30 @@ function gtsApplyLanguage(lang, onFail){
 select.goog-te-combo,
 select.goog-te-combo * { display: none !important; visibility: hidden !important; width: 0 !important; height: 0 !important; margin: 0 !important; padding: 0 !important; pointer-events: none !important; }
 .gts-select:hover {
-  background-color: rgba(255,255,255,0.18);
-  border-color: rgba(255,255,255,0.50);
+  background-color: #f8fafc;
+  border-color: #94a3b8;
 }
 .gts-select option {
-  background: #1e293b;
-  color: #f1f5f9;
+  background: #ffffff;
+  color: #0f172a;
+}
+
+@media only screen and (max-width: 900px) {
+  .gts-mobile-wrap {
+    position: fixed !important;
+    right: 12px;
+    bottom: 14px;
+    z-index: 2147483000;
+    background: rgba(255,255,255,0.96);
+    border: 1px solid #cbd5e1;
+    border-radius: 999px;
+    padding: 2px;
+    box-shadow: 0 6px 18px rgba(15, 23, 42, 0.2);
+  }
+  .gts-mobile-wrap .gts-select {
+    min-width: 132px;
+    font-size: 12px;
+  }
 }
 /* ── Banner / body-shift suppression ─────────────────── */
 .goog-te-banner-frame,

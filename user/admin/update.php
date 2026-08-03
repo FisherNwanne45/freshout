@@ -41,7 +41,7 @@ require_once __DIR__ . '/partials/admin-shell-open.php';
           <th class="px-3 py-2.5 text-left text-xs font-semibold text-gray-600 uppercase tracking-wide">Acc No</th>
           <th class="px-3 py-2.5 text-left text-xs font-semibold text-gray-600 uppercase tracking-wide">Email</th>
           <th class="px-3 py-2.5 text-left text-xs font-semibold text-gray-600 uppercase tracking-wide">Type</th>
-          <th class="px-3 py-2.5 text-left text-xs font-semibold text-gray-600 uppercase tracking-wide">Balance</th>
+          <th class="px-3 py-2.5 text-left text-xs font-semibold text-gray-600 uppercase tracking-wide">Curr/Balance</th>
           <th class="px-3 py-2.5 text-left text-xs font-semibold text-gray-600 uppercase tracking-wide">Status</th>
           <th class="px-3 py-2.5 text-left text-xs font-semibold text-gray-600 uppercase tracking-wide">Action</th>
         </tr>
@@ -54,7 +54,7 @@ require_once __DIR__ . '/partials/admin-shell-open.php';
           <td class="px-3 py-3 text-sm text-gray-700 font-mono text-xs"><?= htmlspecialchars($row['acc_no']) ?></td>
           <td class="px-3 py-3 text-sm text-gray-700"><?= htmlspecialchars($row['email']) ?></td>
           <td class="px-3 py-3 text-sm text-gray-700"><?= htmlspecialchars($row['type']) ?></td>
-          <td class="px-3 py-3 text-sm text-gray-700 text-right font-medium"><?= number_format((float)$row['t_bal'],2) ?></td>
+          <td class="px-3 py-3 text-sm text-gray-700 font-medium"><?= htmlspecialchars($row['currency']) ?> <?= number_format((float)$row['t_bal'],2) ?></td>
           <td class="px-3 py-3 text-sm text-gray-700">
             <span class="inline-flex px-2.5 py-0.5 rounded-full text-xs font-medium
               <?= $row['status']==='Active' ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500' ?>">

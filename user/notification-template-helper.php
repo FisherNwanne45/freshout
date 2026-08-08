@@ -237,7 +237,7 @@ if (!function_exists('notification_template_default_overrides')) {
             ],
             'transaction_alert' => [
                 'subject' => 'Transaction Alert: {{transaction_type}}',
-                'body' => '<p>Hello {{name}},</p><p>A transaction update is available on your account.</p><p><strong>Type:</strong> {{transaction_type}}<br><strong>Amount:</strong> {{currency}} {{amount}}<br><strong>Description:</strong> {{description}}<br><strong>Status:</strong> {{status}}</p>',
+                'body' => '<p>Hello {{name}},</p><p>A transaction update is available on your account.</p><p><strong>Type:</strong> {{transaction_type}}<br><strong>Amount:</strong> {{currency}} {{amount}}<br><strong>Description:</strong> {{description}}<br><strong>Balance:</strong> {{currency}} {{balance}}<br><strong>Date:</strong> {{date}}<br><strong>Status:</strong> {{status}}</p>',
             ],
             'otp_code' => [
                 'subject' => 'Your One-Time Password (OTP)',

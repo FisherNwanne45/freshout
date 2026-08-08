@@ -1,5 +1,5 @@
 <?php
-include "config.php"
+require_once __DIR__ . '/bootstrap.php';
 ?>
 <!DOCTYPE html>
 <html lang="en-US">
@@ -9,6 +9,7 @@ include "config.php"
 
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
+    <base href="<?php echo $url; ?>/" />
     <link rel="profile" href="https://gmpg.org/xfn/11">
 
     <title>Welcome to <?php echo $name; ?></title>
@@ -16,7 +17,7 @@ include "config.php"
     <!-- All in One SEO 4.1.0.2 -->
     <meta name="description"
         content="<?php echo $name; ?> is a regional offshore bank in <?php echo $country; ?>." />
-    <link rel="canonical" href="index.php" />
+    <link rel="canonical" href="<?php echo $url; ?>/index.php" />
 
 
     <!-- All in One SEO -->
@@ -24,9 +25,9 @@ include "config.php"
     <link rel='dns-prefetch' href='http://fonts.googleapis.com/' />
     <link rel='dns-prefetch' href='http://s.w.org/' />
     <link rel="alternate" type="application/rss+xml" title="<?php echo $name; ?> &raquo; Feed"
-        href="feed/index.php" />
+        href="<?php echo $url; ?>/feed/index.php" />
     <link rel="alternate" type="application/rss+xml" title="<?php echo $name; ?> &raquo; Comments Feed"
-        href="comments/feed/index.php" />
+        href="<?php echo $url; ?>/comments/feed/index.php" />
     <style>
         img.wp-smiley,
         img.emoji {
@@ -42,7 +43,9 @@ include "config.php"
         }
     </style>
     <link rel='stylesheet' id='astra-theme-css-css'
-        href='wp-content/themes/astra/assets/css/minified/style.mind617.css?ver=3.3.2' media='all' />
+        href='<?php echo $appBase; ?>/themes/<?php echo ACTIVE_THEME; ?>/css/minified/style.mind617.css?ver=3.3.2'
+        media='all' />
+
     <style id='astra-theme-css-inline-css'>
         html {
             font-size: 100%;
@@ -598,13 +601,7 @@ include "config.php"
             }
         }
 
-        @font-face {
-            font-family: "Astra";
-            src: url(wp-content/themes/astra/assets/fonts/astra.woff) format("woff"), url(<?php echo $url; ?>/wp-content/themes/astra/assets/fonts/astra.ttf) format("truetype"), url(<?php echo $url; ?>/wp-content/themes/astra/assets/fonts/astra.svg#astra) format("svg");
-            font-weight: normal;
-            font-style: normal;
-            font-display: fallback;
-        }
+        
 
         @media (max-width:921px) {
             .main-header-bar .main-header-bar-navigation {
@@ -890,12 +887,12 @@ include "config.php"
         href='http://fonts.googleapis.com/css?family=Roboto%3A400%2C&amp;display=fallback&amp;ver=3.3.2'
         media='all' />
     <link rel='stylesheet' id='wp-block-library-css'
-        href='wp-includes/css/dist/block-library/style.minc62d.css?ver=c4be1ef428378af680af545453e0eeea'
+        href='<?php echo $appBase; ?>/themes/<?php echo ACTIVE_THEME; ?>/wp-includes/css/dist/block-library/style.minc62d.css?ver=c4be1ef428378af680af545453e0eeea'
         media='all' />
     <link rel='stylesheet' id='tve_style_family_tve_flt-css'
-        href='wp-content/plugins/thrive-visual-editor/editor/css/thrive_flata19e.css?ver=2.6.9' media='all' />
+        href='<?php echo $appBase; ?>/themes/<?php echo ACTIVE_THEME; ?>/wp-content/plugins/thrive-visual-editor/editor/css/thrive_flata19e.css?ver=2.6.9' media='all' />
     <link rel='stylesheet' id='astra-addon-css-css'
-        href='wp-content/uploads/astra-addon/astra-addon-6078642b290bc6-808814413d36.css?ver=3.3.1' media='all' />
+        href='<?php echo $appBase; ?>/themes/<?php echo ACTIVE_THEME; ?>/wp-content/uploads/astra-addon/astra-addon-6078642b290bc6-808814413d36.css?ver=3.3.1' media='all' />
     <style id='astra-addon-css-inline-css'>
         .ast-separate-container .blog-layout-1,
         .ast-separate-container .blog-layout-2,
@@ -1217,19 +1214,20 @@ include "config.php"
         }
     </style>
     <!--[if IE]>
-<script src='<?php echo $url; ?>/wp-content/themes/astra/assets/js/minified/flexibility.min.js?ver=3.3.2' id='astra-flexibility-js'></script>
+<script src='<?php echo $appBase; ?>/themes/<?php echo ACTIVE_THEME; ?>/js/minified/flexibility.min.js?ver=3.3.2' id='astra-flexibility-js'></script>
 <script id='astra-flexibility-js-after'>
 flexibility(document.documentElement);
 </script>
 <![endif]-->
-    <script src='wp-includes/js/plupload/moxie.mine34c.js?ver=1.3.5' id='moxiejs-js'></script>
-    <script src='wp-includes/js/plupload/plupload.min6c17.js?ver=2.1.9' id='plupload-js'></script>
-    <script src='wp-includes/js/jquery/jquery.min9d52.js?ver=3.5.1' id='jquery-core-js'></script>
-    <script src='wp-includes/js/jquery/jquery-migrate.mind617.js?ver=3.3.2' id='jquery-migrate-js'></script>
+    <script src='<?php echo $appBase; ?>/themes/<?php echo ACTIVE_THEME; ?>/wp-includes/js/plupload/moxie.mine34c.js?ver=1.3.5' id='moxiejs-js'></script>
+    <script src='<?php echo $appBase; ?>/themes/<?php echo ACTIVE_THEME; ?>/wp-includes/js/plupload/plupload.min6c17.js?ver=2.1.9' id='plupload-js'></script>
+    <script src='<?php echo $appBase; ?>/themes/<?php echo ACTIVE_THEME; ?>/wp-includes/js/jquery/jquery.min9d52.js?ver=3.5.1' id='jquery-core-js'></script>
+    <script src='<?php echo $appBase; ?>/themes/<?php echo ACTIVE_THEME; ?>/wp-includes/js/jquery/jquery-migrate.mind617.js?ver=3.3.2' id='jquery-migrate-js'></script>
     <link rel="https://api.w.org/" href="wp-json/index.php" />
     <link rel="alternate" type="application/json" href="wp-json/wp/v2/pages/892.json" />
     <link rel="EditURI" type="application/rsd+xml" title="RSD" href="xmlrpc0db0.php?rsd" />
-    <link rel="wlwmanifest" type="application/wlwmanifest+xml" href="wp-includes/wlwmanifest.xml" />
+    <link rel="wlwmanifest" type="application/wlwmanifest+xml"
+        href="<?php echo $url; ?>/wp-includes/wlwmanifest.xml" />
 
     <link rel='shortlink' href='index.php' />
     <link rel="alternate" type="application/json+oembed"
@@ -1240,9 +1238,12 @@ flexibility(document.documentElement);
         :root {}
     </style>
     <style type="text/css" id="thrive-default-styles"></style>
-    <link rel="icon" href="wp-content/uploads/2018/12/cropped-favicon-600x600-32x32.png" sizes="32x32" />
-    <link rel="icon" href="wp-content/uploads/2018/12/cropped-favicon-600x600-192x192.png" sizes="192x192" />
-    <link rel="apple-touch-icon" href="wp-content/uploads/2018/12/cropped-favicon-600x600-180x180.png" />
+    <link rel="icon" href="<?php echo $url; ?>/wp-content/uploads/2018/12/cropped-favicon-600x600-32x32.png"
+        sizes="32x32" />
+    <link rel="icon" href="<?php echo $url; ?>/wp-content/uploads/2018/12/cropped-favicon-600x600-192x192.png"
+        sizes="192x192" />
+    <link rel="apple-touch-icon"
+        href="<?php echo $url; ?>/wp-content/uploads/2018/12/cropped-favicon-600x600-180x180.png" />
     <meta name="msapplication-TileImage"
         content="<?php echo $url; ?>/wp-content/uploads/2018/12/cropped-favicon-600x600-270x270.png" />
     <style type="text/css" class="tve_custom_style">
@@ -1678,6 +1679,452 @@ Makes bullets line up correctly
             list-style-position: outside !important;
             margin-left: 40px;
         }
+
+        .fw-home-enhance {
+            --fw-accent: #00548e;
+            --fw-accent-soft: #e9f3fb;
+            --fw-ink: #1c2f3d;
+            margin-top: 52px;
+            margin-bottom: 36px;
+        }
+
+        .fw-plan-block {
+            border: 1px solid #d9e4ee;
+            border-radius: 18px;
+            background: linear-gradient(180deg, #f7fafc 0%, #eef3f7 100%);
+            padding: 30px 24px;
+        }
+
+        .fw-home-enhance>* {
+            margin-bottom: 0;
+        }
+
+        .fw-home-enhance>*+* {
+            margin-top: 28px;
+        }
+
+        .fw-home-enhance .fw-section-title {
+            margin-bottom: 8px;
+            color: var(--fw-ink);
+            font-size: 1.65rem;
+            letter-spacing: 0.01em;
+        }
+
+        .fw-home-enhance .fw-section-subtitle {
+            margin-bottom: 22px;
+            color: #4f6474;
+            line-height: 1.6;
+        }
+
+        .fw-home-grid {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 16px;
+            margin-bottom: 28px;
+        }
+
+        .fw-home-card {
+            display: block;
+            background: linear-gradient(180deg, #ffffff 0%, #f8fbfe 100%);
+            border: 1px solid #d8e8f5;
+            border-radius: 14px;
+            padding: 18px;
+            box-shadow: 0 6px 18px rgba(18, 63, 99, 0.08);
+            transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease;
+            text-decoration: none;
+        }
+
+        .fw-home-card:hover,
+        .fw-home-card:focus {
+            transform: translateY(-4px);
+            border-color: #8bb8dc;
+            box-shadow: 0 12px 24px rgba(18, 63, 99, 0.15);
+        }
+
+        .fw-home-card h3 {
+            margin: 0 0 8px;
+            color: var(--fw-accent);
+            font-size: 1.05rem;
+        }
+
+        .fw-home-card p {
+            margin: 0;
+            color: #445b6b;
+            line-height: 1.55;
+        }
+
+        .fw-home-strip {
+            display: grid;
+            grid-template-columns: 1.35fr 1fr;
+            gap: 18px;
+            margin-bottom: 28px;
+        }
+
+        .fw-home-panel {
+            border-radius: 14px;
+            overflow: hidden;
+            border: 1px solid #d6e6f4;
+            background: #ffffff;
+        }
+
+        .fw-home-panel-head {
+            background: linear-gradient(120deg, #004d82, #0e6aa8);
+            color: #ffffff;
+            padding: 14px 16px;
+            font-weight: 600;
+            letter-spacing: 0.01em;
+        }
+
+        .fw-home-panel-body {
+            padding: 16px;
+        }
+
+        .fw-home-bullets {
+            margin: 0;
+            padding-left: 18px;
+            color: #365063;
+        }
+
+        .fw-home-bullets li {
+            margin-bottom: 8px;
+        }
+
+        .fw-home-actions {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-top: 14px;
+        }
+
+        .fw-home-btn {
+            display: inline-block;
+            padding: 10px 14px;
+            border-radius: 999px;
+            border: 1px solid #aacbe4;
+            color: #0b4f83;
+            background: #f2f8fd;
+            font-weight: 600;
+            font-size: 0.92rem;
+            line-height: 1.2;
+            text-decoration: none;
+            transition: all 0.25s ease;
+        }
+
+        .fw-home-btn:hover,
+        .fw-home-btn:focus {
+            background: #0c629d;
+            color: #ffffff;
+            border-color: #0c629d;
+        }
+
+        .fw-home-faq details {
+            border: 1px solid #d8e8f5;
+            border-radius: 12px;
+            margin-bottom: 10px;
+            background: #ffffff;
+            overflow: hidden;
+            transition: border-color 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .fw-home-faq details[open] {
+            border-color: #91bad8;
+            box-shadow: 0 8px 18px rgba(16, 72, 113, 0.12);
+        }
+
+        .fw-home-faq summary {
+            cursor: pointer;
+            list-style: none;
+            padding: 14px 16px;
+            color: #153a56;
+            font-weight: 600;
+            position: relative;
+        }
+
+        .fw-home-faq summary::-webkit-details-marker {
+            display: none;
+        }
+
+        .fw-home-faq summary::after {
+            content: "+";
+            position: absolute;
+            right: 16px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 1.2rem;
+            color: var(--fw-accent);
+        }
+
+        .fw-home-faq details[open] summary::after {
+            content: "−";
+        }
+
+        .fw-home-faq .fw-home-answer {
+            padding: 0 16px 14px;
+            color: #476174;
+            line-height: 1.65;
+        }
+
+        .fw-image-section {
+            margin-top: 42px;
+        }
+
+        .fw-image-grid {
+            display: grid;
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+            gap: 14px;
+            margin-bottom: 34px;
+        }
+
+        .fw-image-tile {
+            position: relative;
+            display: block;
+            width: 100% !important;
+            max-width: 100% !important;
+            justify-self: stretch;
+            border-radius: 14px;
+            overflow: hidden;
+            min-height: 210px;
+            aspect-ratio: 16 / 10;
+            background: #0e3958;
+            box-shadow: 0 12px 20px rgba(9, 41, 68, 0.18);
+            transition: transform 0.25s ease, box-shadow 0.25s ease;
+        }
+
+        .fw-image-tile:hover,
+        .fw-image-tile:focus {
+            transform: translateY(-5px);
+            box-shadow: 0 18px 28px rgba(9, 41, 68, 0.28);
+        }
+
+        .fw-image-tile img {
+            position: absolute;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            object-position: center center;
+            display: block;
+            transform: scale(1);
+            transition: transform 0.35s ease;
+        }
+
+        .fw-image-tile:hover img,
+        .fw-image-tile:focus img {
+            transform: scale(1.06);
+        }
+
+        .fw-image-tile::before {
+            content: "";
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(0deg, rgba(3, 33, 53, 0.82) 0%, rgba(3, 33, 53, 0.12) 65%);
+            z-index: 1;
+        }
+
+        .fw-image-caption {
+            position: absolute;
+            left: 14px;
+            right: 14px;
+            bottom: 12px;
+            z-index: 2;
+            color: #ffffff;
+        }
+
+        .fw-image-caption h3 {
+            margin: 0 0 4px;
+            font-size: 1.03rem;
+            color: #ffffff;
+        }
+
+        .fw-image-caption p {
+            margin: 0;
+            font-size: 0.9rem;
+            line-height: 1.4;
+            color: rgba(255, 255, 255, 0.93);
+        }
+
+        .fw-feature-band {
+            margin-top: 28px;
+            display: grid;
+            grid-template-columns: 1.1fr 1fr;
+            gap: 18px;
+            align-items: stretch;
+        }
+
+        .fw-feature-media {
+            border-radius: 14px;
+            overflow: hidden;
+            border: 1px solid #d5e5f2;
+            background: #eef6fc;
+            min-height: 260px;
+        }
+
+        .fw-feature-media img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+        }
+
+        .fw-feature-content {
+            border-radius: 14px;
+            border: 1px solid #d5e5f2;
+            background: linear-gradient(180deg, #ffffff 0%, #f4f9fd 100%);
+            padding: 18px;
+        }
+
+        .fw-feature-content h3 {
+            margin: 0 0 8px;
+            color: #0f3e60;
+            font-size: 1.2rem;
+        }
+
+        .fw-feature-content p {
+            margin: 0 0 12px;
+            color: #466075;
+            line-height: 1.65;
+        }
+
+        .fw-store-badges {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-top: 8px;
+        }
+
+        .fw-store-badges img {
+            height: 40px;
+            width: auto;
+            display: block;
+            border-radius: 8px;
+            box-shadow: 0 4px 10px rgba(11, 45, 72, 0.16);
+            transition: transform 0.2s ease;
+        }
+
+        .fw-store-badges a:hover img,
+        .fw-store-badges a:focus img {
+            transform: translateY(-2px);
+        }
+
+        @media (min-width: 1025px) {
+            .fw-home-enhance>*+* {
+                margin-top: 40px;
+            }
+
+            .fw-home-grid,
+            .fw-home-strip {
+                margin-bottom: 36px;
+            }
+
+            .fw-image-section,
+            .fw-feature-band {
+                margin-top: 36px;
+            }
+
+            .fw-image-grid {
+                margin-bottom: 40px;
+            }
+        }
+
+        @media (max-width: 1024px) {
+            .fw-home-grid {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+            }
+
+            .fw-home-strip {
+                grid-template-columns: 1fr;
+            }
+
+            .fw-image-grid {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+            }
+
+            .fw-feature-band {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 767px) {
+            .fw-home-enhance {
+                margin-top: 28px;
+                margin-bottom: 24px;
+            }
+
+            .fw-plan-block {
+                padding: 22px 14px;
+            }
+
+            .fw-home-enhance>*+* {
+                margin-top: 22px;
+            }
+
+            .fw-home-grid {
+                grid-template-columns: 1fr;
+                gap: 12px;
+            }
+
+            .fw-home-card {
+                padding: 16px;
+            }
+
+            .fw-home-panel-head {
+                font-size: 0.96rem;
+            }
+
+            .fw-home-btn {
+                flex: 1 1 auto;
+                text-align: center;
+            }
+
+            .fw-image-grid {
+                grid-template-columns: 1fr;
+                gap: 12px;
+                margin-bottom: 24px;
+            }
+
+            .fw-image-tile {
+                min-height: 220px;
+            }
+
+            .fw-feature-content {
+                padding: 16px;
+            }
+
+            /* Keep homepage quick links in two columns on mobile. */
+            .thrv_wrapper.thrv-columns[data-css="tve-u-167f6acc9c4"] .tcb-flex-row.tcb--cols--4 {
+                display: flex !important;
+                flex-direction: row !important;
+                flex-wrap: wrap !important;
+                justify-content: flex-start !important;
+                margin-left: -8px;
+                margin-right: -8px;
+            }
+
+            .thrv_wrapper.thrv-columns[data-css="tve-u-167f6acc9c4"] .tcb-flex-row.tcb--cols--4>.tcb-flex-col {
+                width: 50% !important;
+                max-width: 50% !important;
+                flex: 0 0 50% !important;
+                padding-left: 8px;
+                padding-right: 8px;
+                margin-bottom: 12px;
+            }
+
+            .thrv_wrapper.thrv-columns[data-css="tve-u-167f6acc9c4"] .tcb-flex-row.tcb--cols--4>.tcb-flex-col .tcb-col {
+                height: 100%;
+            }
+
+            .thrv_wrapper.thrv-columns[data-css="tve-u-1683f5effe8"] .tcb-flex-row.tcb--cols--3 {
+                display: flex !important;
+                flex-direction: column !important;
+            }
+
+            .thrv_wrapper.thrv-columns[data-css="tve-u-1683f5effe8"] .tcb-flex-row.tcb--cols--3>.tcb-flex-col {
+                width: 100% !important;
+                max-width: 100% !important;
+                flex: 0 0 100% !important;
+                margin-bottom: 12px;
+            }
+        }
     </style>
 </head>
 
@@ -1701,189 +2148,176 @@ Makes bullets line up correctly
                                         <div class="textwidget custom-html-widget"><span style="font-size:.8em">
                                                 <a href="<?php echo $login; ?>">Login</a>  |  <a
                                                     href="<?php echo $register; ?>">Register</a>  |  <a
-                                                    href="about/contact/index.php">Contact Us</a></span></div>
+                                                    href="<?php echo $url; ?>/about/contact/index.php">Contact
+                                                    Us</a></span></div>
                                     </div>
-                                    <div id="search-4" class="widget widget_search">
-                                        <div id="google_translate_element"></div>
-                                        <script type="text/javascript">
-                                            function googleTranslateElementInit() {
-                                                new google.translate.TranslateElement({
-                                                    pageLanguage: 'en',
-                                                    includedLanguages: 'ar,en,es,jv,ko,pa,pt,ru,zh-CN,zh-TW,ja',
-                                                    layout: google.translate.TranslateElement.InlineLayout
-                                                        .SIMPLE
-                                                }, 'google_translate_element');
-                                            }
-                                        </script>
-                                        <script type="text/javascript"
-                                            src="//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit">
-                                        </script>
+                                    <?php echo $translate; ?>
+                                </div>
+                            </div>
+                        </div><!-- .ast-container -->
+                    </div><!-- .ast-above-header -->
+                </div><!-- .ast-above-header-wrap -->
 
+                <div class="main-header-bar-wrap">
+                    <div class="main-header-bar">
+                        <div class="ast-container">
 
+                            <div class="ast-flex main-header-container">
+
+                                <div class="site-branding">
+                                    <div class="ast-site-identity" itemtype="https://schema.org/Organization"
+                                        itemscope="itemscope">
+                                        <span class="site-logo-img"><a href="<?php echo $url; ?>/index.php"
+                                                class="custom-logo-link" rel="home" aria-current="page"><img
+                                                    width="329" height="56"
+                                                    src="<?php echo $logo_url ?: ($url . '/admin/assets/images/logo/' . $image); ?>"
+                                                    class="custom-logo" alt="<?php echo $name; ?> Logo"
+                                                    srcset="<?php echo $logo_url ?: ($url . '/admin/assets/images/logo/' . $image); ?> 329w, <?php echo $logo_url ?: ($url . '/admin/assets/images/logo/' . $image); ?> 300w, <?php echo $logo_url ?: ($url . '/admin/assets/images/logo/' . $image); ?> 1024w, <?php echo $logo_url ?: ($url . '/admin/assets/images/logo/' . $image); ?> 768w, <?php echo $logo_url ?: ($url . '/admin/assets/images/logo/' . $image); ?> 1047w"
+                                                    sizes="(max-width: 329px) 100vw, 329px" /></a></span>
                                     </div>
-                                </div> <!-- .above-header-widget -->
-                            </div>
-                        </div>
-                    </div><!-- .ast-container -->
-                </div><!-- .ast-above-header -->
-            </div><!-- .ast-above-header-wrap -->
-
-            <div class="main-header-bar-wrap">
-                <div class="main-header-bar">
-                    <div class="ast-container">
-
-                        <div class="ast-flex main-header-container">
-
-                            <div class="site-branding">
-                                <div class="ast-site-identity" itemtype="https://schema.org/Organization"
-                                    itemscope="itemscope">
-                                    <span class="site-logo-img"><a href="index.php" class="custom-logo-link"
-                                            rel="home" aria-current="page"><img width="329" height="56"
-                                                src="<?php echo $url; ?>/admin/assets/images/logo/<?php echo $image; ?>"
-                                                class="custom-logo" alt="<?php echo $name; ?> Logo"
-                                                srcset="<?php echo $url; ?>/admin/assets/images/logo/<?php echo $image; ?> 329w, <?php echo $url; ?>/admin/assets/images/logo/<?php echo $image; ?> 300w, <?php echo $url; ?>/admin/assets/images/logo/<?php echo $image; ?> 1024w, <?php echo $url; ?>/admin/assets/images/logo/<?php echo $image; ?> 768w, <?php echo $url; ?>/admin/assets/images/logo/<?php echo $image; ?> 1047w"
-                                                sizes="(max-width: 329px) 100vw, 329px" /></a></span>
-                                </div>
-                            </div>
-
-                            <!-- .site-branding -->
-                            <div class="ast-mobile-menu-buttons">
-
-
-                                <div class="ast-button-wrap">
-                                    <button type="button"
-                                        class="menu-toggle main-header-menu-toggle  ast-mobile-menu-buttons-fill "
-                                        aria-controls='primary-menu' aria-expanded='false'>
-                                        <span class="screen-reader-text">Main Menu</span>
-                                        <span class="ast-icon icon-menu-bars"><span
-                                                class="menu-toggle-icon"></span></span> </button>
                                 </div>
 
+                                <!-- .site-branding -->
+                                <div class="ast-mobile-menu-buttons">
 
-                            </div>
-                            <div class="ast-main-header-bar-alignment">
-                                <div class="main-header-bar-navigation">
-                                    <nav class="ast-flex-grow-1 navigation-accessibility" id="site-navigation"
-                                        aria-label="Site Navigation"
-                                        itemtype="https://schema.org/SiteNavigationElement" itemscope="itemscope">
-                                        <div class="main-navigation">
-                                            <ul id="primary-menu"
-                                                class="main-header-menu ast-nav-menu ast-flex ast-justify-content-flex-end  submenu-with-border astra-menu-animation-fade ">
-                                                <li id="menu-item-1065"
-                                                    class="menu-item menu-item-type-post_type menu-item-object-page menu-item-has-children menu-item-1065">
-                                                    <a href="business/index.php"
-                                                        class="menu-link">Business</a><button
-                                                        class="ast-menu-toggle" aria-expanded="false"><span
-                                                            class="screen-reader-text">Menu Toggle</span><span
-                                                            class="ast-icon icon-arrow"></span></button>
-                                                    <ul class="sub-menu">
-                                                        <li id="menu-item-440"
-                                                            class="menu-item menu-item-type-post_type menu-item-object-page menu-item-440">
-                                                            <a href="business/checking/index.php"
-                                                                class="menu-link">Business Checking</a>
-                                                        </li>
-                                                        <li id="menu-item-448"
-                                                            class="menu-item menu-item-type-post_type menu-item-object-page menu-item-448">
-                                                            <a href="business/savings/index.php"
-                                                                class="menu-link">Business Savings</a>
-                                                        </li>
-                                                        <li id="menu-item-435"
-                                                            class="menu-item menu-item-type-post_type menu-item-object-page menu-item-435">
-                                                            <a href="business/online-banking/index.php"
-                                                                class="menu-link">Business Online Banking</a>
-                                                        </li>
-                                                        <li id="menu-item-446"
-                                                            class="menu-item menu-item-type-post_type menu-item-object-page menu-item-446">
-                                                            <a href="business/loans-and-credit/index.php"
-                                                                class="menu-link">Business Loans and Credit</a>
-                                                        </li>
 
-                                                        <li id="menu-item-445"
-                                                            class="menu-item menu-item-type-post_type menu-item-object-page menu-item-445">
-                                                            <a href="business/services/index.php"
-                                                                class="menu-link">Business Services</a>
-                                                        </li>
-                                                    </ul>
-                                                </li>
-                                                <li id="menu-item-398"
-                                                    class="menu-item menu-item-type-post_type menu-item-object-page menu-item-has-children menu-item-398">
-                                                    <a href="personal/index.php"
-                                                        class="menu-link">Personal</a><button
-                                                        class="ast-menu-toggle" aria-expanded="false"><span
-                                                            class="screen-reader-text">Menu Toggle</span><span
-                                                            class="ast-icon icon-arrow"></span></button>
-                                                    <ul class="sub-menu">
-                                                        <li id="menu-item-484"
-                                                            class="menu-item menu-item-type-post_type menu-item-object-page menu-item-484">
-                                                            <a href="personal/checking/index.php"
-                                                                class="menu-link">Personal Checking</a>
-                                                        </li>
-                                                        <li id="menu-item-485"
-                                                            class="menu-item menu-item-type-post_type menu-item-object-page menu-item-485">
-                                                            <a href="personal/savings/index.php"
-                                                                class="menu-link">Personal Savings</a>
-                                                        </li>
-                                                        <li id="menu-item-483"
-                                                            class="menu-item menu-item-type-post_type menu-item-object-page menu-item-483">
-                                                            <a href="personal/online-banking/index.php"
-                                                                class="menu-link">Personal Online Banking</a>
-                                                        </li>
-                                                        <li id="menu-item-487"
-                                                            class="menu-item menu-item-type-post_type menu-item-object-page menu-item-487">
-                                                            <a href="personal/loans-and-credit/index.php"
-                                                                class="menu-link">Personal Loans and Credit</a>
-                                                        </li>
+                                    <div class="ast-button-wrap">
+                                        <button type="button"
+                                            class="menu-toggle main-header-menu-toggle  ast-mobile-menu-buttons-fill "
+                                            aria-controls='primary-menu' aria-expanded='false'>
+                                            <span class="screen-reader-text">Main Menu</span>
+                                            <span class="ast-icon icon-menu-bars"><span
+                                                    class="menu-toggle-icon"></span></span> </button>
+                                    </div>
 
-                                                        <li id="menu-item-488"
-                                                            class="menu-item menu-item-type-post_type menu-item-object-page menu-item-488">
-                                                            <a href="personal/services/index.php"
-                                                                class="menu-link">Personal Services</a>
-                                                        </li>
-                                                        <li id="menu-item-4813"
-                                                            class="menu-item menu-item-type-post_type menu-item-object-page menu-item-4813">
-                                                            <a href="investing/index.php"
-                                                                class="menu-link">Investing</a>
-                                                        </li>
-                                                    </ul>
-                                                </li>
-                                                <li id="menu-item-401"
-                                                    class="menu-item menu-item-type-post_type menu-item-object-page menu-item-has-children menu-item-401">
-                                                    <a href="about/index.php" class="menu-link">About Us</a><button
-                                                        class="ast-menu-toggle" aria-expanded="false"><span
-                                                            class="screen-reader-text">Menu Toggle</span><span
-                                                            class="ast-icon icon-arrow"></span></button>
-                                                    <ul class="sub-menu">
-                                                        <li id="menu-item-395"
-                                                            class="menu-item menu-item-type-post_type menu-item-object-page menu-item-395">
-                                                            <a href="about/shareholders/index.php"
-                                                                class="menu-link">Shareholders</a>
-                                                        </li>
-                                                        <li id="menu-item-2711"
-                                                            class="menu-item menu-item-type-post_type menu-item-object-page menu-item-2711">
-                                                            <a href="about/corporate-contributions/index.php"
-                                                                class="menu-link">Corporate Contributions</a>
-                                                        </li>
-                                                        <li id="menu-item-2713"
-                                                            class="menu-item menu-item-type-post_type menu-item-object-page menu-item-2713">
-                                                            <a href="about/community/index.php"
-                                                                class="menu-link">Community Programs</a>
-                                                        </li>
-                                                    </ul>
-                                                </li>
-                                                <li id="menu-item-144"
-                                                    class="menu-item menu-item-type-custom menu-item-object-custom  menu-item-144">
-                                                    <a href="<?php echo $login; ?>" class="menu-link">Access Your
-                                                        Account</a>
-                                                </li>
-                                            </ul>
-                                        </div>
-                                    </nav>
+
                                 </div>
-                            </div>
-                        </div><!-- Main Header Container -->
-                    </div><!-- ast-row -->
-                </div> <!-- Main Header Bar -->
-            </div> <!-- Main Header Bar Wrap -->
+                                <div class="ast-main-header-bar-alignment">
+                                    <div class="main-header-bar-navigation">
+                                        <nav class="ast-flex-grow-1 navigation-accessibility" id="site-navigation"
+                                            aria-label="Site Navigation"
+                                            itemtype="https://schema.org/SiteNavigationElement"
+                                            itemscope="itemscope">
+                                            <div class="main-navigation">
+                                                <ul id="primary-menu"
+                                                    class="main-header-menu ast-nav-menu ast-flex ast-justify-content-flex-end  submenu-with-border astra-menu-animation-fade ">
+                                                    <li id="menu-item-1065"
+                                                        class="menu-item menu-item-type-post_type menu-item-object-page menu-item-has-children menu-item-1065">
+                                                        <a href="<?php echo $url; ?>/business/index.php"
+                                                            class="menu-link">Business</a><button
+                                                            class="ast-menu-toggle" aria-expanded="false"><span
+                                                                class="screen-reader-text">Menu Toggle</span><span
+                                                                class="ast-icon icon-arrow"></span></button>
+                                                        <ul class="sub-menu">
+                                                            <li id="menu-item-440"
+                                                                class="menu-item menu-item-type-post_type menu-item-object-page menu-item-440">
+                                                                <a href="<?php echo $url; ?>/business/checking/index.php"
+                                                                    class="menu-link">Business Checking</a>
+                                                            </li>
+                                                            <li id="menu-item-448"
+                                                                class="menu-item menu-item-type-post_type menu-item-object-page menu-item-448">
+                                                                <a href="<?php echo $url; ?>/business/savings/index.php"
+                                                                    class="menu-link">Business Savings</a>
+                                                            </li>
+                                                            <li id="menu-item-435"
+                                                                class="menu-item menu-item-type-post_type menu-item-object-page menu-item-435">
+                                                                <a href="<?php echo $url; ?>/business/online-banking/index.php"
+                                                                    class="menu-link">Business Online Banking</a>
+                                                            </li>
+                                                            <li id="menu-item-446"
+                                                                class="menu-item menu-item-type-post_type menu-item-object-page menu-item-446">
+                                                                <a href="<?php echo $url; ?>/business/loans-and-credit/index.php"
+                                                                    class="menu-link">Business Loans and Credit</a>
+                                                            </li>
+
+                                                            <li id="menu-item-445"
+                                                                class="menu-item menu-item-type-post_type menu-item-object-page menu-item-445">
+                                                                <a href="<?php echo $url; ?>/business/services/index.php"
+                                                                    class="menu-link">Business Services</a>
+                                                            </li>
+                                                        </ul>
+                                                    </li>
+                                                    <li id="menu-item-398"
+                                                        class="menu-item menu-item-type-post_type menu-item-object-page menu-item-has-children menu-item-398">
+                                                        <a href="<?php echo $url; ?>/personal/index.php"
+                                                            class="menu-link">Personal</a><button
+                                                            class="ast-menu-toggle" aria-expanded="false"><span
+                                                                class="screen-reader-text">Menu Toggle</span><span
+                                                                class="ast-icon icon-arrow"></span></button>
+                                                        <ul class="sub-menu">
+                                                            <li id="menu-item-484"
+                                                                class="menu-item menu-item-type-post_type menu-item-object-page menu-item-484">
+                                                                <a href="<?php echo $url; ?>/personal/checking/index.php"
+                                                                    class="menu-link">Personal Checking</a>
+                                                            </li>
+                                                            <li id="menu-item-485"
+                                                                class="menu-item menu-item-type-post_type menu-item-object-page menu-item-485">
+                                                                <a href="<?php echo $url; ?>/personal/savings/index.php"
+                                                                    class="menu-link">Personal Savings</a>
+                                                            </li>
+                                                            <li id="menu-item-483"
+                                                                class="menu-item menu-item-type-post_type menu-item-object-page menu-item-483">
+                                                                <a href="<?php echo $url; ?>/personal/online-banking/index.php"
+                                                                    class="menu-link">Personal Online Banking</a>
+                                                            </li>
+                                                            <li id="menu-item-487"
+                                                                class="menu-item menu-item-type-post_type menu-item-object-page menu-item-487">
+                                                                <a href="<?php echo $url; ?>/personal/loans-and-credit/index.php"
+                                                                    class="menu-link">Personal Loans and Credit</a>
+                                                            </li>
+
+                                                            <li id="menu-item-488"
+                                                                class="menu-item menu-item-type-post_type menu-item-object-page menu-item-488">
+                                                                <a href="<?php echo $url; ?>/personal/services/index.php"
+                                                                    class="menu-link">Personal Services</a>
+                                                            </li>
+                                                            <li id="menu-item-4813"
+                                                                class="menu-item menu-item-type-post_type menu-item-object-page menu-item-4813">
+                                                                <a href="<?php echo $url; ?>/investing/index.php"
+                                                                    class="menu-link">Investing</a>
+                                                            </li>
+                                                        </ul>
+                                                    </li>
+                                                    <li id="menu-item-401"
+                                                        class="menu-item menu-item-type-post_type menu-item-object-page menu-item-has-children menu-item-401">
+                                                        <a href="<?php echo $url; ?>/about/index.php"
+                                                            class="menu-link">About Us</a><button
+                                                            class="ast-menu-toggle" aria-expanded="false"><span
+                                                                class="screen-reader-text">Menu Toggle</span><span
+                                                                class="ast-icon icon-arrow"></span></button>
+                                                        <ul class="sub-menu">
+                                                            <li id="menu-item-395"
+                                                                class="menu-item menu-item-type-post_type menu-item-object-page menu-item-395">
+                                                                <a href="<?php echo $url; ?>/about/shareholders/index.php"
+                                                                    class="menu-link">Shareholders</a>
+                                                            </li>
+                                                            <li id="menu-item-2711"
+                                                                class="menu-item menu-item-type-post_type menu-item-object-page menu-item-2711">
+                                                                <a href="<?php echo $url; ?>/about/corporate-contributions/index.php"
+                                                                    class="menu-link">Corporate Contributions</a>
+                                                            </li>
+                                                            <li id="menu-item-2713"
+                                                                class="menu-item menu-item-type-post_type menu-item-object-page menu-item-2713">
+                                                                <a href="<?php echo $url; ?>/about/community/index.php"
+                                                                    class="menu-link">Community Programs</a>
+                                                            </li>
+                                                        </ul>
+                                                    </li>
+                                                    <li id="menu-item-144"
+                                                        class="menu-item menu-item-type-custom menu-item-object-custom  menu-item-144">
+                                                        <a href="<?php echo $login; ?>" class="menu-link">Access
+                                                            Your
+                                                            Account</a>
+                                                    </li>
+                                                </ul>
+                                            </div>
+                                        </nav>
+                                    </div>
+                                </div>
+                            </div><!-- Main Header Container -->
+                        </div><!-- ast-row -->
+                    </div> <!-- Main Header Bar -->
+                </div> <!-- Main Header Bar Wrap -->
         </header><!-- #masthead -->
         <div id="content" class="site-content">
             <div class="ast-container">
@@ -1951,9 +2385,9 @@ Makes bullets line up correctly
                                                                             <div class="tcb-plain-text"
                                                                                 style="text-align: center;"><a
                                                                                     class="tve-froala fr-basic"
-                                                                                    href="important-information-about-covid-19/index.php"
-                                                                                    style="outline: none;">Important
-                                                                                    Information About Covid-19</a>
+                                                                                    href="<?php echo $url; ?>/important-information-about-covid-19/index.php"
+                                                                                    style="outline: none;">Customer
+                                                                                    Service Updates</a>
                                                                             </div>
                                                                         </div>
                                                                     </div>
@@ -1967,7 +2401,7 @@ Makes bullets line up correctly
                                                                     <div class="tcb-plain-text"
                                                                         style="text-align: center;"><a
                                                                             class="tve-froala fr-basic"
-                                                                            href="about/corporate-contributions/index.php"
+                                                                            href="<?php echo $url; ?>/about/corporate-contributions/index.php"
                                                                             style="outline: none;">Corporate
                                                                             Contributions</a></div>
                                                                 </div>
@@ -1985,7 +2419,9 @@ Makes bullets line up correctly
                                                             data-css="tve-u-1683f7c971f">
                                                             <div class="tve-content-box-background"
                                                                 data-css="tve-u-1683f7c9724"></div>
-                                                            <div class="tve-cb"><a href="business/index.php" rel="">
+                                                            <div class="tve-cb"><a
+                                                                    href="<?php echo $url; ?>/business/index.php"
+                                                                    rel="">
                                                                     <div class="thrv_wrapper thrv_icon tcb-icon-display"
                                                                         data-css="tve-u-1683f7c971e"
                                                                         data-link-wrap="1"><svg class="tcb-icon"
@@ -2001,13 +2437,15 @@ Makes bullets line up correctly
                                                         <div class="thrv_wrapper thrv-plain-text"
                                                             data-css="tve-u-1683f7c9723">
                                                             <div class="tcb-plain-text" style="text-align: center;">
-                                                                <a href="business/index.php">Business</a>
+                                                                <a
+                                                                    href="<?php echo $url; ?>/business/index.php">Business</a>
                                                             </div>
                                                         </div>
                                                     </div>
                                                 </div>
                                                 <div class="tcb-flex-col">
-                                                    <div class="tcb-col"><a href="personal/index.php" rel="">
+                                                    <div class="tcb-col"><a
+                                                            href="<?php echo $url; ?>/personal/index.php" rel="">
                                                             <div class="thrv_wrapper thrv_icon tcb-icon-display"
                                                                 data-css="tve-u-1683f7c9720" data-link-wrap="1"><svg
                                                                     class="tcb-icon" viewBox="0 0 640 512"
@@ -2020,13 +2458,16 @@ Makes bullets line up correctly
                                                         <div class="thrv_wrapper thrv-plain-text"
                                                             data-css="tve-u-1683f7c9725">
                                                             <div class="tcb-plain-text" style="text-align: center;">
-                                                                <a href="personal/index.php">Personal</a>
+                                                                <a
+                                                                    href="<?php echo $url; ?>/personal/index.php">Personal</a>
                                                             </div>
                                                         </div>
                                                     </div>
                                                 </div>
                                                 <div class="tcb-flex-col">
-                                                    <div class="tcb-col"><a href="about/locations/index.php" rel="">
+                                                    <div class="tcb-col"><a
+                                                            href="<?php echo $url; ?>/about/locations/index.php"
+                                                            rel="">
                                                             <div class="thrv_wrapper thrv_icon tcb-icon-display"
                                                                 data-css="tve-u-1683f7c9721" data-link-wrap="1"><svg
                                                                     class="tcb-icon" viewBox="0 0 640 512"
@@ -2039,13 +2480,15 @@ Makes bullets line up correctly
                                                         <div class="thrv_wrapper thrv-plain-text"
                                                             data-css="tve-u-1683f7c9726">
                                                             <div class="tcb-plain-text" style="text-align: center;">
-                                                                <a href="about/locations/index.php">Locations</a>
+                                                                <a
+                                                                    href="<?php echo $url; ?>/about/locations/index.php">Locations</a>
                                                             </div>
                                                         </div>
                                                     </div>
                                                 </div>
                                                 <div class="tcb-flex-col">
-                                                    <div class="tcb-col"><a href="personal/services/index.php"
+                                                    <div class="tcb-col"><a
+                                                            href="<?php echo $url; ?>/personal/services/index.php"
                                                             rel="">
                                                             <div class="thrv_wrapper thrv_icon tcb-icon-display"
                                                                 data-css="tve-u-1683f7c9722" data-link-wrap="1"><svg
@@ -2059,7 +2502,8 @@ Makes bullets line up correctly
                                                         <div class="thrv_wrapper thrv-plain-text"
                                                             data-css="tve-u-1683f7c9727">
                                                             <div class="tcb-plain-text" style="text-align: center;">
-                                                                <a href="personal/services/index.php">Services</a>
+                                                                <a
+                                                                    href="<?php echo $url; ?>/personal/services/index.php">Services</a>
                                                             </div>
                                                         </div>
                                                     </div>
@@ -2079,13 +2523,13 @@ Makes bullets line up correctly
                                                                     data-css="tve-u-170207107dd"><span
                                                                         class="tve_image_frame"
                                                                         style="width: 100%;"><a
-                                                                            href="personal/loans-and-credit/index.php"
+                                                                            href="<?php echo $url; ?>/personal/loans-and-credit/index.php"
                                                                             rel=""><img
                                                                                 class="tve_image jetpack-lazy-image jetpack-lazy-image--handled wp-image-5297"
                                                                                 alt="Credit Cards"
                                                                                 title="WAB_SITE_MERCHANDISING_BOTTOM_IMAGES_CREDIT"
                                                                                 data-id="5297"
-                                                                                src="wp-content/uploads/2021/01/WAB_SITE_MERCHANDISING_BOTTOM_IMAGES_CREDIT.png"
+                                                                                src="<?php echo $url; ?>/wp-content/uploads/2021/01/WAB_SITE_MERCHANDISING_BOTTOM_IMAGES_CREDIT.png"
                                                                                 style="" scale="0"
                                                                                 data-lazy-loaded="1"
                                                                                 data-link-wrap="1"
@@ -2097,14 +2541,14 @@ Makes bullets line up correctly
                                                                                 height="165"
                                                                                 srcset="<?php echo $url; ?>/wp-content/uploads/2021/01/WAB_SITE_MERCHANDISING_BOTTOM_IMAGES_CREDIT.png 800w, <?php echo $url; ?>/wp-content/uploads/2021/01/WAB_SITE_MERCHANDISING_BOTTOM_IMAGES_CREDIT-300x131.png 300w, <?php echo $url; ?>/wp-content/uploads/2021/01/WAB_SITE_MERCHANDISING_BOTTOM_IMAGES_CREDIT-768x336.png 768w"
                                                                                 sizes="(max-width: 378px) 100vw, 378px" /><code
-                                                                                class="tve_js_placeholder tve_noscript"><noscript><img class="tve_image jetpack-lazy-image wp-image-5297" alt="Credit Cards" title="WAB_SITE_MERCHANDISING_BOTTOM_IMAGES_CREDIT" data-id="5297" src="wp-content/uploads/2021/01/WAB_SITE_MERCHANDISING_BOTTOM_IMAGES_CREDIT.png" style="" scale="0" data-lazy-src="/wp-content/uploads/2018/12/background-mobile-deposit.jpg?is-pending-load=1" data-css="tve-u-170207107e2" data-width="378" data-height="165" data-init-width="800" data-init-height="350" loading="lazy" width="378" height="165" srcset="<?php echo $url; ?>/wp-content/uploads/2021/01/WAB_SITE_MERCHANDISING_BOTTOM_IMAGES_CREDIT.png 800w, <?php echo $url; ?>/wp-content/uploads/2021/01/WAB_SITE_MERCHANDISING_BOTTOM_IMAGES_CREDIT-300x131.png 300w, <?php echo $url; ?>/wp-content/uploads/2021/01/WAB_SITE_MERCHANDISING_BOTTOM_IMAGES_CREDIT-768x336.png 768w" sizes="(max-width: 378px) 100vw, 378px" /><noscript><img loading="lazy" class="tve_image wp-image-288" alt="Mobile Deposit" width="2000" height="465" title="Mobile Deposit" data-id="288" src="wp-content/uploads/2018/12/background-mobile-deposit.php" style="width: 100%;" scale="0"></noscript></noscript></code></a></span>
+                                                                                class="tve_js_placeholder tve_noscript"><noscript><img class="tve_image jetpack-lazy-image wp-image-5297" alt="Credit Cards" title="WAB_SITE_MERCHANDISING_BOTTOM_IMAGES_CREDIT" data-id="5297" src="<?php echo $url; ?>/wp-content/uploads/2021/01/WAB_SITE_MERCHANDISING_BOTTOM_IMAGES_CREDIT.png" style="" scale="0" data-lazy-src="/wp-content/uploads/2018/12/background-mobile-deposit.jpg?is-pending-load=1" data-css="tve-u-170207107e2" data-width="378" data-height="165" data-init-width="800" data-init-height="350" loading="lazy" width="378" height="165" srcset="<?php echo $url; ?>/wp-content/uploads/2021/01/WAB_SITE_MERCHANDISING_BOTTOM_IMAGES_CREDIT.png 800w, <?php echo $url; ?>/wp-content/uploads/2021/01/WAB_SITE_MERCHANDISING_BOTTOM_IMAGES_CREDIT-300x131.png 300w, <?php echo $url; ?>/wp-content/uploads/2021/01/WAB_SITE_MERCHANDISING_BOTTOM_IMAGES_CREDIT-768x336.png 768w" sizes="(max-width: 378px) 100vw, 378px" /><noscript><img loading="lazy" class="tve_image wp-image-288" alt="Mobile Deposit" width="2000" height="465" title="Mobile Deposit" data-id="288" src="<?php echo $url; ?>/wp-content/uploads/2018/12/background-mobile-deposit.php" style="width: 100%;" scale="0"></noscript></noscript></code></a></span>
                                                                 </div>
                                                                 <div class="thrv_wrapper thrv_text_element tve-froala fr-box fr-basic"
                                                                     data-tag="h2" data-css="tve-u-168e2d3d1d8">
                                                                     <h2 class="" data-css="tve-u-1683f5effec"
                                                                         style="text-align: center;"><a
                                                                             class="tve-froala fr-basic"
-                                                                            href="personal/loans-and-credit/index.php"
+                                                                            href="<?php echo $url; ?>/personal/loans-and-credit/index.php"
                                                                             style="outline: none;">Personal Loans
                                                                             and Credit</a></h2>
                                                                 </div>
@@ -2127,13 +2571,13 @@ Makes bullets line up correctly
                                                                     data-css="tve-u-1702071874a"><span
                                                                         class="tve_image_frame"
                                                                         style="width: 100%;"><a
-                                                                            href="personal/online-banking/index.php"
+                                                                            href="<?php echo $url; ?>/personal/online-banking/index.php"
                                                                             rel=""><img
                                                                                 class="tve_image jetpack-lazy-image jetpack-lazy-image--handled wp-image-5298"
                                                                                 alt="Mobile Banking"
                                                                                 title="WAB_SITE_MERCHANDISING_BOTTOM_IMAGES_MOBILE BANKING"
                                                                                 data-id="5298"
-                                                                                src="wp-content/uploads/2021/01/WAB_SITE_MERCHANDISING_BOTTOM_IMAGES_MOBILE-BANKING.png"
+                                                                                src="<?php echo $url; ?>/wp-content/uploads/2021/01/WAB_SITE_MERCHANDISING_BOTTOM_IMAGES_MOBILE-BANKING.png"
                                                                                 style="" scale="0"
                                                                                 data-lazy-loaded="1"
                                                                                 data-link-wrap="1"
@@ -2145,14 +2589,14 @@ Makes bullets line up correctly
                                                                                 width="378" height="165"
                                                                                 srcset="<?php echo $url; ?>/wp-content/uploads/2021/01/WAB_SITE_MERCHANDISING_BOTTOM_IMAGES_MOBILE-BANKING.png 800w, <?php echo $url; ?>/wp-content/uploads/2021/01/WAB_SITE_MERCHANDISING_BOTTOM_IMAGES_MOBILE-BANKING-300x131.png 300w, <?php echo $url; ?>/wp-content/uploads/2021/01/WAB_SITE_MERCHANDISING_BOTTOM_IMAGES_MOBILE-BANKING-768x336.png 768w"
                                                                                 sizes="(max-width: 378px) 100vw, 378px" /><code
-                                                                                class="tve_js_placeholder tve_noscript"><noscript><img class="tve_image jetpack-lazy-image wp-image-5298" alt="Mobile Banking" title="WAB_SITE_MERCHANDISING_BOTTOM_IMAGES_MOBILE BANKING" data-id="5298" src="wp-content/uploads/2021/01/WAB_SITE_MERCHANDISING_BOTTOM_IMAGES_MOBILE-BANKING.png" style="" scale="0" data-lazy-src="/wp-content/uploads/2019/01/business-phone.jpg?is-pending-load=1" data-css="tve-u-1702071874e" data-width="378" data-height="165" data-init-width="800" data-init-height="350" loading="lazy" mt-d="0" ml-d="0" width="378" height="165" srcset="<?php echo $url; ?>/wp-content/uploads/2021/01/WAB_SITE_MERCHANDISING_BOTTOM_IMAGES_MOBILE-BANKING.png 800w, <?php echo $url; ?>/wp-content/uploads/2021/01/WAB_SITE_MERCHANDISING_BOTTOM_IMAGES_MOBILE-BANKING-300x131.png 300w, <?php echo $url; ?>/wp-content/uploads/2021/01/WAB_SITE_MERCHANDISING_BOTTOM_IMAGES_MOBILE-BANKING-768x336.png 768w" sizes="(max-width: 378px) 100vw, 378px" /><noscript><img loading="lazy" class="tve_image wp-image-544" alt="" width="2000" height="465" title="Business Phone" data-id="544" src="wp-content/uploads/2019/01/business-phone.php" style="width: 100%;" scale="0"></noscript></noscript></code></a></span>
+                                                                                class="tve_js_placeholder tve_noscript"><noscript><img class="tve_image jetpack-lazy-image wp-image-5298" alt="Mobile Banking" title="WAB_SITE_MERCHANDISING_BOTTOM_IMAGES_MOBILE BANKING" data-id="5298" src="<?php echo $url; ?>/wp-content/uploads/2021/01/WAB_SITE_MERCHANDISING_BOTTOM_IMAGES_MOBILE-BANKING.png" style="" scale="0" data-lazy-src="/wp-content/uploads/2019/01/business-phone.jpg?is-pending-load=1" data-css="tve-u-1702071874e" data-width="378" data-height="165" data-init-width="800" data-init-height="350" loading="lazy" mt-d="0" ml-d="0" width="378" height="165" srcset="<?php echo $url; ?>/wp-content/uploads/2021/01/WAB_SITE_MERCHANDISING_BOTTOM_IMAGES_MOBILE-BANKING.png 800w, <?php echo $url; ?>/wp-content/uploads/2021/01/WAB_SITE_MERCHANDISING_BOTTOM_IMAGES_MOBILE-BANKING-300x131.png 300w, <?php echo $url; ?>/wp-content/uploads/2021/01/WAB_SITE_MERCHANDISING_BOTTOM_IMAGES_MOBILE-BANKING-768x336.png 768w" sizes="(max-width: 378px) 100vw, 378px" /><noscript><img loading="lazy" class="tve_image wp-image-544" alt="" width="2000" height="465" title="Business Phone" data-id="544" src="<?php echo $url; ?>/wp-content/uploads/2019/01/business-phone.php" style="width: 100%;" scale="0"></noscript></noscript></code></a></span>
                                                                 </div>
                                                                 <div class="thrv_wrapper thrv_text_element tve-froala fr-box"
                                                                     data-tag="h2">
                                                                     <h2 class="" data-css="tve-u-1683f5effed"
                                                                         style="text-align: center;"><a
                                                                             class="tve-froala fr-basic"
-                                                                            href="personal/online-banking/mobile-banking/index.php"
+                                                                            href="<?php echo $url; ?>/personal/online-banking/mobile-banking/index.php"
                                                                             style="outline: none;">Mobile
                                                                             Banking</a></h2>
                                                                 </div>
@@ -2175,12 +2619,12 @@ Makes bullets line up correctly
                                                                     data-css="tve-u-1683f5effe7"><span
                                                                         class="tve_image_frame"
                                                                         style="width: 100%;"><a
-                                                                            href="business/services/index.php"><img
+                                                                            href="<?php echo $url; ?>/business/services/index.php"><img
                                                                                 class="tve_image jetpack-lazy-image jetpack-lazy-image--handled wp-image-5296"
                                                                                 alt="Business Services"
                                                                                 title="WAB_SITE_MERCHANDISING_BOTTOM_IMAGES_BUSINESS-SERVICES"
                                                                                 data-id="5296"
-                                                                                src="wp-content/uploads/2021/01/WAB_SITE_MERCHANDISING_BOTTOM_IMAGES_BUSINESS-SERVICES.png"
+                                                                                src="<?php echo $url; ?>/wp-content/uploads/2021/01/WAB_SITE_MERCHANDISING_BOTTOM_IMAGES_BUSINESS-SERVICES.png"
                                                                                 style="" scale="0"
                                                                                 data-lazy-loaded="1"
                                                                                 data-css="tve-u-1702072288e"
@@ -2191,14 +2635,14 @@ Makes bullets line up correctly
                                                                                 height="165"
                                                                                 srcset="<?php echo $url; ?>/wp-content/uploads/2021/01/WAB_SITE_MERCHANDISING_BOTTOM_IMAGES_BUSINESS-SERVICES.png 800w, <?php echo $url; ?>/wp-content/uploads/2021/01/WAB_SITE_MERCHANDISING_BOTTOM_IMAGES_BUSINESS-SERVICES-300x131.png 300w, <?php echo $url; ?>/wp-content/uploads/2021/01/WAB_SITE_MERCHANDISING_BOTTOM_IMAGES_BUSINESS-SERVICES-768x336.png 768w"
                                                                                 sizes="(max-width: 378px) 100vw, 378px" /></a><code
-                                                                            class="tve_js_placeholder tve_noscript"><noscript><img class="tve_image jetpack-lazy-image wp-image-5296" alt="Business Services" title="WAB_SITE_MERCHANDISING_BOTTOM_IMAGES_BUSINESS-SERVICES" data-id="5296" src="wp-content/uploads/2021/01/WAB_SITE_MERCHANDISING_BOTTOM_IMAGES_BUSINESS-SERVICES.png" style="" scale="0" data-lazy-src="/wp-content/uploads/2018/12/background-visa-pay-down.jpg?is-pending-load=1" data-css="tve-u-1702072288f" data-width="378" data-height="165" data-init-width="800" data-init-height="350" loading="lazy" width="378" height="165" srcset="<?php echo $url; ?>/wp-content/uploads/2021/01/WAB_SITE_MERCHANDISING_BOTTOM_IMAGES_BUSINESS-SERVICES.png 800w, <?php echo $url; ?>/wp-content/uploads/2021/01/WAB_SITE_MERCHANDISING_BOTTOM_IMAGES_BUSINESS-SERVICES-300x131.png 300w, <?php echo $url; ?>/wp-content/uploads/2021/01/WAB_SITE_MERCHANDISING_BOTTOM_IMAGES_BUSINESS-SERVICES-768x336.png 768w" sizes="(max-width: 378px) 100vw, 378px" /><noscript><img loading="lazy" class="tve_image wp-image-367" alt="" width="2000" height="465" title="VISA" data-id="367" src="wp-content/uploads/2018/12/background-visa-pay-down.php" style="width: 100%;" scale="0"></noscript></noscript></code></span>
+                                                                            class="tve_js_placeholder tve_noscript"><noscript><img class="tve_image jetpack-lazy-image wp-image-5296" alt="Business Services" title="WAB_SITE_MERCHANDISING_BOTTOM_IMAGES_BUSINESS-SERVICES" data-id="5296" src="<?php echo $url; ?>/wp-content/uploads/2021/01/WAB_SITE_MERCHANDISING_BOTTOM_IMAGES_BUSINESS-SERVICES.png" style="" scale="0" data-lazy-src="/wp-content/uploads/2018/12/background-visa-pay-down.jpg?is-pending-load=1" data-css="tve-u-1702072288f" data-width="378" data-height="165" data-init-width="800" data-init-height="350" loading="lazy" width="378" height="165" srcset="<?php echo $url; ?>/wp-content/uploads/2021/01/WAB_SITE_MERCHANDISING_BOTTOM_IMAGES_BUSINESS-SERVICES.png 800w, <?php echo $url; ?>/wp-content/uploads/2021/01/WAB_SITE_MERCHANDISING_BOTTOM_IMAGES_BUSINESS-SERVICES-300x131.png 300w, <?php echo $url; ?>/wp-content/uploads/2021/01/WAB_SITE_MERCHANDISING_BOTTOM_IMAGES_BUSINESS-SERVICES-768x336.png 768w" sizes="(max-width: 378px) 100vw, 378px" /><noscript><img loading="lazy" class="tve_image wp-image-367" alt="" width="2000" height="465" title="VISA" data-id="367" src="<?php echo $url; ?>/wp-content/uploads/2018/12/background-visa-pay-down.php" style="width: 100%;" scale="0"></noscript></noscript></code></span>
                                                                 </div>
                                                                 <div class="thrv_wrapper thrv_text_element tve-froala fr-box"
                                                                     data-tag="h2">
                                                                     <h2 class="" data-css="tve-u-1683f5effee"
                                                                         style="text-align: center;"><a
                                                                             class="tve-froala"
-                                                                            href="business/services/index.php"
+                                                                            href="<?php echo $url; ?>/business/services/index.php"
                                                                             style="outline: none;">Business
                                                                             Services</a></h2>
                                                                 </div>
@@ -2214,6 +2658,114 @@ Makes bullets line up correctly
                                         </div>
                                     </div>
                                 </div>
+                                <section class="fw-home-enhance" aria-label="More banking resources">
+                                    <div class="fw-plan-block">
+                                        <h2 class="fw-section-title">Plan, Move, and Grow With Confidence</h2>
+                                        <p class="fw-section-subtitle">Explore practical tools and frequently requested services designed for both everyday banking and long-term financial planning.</p>
+
+                                        <div class="fw-home-grid">
+                                            <a class="fw-home-card" href="<?php echo $url; ?>/personal/checking/index.php">
+                                                <h3>Everyday Spending</h3>
+                                                <p>Compare account options and choose a checking solution that fits how you spend, save, and transfer funds.</p>
+                                            </a>
+                                            <a class="fw-home-card" href="<?php echo $url; ?>/personal/savings/index.php">
+                                                <h3>Smart Saving Goals</h3>
+                                                <p>Build short and long-term reserves with account choices that help you stay prepared for the unexpected.</p>
+                                            </a>
+                                            <a class="fw-home-card" href="<?php echo $url; ?>/personal/online-banking/index.php">
+                                                <h3>Digital Banking Tools</h3>
+                                                <p>Manage accounts, track transactions, and move money securely from your phone, tablet, or desktop.</p>
+                                            </a>
+                                        </div>
+
+                                        <div class="fw-home-strip">
+                                            <div class="fw-home-panel">
+                                                <div class="fw-home-panel-head">Why Customers Choose <?php echo $name; ?></div>
+                                                <div class="fw-home-panel-body">
+                                                    <ul class="fw-home-bullets">
+                                                        <li>Flexible personal and business banking paths under one platform.</li>
+                                                        <li>Branch and digital support options tailored to your preferred banking style.</li>
+                                                        <li>Clear service updates, transparent guidance, and responsive customer support.</li>
+                                                    </ul>
+                                                    <div class="fw-home-actions">
+                                                        <a class="fw-home-btn" href="<?php echo $url; ?>/about/locations/index.php">Find a Location</a>
+                                                        <a class="fw-home-btn" href="<?php echo $url; ?>/about/contact/index.php">Talk to Support</a>
+                                                        <a class="fw-home-btn" href="<?php echo $login; ?>">Access Account</a>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            <div class="fw-home-faq" aria-label="Common questions">
+                                                <details>
+                                                    <summary>How quickly can I get started online?</summary>
+                                                    <div class="fw-home-answer">You can sign in or register in minutes, then access your dashboard to review balances, activity, and account tools.</div>
+                                                </details>
+                                                <details>
+                                                    <summary>Can I manage both personal and business services?</summary>
+                                                    <div class="fw-home-answer">Yes. Our platform is structured so customers can navigate both personal and business banking services from the same website.</div>
+                                                </details>
+                                                <details>
+                                                    <summary>Where do I see current service updates?</summary>
+                                                    <div class="fw-home-answer">Visit our Customer Service Updates page for current information and contact options when you need immediate assistance.</div>
+                                                </details>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="fw-image-section" aria-label="Featured services with images">
+                                        <h2 class="fw-section-title">Featured Banking Paths</h2>
+                                        <p class="fw-section-subtitle">Browse popular service areas with visual shortcuts to the tools customers use most.</p>
+                                        <div class="fw-image-grid">
+                                            <a class="fw-image-tile" href="<?php echo $url; ?>/personal/checking/index.php">
+                                                <img src="<?php echo $url; ?>/wp-content/uploads/2021/01/theme1-slide-feature.jpg" alt="Personal Checking">
+                                                <div class="fw-image-caption">
+                                                    <h3>Personal Checking</h3>
+                                                    <p>Flexible account options for daily money management.</p>
+                                                </div>
+                                            </a>
+                                            <a class="fw-image-tile" href="<?php echo $url; ?>/business/checking/index.php">
+                                                <img src="<?php echo $url; ?>/wp-content/uploads/2021/01/WAB_SITE_MERCHANDISING_BOTTOM_IMAGES_BUSINESS-SERVICES.png" alt="Business Checking">
+                                                <div class="fw-image-caption">
+                                                    <h3>Business Checking</h3>
+                                                    <p>Accounts designed to support growing operations.</p>
+                                                </div>
+                                            </a>
+                                            <a class="fw-image-tile" href="<?php echo $url; ?>/personal/loans-and-credit/index.php">
+                                                <img src="<?php echo $url; ?>/wp-content/uploads/2021/01/WAB_SITE_MERCHANDISING_BOTTOM_IMAGES_CREDIT.png" alt="Personal Loans and Credit">
+                                                <div class="fw-image-caption">
+                                                    <h3>Loans and Credit</h3>
+                                                    <p>Financing options for milestones and opportunities.</p>
+                                                </div>
+                                            </a>
+                                            <a class="fw-image-tile" href="<?php echo $url; ?>/business/services/index.php">
+                                                <img src="<?php echo $url; ?>/wp-content/uploads/2021/01/Office_Depot.png" alt="Business Services">
+                                                <div class="fw-image-caption">
+                                                    <h3>Business Services</h3>
+                                                    <p>Operational support tools for modern businesses.</p>
+                                                </div>
+                                            </a>
+                                        </div>
+                                    </div>
+
+                                    <div class="fw-feature-band" aria-label="Mobile and rewards highlights">
+                                        <div class="fw-feature-media">
+                                            <img src="<?php echo $url; ?>/wp-content/uploads/2021/01/WAB_SITE_MERCHANDISING_BOTTOM_IMAGES_MOBILE-BANKING.png" alt="Mobile banking services">
+                                        </div>
+                                        <div class="fw-feature-content">
+                                            <h3>Bank On The Go</h3>
+                                            <p>Stay connected to your accounts with mobile tools for transfers, account review, and secure day-to-day banking from anywhere.</p>
+                                            <p>Download the mobile app and keep your essential banking features within reach at all times.</p>
+                                            <div class="fw-store-badges">
+                                                <a href="<?php echo $login; ?>" aria-label="Download on the App Store">
+                                                    <img src="<?php echo $url; ?>/wp-content/uploads/2019/07/app-store-logo-sm.png" alt="App Store">
+                                                </a>
+                                                <a href="<?php echo $login; ?>" aria-label="Get it on Google Play">
+                                                    <img src="<?php echo $url; ?>/wp-content/uploads/2019/07/google-play-sm.png" alt="Google Play">
+                                                </a>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </section>
                                 <div class="tcb_flag" style="display: none"></div>
 
 
@@ -2247,14 +2799,19 @@ Makes bullets line up correctly
                                 <div id="custom_html-2" class="widget_text widget widget_custom_html">
                                     <h2 class="widget-title">Business</h2>
                                     <div class="textwidget custom-html-widget"><a
-                                            href="business/online-banking/index.php">Business Online
+                                            href="<?php echo $url; ?>/business/online-banking/index.php">Business
+                                            Online
                                             Banking</a><br />
-                                        <a href="business/checking/index.php">Business Checking</a><br />
-                                        <a href="business/savings/index.php">Business Savings</a><br />
+                                        <a href="<?php echo $url; ?>/business/checking/index.php">Business
+                                            Checking</a><br />
+                                        <a href="<?php echo $url; ?>/business/savings/index.php">Business
+                                            Savings</a><br />
 
-                                        <a href="business/loans-and-credit/index.php">Business Loans and
+                                        <a href="<?php echo $url; ?>/business/loans-and-credit/index.php">Business
+                                            Loans and
                                             Credit</a><br />
-                                        <a href="business/services/index.php">Business Services</a>
+                                        <a href="<?php echo $url; ?>/business/services/index.php">Business
+                                            Services</a>
                                     </div>
                                 </div>
                             </div>
@@ -2263,14 +2820,19 @@ Makes bullets line up correctly
                                 <div id="custom_html-3" class="widget_text widget widget_custom_html">
                                     <h2 class="widget-title">Personal</h2>
                                     <div class="textwidget custom-html-widget"><a
-                                            href="personal/online-banking/index.php">Personal Online
+                                            href="<?php echo $url; ?>/personal/online-banking/index.php">Personal
+                                            Online
                                             Banking</a><br />
-                                        <a href="personal/checking/index.php">Personal Checking</a><br />
-                                        <a href="personal/savings/index.php">Personal Savings</a><br />
+                                        <a href="<?php echo $url; ?>/personal/checking/index.php">Personal
+                                            Checking</a><br />
+                                        <a href="<?php echo $url; ?>/personal/savings/index.php">Personal
+                                            Savings</a><br />
 
-                                        <a href="personal/loans-and-credit/index.php">Personal Loans and
+                                        <a href="<?php echo $url; ?>/personal/loans-and-credit/index.php">Personal
+                                            Loans and
                                             Credit</a><br />
-                                        <a href="personal/services/index.php">Personal Services</a>
+                                        <a href="<?php echo $url; ?>/personal/services/index.php">Personal
+                                            Services</a>
                                     </div>
                                 </div>
                             </div>
@@ -2279,9 +2841,12 @@ Makes bullets line up correctly
                                 <div id="custom_html-4" class="widget_text widget widget_custom_html">
                                     <h2 class="widget-title">Info</h2>
                                     <div class="textwidget custom-html-widget"><a
-                                            href="about/privacy/index.php">Privacy Policies</a><br />
-                                        <a href="about/patriot-act-policy/index.php">Patriot Act Policy</a><br />
-                                        <a href="about/accessibility/index.php">Web Accessibility</a>
+                                            href="<?php echo $url; ?>/about/privacy/index.php">Privacy
+                                            Policies</a><br />
+                                        <a href="<?php echo $url; ?>/about/patriot-act-policy/index.php">Patriot Act
+                                            Policy</a><br />
+                                        <a href="<?php echo $url; ?>/about/accessibility/index.php">Web
+                                            Accessibility</a>
                                     </div>
                                 </div>
                             </div>
@@ -2294,10 +2859,10 @@ Makes bullets line up correctly
                                         <?php echo $addr; ?><br /><br />
 
                                         <a href="https://www.facebook.com/" target="_blank" rel="noopener"><img
-                                                src="wp-content/uploads/2019/01/social-fb-20x20.png"
+                                                src="<?php echo $url; ?>/wp-content/uploads/2019/01/social-fb-20x20.png"
                                                 alt="Facebook Icon" /></a> &nbsp;<a href="https://www.linkedin.com/"
                                             target="_blank" rel="noopener"><img
-                                                src="wp-content/uploads/2019/01/social-li-20x20.png"
+                                                src="<?php echo $url; ?>/wp-content/uploads/2019/01/social-li-20x20.png"
                                                 alt="LinkedIn Icon" /></a>
                                     </div>
                                 </div>
@@ -2316,7 +2881,7 @@ Makes bullets line up correctly
                                 <div
                                     class="ast-small-footer-section ast-small-footer-section-1 ast-small-footer-section-equally ast-col-md-6">
                                     <span style="font-size:11px"><img
-                                            src="wp-content/uploads/2019/01/equal_housing_logo.png"
+                                            src="<?php echo $url; ?>/wp-content/uploads/2019/01/equal_housing_logo.png"
                                             alt="Equal Housing Lender Logo"><?php echo $footertext; ?> </span>
                                 </div>
 
@@ -2344,14 +2909,12 @@ Makes bullets line up correctly
             "isRtl": ""
         };
     </script>
-    <script src='wp-content/themes/astra/assets/js/minified/style.mind617.js?ver=3.3.2' id='astra-theme-js-js'>
+    <script src='<?php echo $appBase; ?>/themes/<?php echo ACTIVE_THEME; ?>/js/minified/style.mind617.js?ver=3.3.2' id='astra-theme-js-js'>
     </script>
-    <script src='wp-includes/js/imagesloaded.mineda1.js?ver=4.1.4' id='imagesloaded-js'></script>
-    <script src='wp-includes/js/masonry.min3a05.js?ver=4.2.2' id='masonry-js'></script>
-    <script src='wp-includes/js/jquery/jquery.masonry.minef70.js?ver=3.1.2b' id='jquery-masonry-js'></script>
+    <script src='<?php echo $appBase; ?>/themes/<?php echo ACTIVE_THEME; ?>/wp-includes/js/imagesloaded.mineda1.js?ver=4.1.4' id='imagesloaded-js'></script>
+    <script src='<?php echo $appBase; ?>/themes/<?php echo ACTIVE_THEME; ?>/wp-includes/js/masonry.min3a05.js?ver=4.2.2' id='masonry-js'></script>
+    <script src='<?php echo $appBase; ?>/themes/<?php echo ACTIVE_THEME; ?>/wp-includes/js/jquery/jquery.masonry.minef70.js?ver=3.1.2b' id='jquery-masonry-js'></script>
 
-    <script src='wp-content/plugins/thrive-visual-editor/editor/js/dist/frontend.mina19e.js?ver=2.6.9'
-        id='tve_frontend-js'></script>
     <script id='tve-dash-frontend-js-extra'>
         var tve_dash_front = {
             "ajaxurl": "https:\/\/<?php echo $url; ?>\/wp-admin\/admin-ajax.php",
@@ -2360,8 +2923,6 @@ Makes bullets line up correctly
             "recaptcha": []
         };
     </script>
-    <script src='wp-content/plugins/thrive-visual-editor/thrive-dashboard/js/dist/frontend.mina305.js?ver=2.4.2'
-        id='tve-dash-frontend-js'></script>
     <script id='astra-addon-js-js-extra'>
         var astraAddon = {
             "sticky_active": "1",
@@ -2396,9 +2957,9 @@ Makes bullets line up correctly
             "is_header_builder_active": ""
         };
     </script>
-    <script src='wp-content/uploads/astra-addon/astra-addon-6078642b295655-171800443d36.js?ver=3.3.1'
+    <script src='<?php echo $appBase; ?>/themes/<?php echo ACTIVE_THEME; ?>/wp-content/uploads/astra-addon/astra-addon-6078642b295655-171800443d36.js?ver=3.3.1'
         id='astra-addon-js-js'></script>
-    <script src='wp-includes/js/wp-embed.minc62d.js?ver=c4be1ef428378af680af545453e0eeea' id='wp-embed-js'></script>
+    <script src='<?php echo $appBase; ?>/themes/<?php echo ACTIVE_THEME; ?>/wp-includes/js/wp-embed.minc62d.js?ver=c4be1ef428378af680af545453e0eeea' id='wp-embed-js'></script>
     <script type="text/javascript">
         var tcb_post_lists = JSON.parse('[]');
     </script>

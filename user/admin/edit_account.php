@@ -6,8 +6,15 @@ require_once 'admin.php';
 require dirname(__DIR__, 2) . '/config.php';
 $conn = $GLOBALS['conn'] ?? null;
 require_once dirname(__DIR__) . '/partials/auto-migrate.php';
+require_once dirname(__DIR__) . '/partials/wallet-ledger.php';
 
 $reg_user = new USER();
+
+if (empty($_SESSION['ea_csrf'])) {
+  $_SESSION['ea_csrf'] = bin2hex(random_bytes(32));
+}
+$eaCsrfToken = (string)($_SESSION['ea_csrf'] ?? '');
+$eaPostAllowed = true;
 
 // Load transaction code settings
 function ea_setting_get(mysqli $conn, string $key, string $default=''): string {
@@ -28,6 +35,7 @@ if ($_fcRes) { while ($_fc = $_fcRes->fetch_assoc()) $fiatCurrencies[] = $_fc; }
 if (!$fiatCurrencies) $fiatCurrencies = [['code'=>'USD','symbol'=>'$','name'=>'US Dollar']];
 
 $accountStatusOptions = ['Active','Dormant/Inactive','Disabled','Closed'];
+$maritalStatusOptions = ['Single', 'Married', 'Divorced', 'Separated', 'Widowed'];
 $loginMethodOptions = [
   'pin' => 'PIN',
   'otp' => 'OTP',
@@ -45,44 +53,62 @@ $authMethodOptions = [
 
 if(isset($_GET['id'])){
     $id = (int)$_GET['id'];
-    $stmt = $reg_user->runQuery("SELECT * FROM account WHERE id='$id'");
-    $stmt->execute();
+  $stmt = $reg_user->runQuery('SELECT * FROM account WHERE id = :id');
+  $stmt->execute([':id' => $id]);
     $row = $stmt->fetch(PDO::FETCH_ASSOC);
+
+  if (!empty($row['acc_no'])) {
+    fw_wallet_seed_from_legacy($conn, (string)$row['acc_no'], (string)($row['currency'] ?? 'USD'));
+  }
 }
 
 $msg = '';
 $imgUpdate = '';
 $walletMsg = '';
 
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+  $postedCsrf = (string)($_POST['ea_csrf'] ?? '');
+  if ($eaCsrfToken === '' || $postedCsrf === '' || !hash_equals($eaCsrfToken, $postedCsrf)) {
+    $eaPostAllowed = false;
+    $msg = '<div class="rounded-lg bg-red-50 border border-red-200 px-4 py-3 text-red-700 text-sm mb-4"><i class="fa-solid fa-triangle-exclamation mr-2"></i>Security token mismatch. Please refresh and retry.</div>';
+  }
+}
+
 // ── Admin: upsert (add/edit) a wallet balance for this user ─────────────────
-if (isset($_POST['wallet_upsert']) && isset($_GET['id'])) {
+if ($eaPostAllowed && isset($_POST['wallet_upsert']) && isset($_GET['id'])) {
     $wId = (int)$_GET['id'];
     $wAccNo   = trim((string)($row['acc_no'] ?? ''));
     $wCode    = strtoupper(trim((string)($_POST['w_currency_code'] ?? '')));
     $wBalance = trim((string)($_POST['w_balance'] ?? '0'));
+  $wAvail = trim((string)($_POST['w_available_balance'] ?? $wBalance));
     if ($wAccNo !== '' && preg_match('/^[A-Z0-9]{2,10}$/', $wCode) && is_numeric($wBalance)) {
-        $safeBal = (float)$wBalance;
-        $safeAcc = $conn->real_escape_string($wAccNo);
-        $safeCod = $conn->real_escape_string($wCode);
-        $conn->query("INSERT INTO account_balances (acc_no, currency_code, balance)
-            VALUES ('$safeAcc', '$safeCod', $safeBal)
-            ON DUPLICATE KEY UPDATE balance = $safeBal");
+    $safeBal = (float)$wBalance;
+    $safeAvail = is_numeric($wAvail) ? (float)$wAvail : $safeBal;
+    fw_wallet_set($conn, $wAccNo, $wCode, $safeBal, $safeAvail);
         $walletMsg = '<div class="rounded-lg bg-green-50 border border-green-200 px-4 py-2 text-green-700 text-sm mb-4">Wallet updated: '
-            . htmlspecialchars($wCode) . ' balance set to ' . number_format($safeBal, 2) . '.</div>';
+      . htmlspecialchars($wCode) . ' total/available set to ' . number_format($safeBal, 2) . ' / ' . number_format(min($safeAvail, $safeBal), 2) . '.</div>';
+
+    // Keep legacy fields aligned when editing the currently selected account currency.
+    if (strtoupper(trim((string)($row['currency'] ?? ''))) === $wCode) {
+      fw_wallet_sync_legacy_account($conn, $wAccNo, $wCode);
+      $stmt = $reg_user->runQuery('SELECT * FROM account WHERE id = :id');
+      $stmt->execute([':id' => $wId]);
+      $row = $stmt->fetch(PDO::FETCH_ASSOC);
+    }
     } else {
         $walletMsg = '<div class="rounded-lg bg-red-50 border border-red-200 px-4 py-2 text-red-700 text-sm mb-4">Invalid wallet data.</div>';
     }
 }
 
 // ── Admin: delete a wallet row ────────────────────────────────────────────────
-if (isset($_POST['wallet_delete']) && isset($_GET['id'])) {
+if ($eaPostAllowed && isset($_POST['wallet_delete']) && isset($_GET['id'])) {
     $dAccNo = trim((string)($row['acc_no'] ?? ''));
     $dCode  = strtoupper(trim((string)($_POST['del_currency_code'] ?? '')));
     if ($dAccNo !== '' && preg_match('/^[A-Z0-9]{2,10}$/', $dCode)) {
-        $safeAcc2 = $conn->real_escape_string($dAccNo);
-        $safeCod2 = $conn->real_escape_string($dCode);
-        $conn->query("DELETE FROM account_balances WHERE acc_no = '$safeAcc2' AND currency_code = '$safeCod2' LIMIT 1");
-        $conn->query("DELETE FROM customer_accounts WHERE owner_acc_no = '$safeAcc2' AND currency_code = '$safeCod2' LIMIT 1");
+    $delWallet = $reg_user->runQuery('DELETE FROM account_balances WHERE acc_no = :acc_no AND currency_code = :currency_code LIMIT 1');
+    $delWallet->execute([':acc_no' => $dAccNo, ':currency_code' => $dCode]);
+    $delCustomer = $reg_user->runQuery('DELETE FROM customer_accounts WHERE owner_acc_no = :owner_acc_no AND currency_code = :currency_code LIMIT 1');
+    $delCustomer->execute([':owner_acc_no' => $dAccNo, ':currency_code' => $dCode]);
         $walletMsg = '<div class="rounded-lg bg-yellow-50 border border-yellow-200 px-4 py-2 text-yellow-700 text-sm mb-4">'
             . htmlspecialchars($dCode) . ' wallet removed.</div>';
     }
@@ -90,7 +116,7 @@ if (isset($_POST['wallet_delete']) && isset($_GET['id'])) {
 
 // ── Admin: Update IBAN for customer account ────────────────────────────────────
 $ibanMsg = '';
-if (isset($_POST['update_iban']) && isset($_GET['id'])) {
+if ($eaPostAllowed && isset($_POST['update_iban']) && isset($_GET['id'])) {
   try {
     $accNo = trim((string)($row['acc_no'] ?? ''));
     $action = trim((string)($_POST['update_iban'] ?? ''));
@@ -205,7 +231,7 @@ if (isset($_POST['update_iban']) && isset($_GET['id'])) {
 }
 
 // Update profile fields handler
-if(isset($_POST['update'])){
+if($eaPostAllowed && isset($_POST['update'])){
     $id = isset($_GET['id']) ? (int)$_GET['id'] : 0;
 
     $fname    = trim($_POST['fname']);
@@ -244,16 +270,30 @@ if(isset($_POST['update'])){
     if (!array_key_exists($auth_method, $authMethodOptions)) {
       $auth_method = 'codes';
     }
+    if (!in_array($marry, $maritalStatusOptions, true)) {
+      $marry = 'Single';
+    }
 
-    if($upass !== '') $upassHash = md5($upass);
+    if($upass !== '') $upassHash = password_hash($upass, PASSWORD_BCRYPT);
     else {
-        $cur = $reg_user->runQuery("SELECT upass FROM account WHERE id='$id'");
-        $cur->execute();
+      $cur = $reg_user->runQuery('SELECT upass FROM account WHERE id = :id');
+      $cur->execute([':id' => $id]);
         $curRow = $cur->fetch(PDO::FETCH_ASSOC);
         $upassHash = $curRow['upass'] ?? '';
     }
 
+    $tBalFloat = is_numeric($t_bal) ? (float)$t_bal : 0.0;
+    $aBalFloat = is_numeric($a_bal) ? (float)$a_bal : $tBalFloat;
+    if ($aBalFloat > $tBalFloat) {
+      $aBalFloat = $tBalFloat;
+    }
+
     try {
+      // Source of truth: selected currency wallet row.
+      if ($acc_no !== '' && preg_match('/^[A-Z0-9]{2,10}$/', strtoupper($currency))) {
+        fw_wallet_set($conn, $acc_no, $currency, $tBalFloat, $aBalFloat);
+      }
+
       $q = $reg_user->runQuery("UPDATE account SET
         fname=:fname, pin=:pin, lname=:lname, uname=:uname, upass=:upass, upass2=:upass2,
         phone=:phone, email=:email, type=:type, work=:work, acc_no=:acc_no, addr=:addr,
@@ -264,37 +304,65 @@ if(isset($_POST['update'])){
       $q->execute([
         ':fname'=>$fname,':pin'=>$pin,':lname'=>$lname,':uname'=>$uname,':upass'=>$upassHash,':upass2'=>$upass2,
         ':phone'=>$phone,':email'=>$email,':type'=>$type,':work'=>$work,':acc_no'=>$acc_no,':addr'=>$addr,
-        ':sex'=>$sex,':dob'=>$dob,':marry'=>$marry,':t_bal'=>$t_bal,':a_bal'=>$a_bal,':currency'=>$currency,
+        ':sex'=>$sex,':dob'=>$dob,':marry'=>$marry,':t_bal'=>$tBalFloat,':a_bal'=>$aBalFloat,':currency'=>$currency,
         ':cot'=>$cot,':tax'=>$tax,':lppi'=>$lppi,':imf'=>$imf,':code5'=>$code5,
         ':status'=>$status,':login_method'=>$login_method,':auth_method'=>$auth_method,
         ':id'=>$id,
       ]);
+
+      if ($acc_no !== '' && preg_match('/^[A-Z0-9]{2,10}$/', strtoupper($currency))) {
+        fw_wallet_sync_legacy_account($conn, $acc_no, $currency);
+      }
 
       $msg = '<div class="rounded-lg bg-green-50 border border-green-200 px-4 py-3 text-green-700 text-sm mb-4"><i class="fa-solid fa-circle-check mr-2"></i>Account updated successfully.</div>';
     } catch (Throwable $e) {
       $msg = '<div class="rounded-lg bg-red-50 border border-red-200 px-4 py-3 text-red-700 text-sm mb-4"><i class="fa-solid fa-triangle-exclamation mr-2"></i>Unable to update account. Please verify the submitted values and database schema.</div>';
     }
 
-    $stmt = $reg_user->runQuery("SELECT * FROM account WHERE id='$id'");
-    $stmt->execute(); $row = $stmt->fetch(PDO::FETCH_ASSOC);
+    $stmt = $reg_user->runQuery('SELECT * FROM account WHERE id = :id');
+    $stmt->execute([':id' => $id]); $row = $stmt->fetch(PDO::FETCH_ASSOC);
 }
 
 // Image update handler
-if(isset($_POST['update_images'])){
+  if($eaPostAllowed && isset($_POST['update_images'])){
     $id = isset($_GET['id']) ? (int)$_GET['id'] : 0;
-    $curStmt = $reg_user->runQuery("SELECT image,pp FROM account WHERE id='$id'");
-    $curStmt->execute(); $curRow = $curStmt->fetch(PDO::FETCH_ASSOC);
+    $curStmt = $reg_user->runQuery('SELECT image,pp FROM account WHERE id = :id');
+    $curStmt->execute([':id' => $id]); $curRow = $curStmt->fetch(PDO::FETCH_ASSOC);
     $image = $curRow['image'] ?? '';
     $pp    = $curRow['pp']    ?? '';
     $allowed = ['jpg','jpeg','png','gif','webp'];
     $imgErrors = [];
+    $uploadDir = __DIR__ . '/foto/';
 
     foreach(['image','pp'] as $field){
         if(!empty($_FILES[$field]['name'])){
-            $ext=strtolower(pathinfo($_FILES[$field]['name'],PATHINFO_EXTENSION));
-            if(!in_array($ext,$allowed)){ $imgErrors[]="Invalid file type for $field."; }
-            elseif($_FILES[$field]['size']>2097152){ $imgErrors[]="$field must be under 2MB."; }
-            else { $fn=basename($_FILES[$field]['name']); move_uploaded_file($_FILES[$field]['tmp_name'],__DIR__.'/foto/'.$fn); $$field=$fn; }
+        $tmpName = (string)($_FILES[$field]['tmp_name'] ?? '');
+        $ext = strtolower(pathinfo((string)($_FILES[$field]['name'] ?? ''), PATHINFO_EXTENSION));
+        if(!in_array($ext,$allowed,true)){ $imgErrors[]="Invalid file type for $field."; }
+        elseif((int)($_FILES[$field]['size'] ?? 0)>2097152){ $imgErrors[]="$field must be under 2MB."; }
+        elseif($tmpName === '' || !is_uploaded_file($tmpName)){ $imgErrors[]="Upload failed for $field."; }
+        else {
+          $imageInfo = @getimagesize($tmpName);
+          $mime = '';
+          if (function_exists('finfo_open')) {
+            $fi = finfo_open(FILEINFO_MIME_TYPE);
+            if ($fi) {
+              $mime = (string)finfo_file($fi, $tmpName);
+              finfo_close($fi);
+            }
+          }
+          $allowedMime = ['image/jpeg','image/png','image/gif','image/webp'];
+          if ($imageInfo === false || ($mime !== '' && !in_array($mime, $allowedMime, true))) {
+            $imgErrors[] = "Invalid image content for $field.";
+          } else {
+            $fn = $field . '_' . bin2hex(random_bytes(8)) . '.' . $ext;
+            if (!@move_uploaded_file($tmpName, $uploadDir . $fn)) {
+              $imgErrors[] = "Could not save $field.";
+            } else {
+              $$field = $fn;
+            }
+          }
+        }
         }
     }
 
@@ -306,8 +374,8 @@ if(isset($_POST['update_images'])){
         $imgUpdate = '<div class="rounded-lg bg-red-50 border border-red-200 px-4 py-3 text-red-700 text-sm mb-4">'.implode('<br>',$imgErrors).'</div>';
     }
 
-    $stmt = $reg_user->runQuery("SELECT * FROM account WHERE id='$id'");
-    $stmt->execute(); $row = $stmt->fetch(PDO::FETCH_ASSOC);
+    $stmt = $reg_user->runQuery('SELECT * FROM account WHERE id = :id');
+    $stmt->execute([':id' => $id]); $row = $stmt->fetch(PDO::FETCH_ASSOC);
 }
 
 $pageTitle = 'Edit Account';
@@ -319,12 +387,27 @@ require_once __DIR__ . '/partials/admin-shell-open.php';
 
 <?php if(!empty($row)): ?>
 
+<?php
+$walletBalancesByCurrency = [];
+if (!empty($row['acc_no'])) {
+  $walletBalancesByCurrency = fw_wallet_all_for_account($conn, (string)$row['acc_no']);
+}
+
+$_selectedCurrency = strtoupper(trim((string)($row['currency'] ?? 'USD')));
+$_selectedWallet = $walletBalancesByCurrency[$_selectedCurrency] ?? null;
+if ($_selectedWallet) {
+  $row['t_bal'] = (string)$_selectedWallet['total_balance'];
+  $row['a_bal'] = (string)$_selectedWallet['available_balance'];
+}
+?>
+
 <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 max-w-5xl mb-6">
   <div class="flex items-center justify-between mb-5">
     <h2 class="font-semibold text-gray-800">Edit Account &mdash; <?= htmlspecialchars(($row['fname']??'').' '.($row['lname']??'')) ?></h2>
     <a href="view_account.php" class="text-sm text-blue-600 hover:underline"><i class="fa-solid fa-arrow-left mr-1"></i>Back</a>
   </div>
   <form method="POST">
+    <input type="hidden" name="ea_csrf" value="<?= htmlspecialchars($eaCsrfToken) ?>">
     <p class="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-3">Personal Information</p>
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
       <div><label class="block text-xs font-medium text-gray-700 mb-1">First Name</label>
@@ -338,14 +421,22 @@ require_once __DIR__ . '/partials/admin-shell-open.php';
       <div><label class="block text-xs font-medium text-gray-700 mb-1">Date of Birth</label>
         <input type="text" name="dob" value="<?= htmlspecialchars($row['dob']??'') ?>" class="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"></div>
       <div><label class="block text-xs font-medium text-gray-700 mb-1">Marital Status</label>
-        <input type="text" name="marry" value="<?= htmlspecialchars($row['marry']??'') ?>" class="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"></div>
+        <select name="marry" class="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+          <?php $_marryVal = trim((string)($row['marry'] ?? '')); ?>
+          <?php if ($_marryVal !== '' && !in_array($_marryVal, $maritalStatusOptions, true)): ?>
+          <option value="<?= htmlspecialchars($_marryVal) ?>" selected><?= htmlspecialchars($_marryVal) ?></option>
+          <?php endif; ?>
+          <?php foreach ($maritalStatusOptions as $ms): ?>
+          <option value="<?= htmlspecialchars($ms) ?>" <?= $_marryVal === $ms ? 'selected' : '' ?>><?= htmlspecialchars($ms) ?></option>
+          <?php endforeach; ?>
+        </select></div>
       <div><label class="block text-xs font-medium text-gray-700 mb-1">Phone</label>
         <input type="text" name="phone" value="<?= htmlspecialchars($row['phone']??'') ?>" class="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"></div>
       <div><label class="block text-xs font-medium text-gray-700 mb-1">Email</label>
         <input type="email" name="email" value="<?= htmlspecialchars($row['email']??'') ?>" class="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"></div>
       <div><label class="block text-xs font-medium text-gray-700 mb-1">Occupation</label>
         <input type="text" name="work" value="<?= htmlspecialchars($row['work']??'') ?>" class="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"></div>
-      <div class="lg:col-span-3"><label class="block text-xs font-medium text-gray-700 mb-1">Address</label>
+      <div><label class="block text-xs font-medium text-gray-700 mb-1">Address</label>
         <input type="text" name="addr" value="<?= htmlspecialchars($row['addr']??'') ?>" class="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"></div>
     </div>
 
@@ -358,13 +449,13 @@ require_once __DIR__ . '/partials/admin-shell-open.php';
       <div><label class="block text-xs font-medium text-gray-700 mb-1">Secondary Password</label>
         <input type="text" name="upass2" value="<?= htmlspecialchars($row['upass2']??'') ?>" class="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"></div>
       <div><label class="block text-xs font-medium text-gray-700 mb-1">Security PIN (4-digit)</label>
-        <input type="password" name="pin" maxlength="4" inputmode="numeric" value="<?= htmlspecialchars($row['pin']??'') ?>" class="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"></div>
+        <input type="text" name="pin" maxlength="4" inputmode="numeric" value="<?= htmlspecialchars($row['pin']??'') ?>" class="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"></div>
       <div><label class="block text-xs font-medium text-gray-700 mb-1">Account Type</label>
         <input type="text" name="type" value="<?= htmlspecialchars($row['type']??'') ?>" class="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"></div>
       <div><label class="block text-xs font-medium text-gray-700 mb-1">Account Number</label>
         <input type="text" name="acc_no" value="<?= htmlspecialchars($row['acc_no']??'') ?>" class="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"></div>
       <div><label class="block text-xs font-medium text-gray-700 mb-1">Currency</label>
-        <select name="currency" class="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+        <select id="ea-currency" name="currency" class="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
           <?php
           $_currVal = strtoupper(trim((string)($row['currency'] ?? '')));
           $__fiatFound = false;
@@ -379,10 +470,11 @@ require_once __DIR__ . '/partials/admin-shell-open.php';
           <?php endif; ?>
         </select></div>
       <div><label class="block text-xs font-medium text-gray-700 mb-1">Total Balance</label>
-        <input type="number" step="0.01" name="t_bal" value="<?= htmlspecialchars($row['t_bal']??'') ?>" class="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"></div>
+        <input id="ea-total-balance" type="number" step="0.01" name="t_bal" value="<?= htmlspecialchars($row['t_bal']??'') ?>" class="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"></div>
       <div><label class="block text-xs font-medium text-gray-700 mb-1">Available Balance</label>
-        <input type="number" step="0.01" name="a_bal" value="<?= htmlspecialchars($row['a_bal']??'') ?>" class="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"></div>
+        <input id="ea-available-balance" type="number" step="0.01" name="a_bal" value="<?= htmlspecialchars($row['a_bal']??'') ?>" class="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"></div>
     </div>
+    <p class="text-xs text-gray-500 -mt-4 mb-6">Balances above are currency-specific and auto-switch when you change currency.</p>
 
     <p class="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-3">Account Status &amp; Auth Method</p>
     <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
@@ -446,6 +538,7 @@ require_once __DIR__ . '/partials/admin-shell-open.php';
 <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 max-w-xl">
   <h2 class="font-semibold text-gray-800 mb-4">Account Images</h2>
   <form method="POST" enctype="multipart/form-data" class="space-y-5">
+    <input type="hidden" name="ea_csrf" value="<?= htmlspecialchars($eaCsrfToken) ?>">
     <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
       <div>
         <label class="block text-xs font-medium text-gray-700 mb-2">ID / Document Image</label>
@@ -488,7 +581,13 @@ require_once __DIR__ . '/partials/admin-shell-open.php';
   if (!empty($row['acc_no'])) {
       $safeAccW = $conn->real_escape_string($row['acc_no']);
       $wRes = $conn->query(
-          "SELECT ab.currency_code, ab.balance, c.symbol, c.name, c.is_crypto
+            "SELECT ab.currency_code,
+              ab.balance,
+              COALESCE(ab.total_balance, ab.balance) AS total_balance,
+              COALESCE(ab.available_balance, COALESCE(ab.total_balance, ab.balance)) AS available_balance,
+              c.symbol,
+              c.name,
+              c.is_crypto
            FROM account_balances ab
            LEFT JOIN currencies c ON c.code = ab.currency_code
            WHERE ab.acc_no = '$safeAccW'
@@ -513,7 +612,7 @@ require_once __DIR__ . '/partials/admin-shell-open.php';
           <th class="pb-2 pr-4">Currency</th>
           <th class="pb-2 pr-4">Name</th>
           <th class="pb-2 pr-4">Type</th>
-          <th class="pb-2 pr-4">Balance</th>
+          <th class="pb-2 pr-4">Balances (Total / Available)</th>
           <th class="pb-2">Actions</th>
         </tr>
       </thead>
@@ -525,9 +624,13 @@ require_once __DIR__ . '/partials/admin-shell-open.php';
           <td class="py-2.5 pr-4"><span class="inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium <?= (int)$uw['is_crypto'] ? 'bg-amber-100 text-amber-700' : 'bg-blue-50 text-blue-600' ?>"><?= (int)$uw['is_crypto'] ? 'Crypto' : 'Fiat' ?></span></td>
           <td class="py-2.5 pr-4">
             <form method="POST" class="flex items-center gap-2">
+              <input type="hidden" name="ea_csrf" value="<?= htmlspecialchars($eaCsrfToken) ?>">
               <input type="hidden" name="w_currency_code" value="<?= htmlspecialchars($uw['currency_code']) ?>">
               <input type="number" step="0.00000001" name="w_balance"
-                value="<?= htmlspecialchars(number_format((float)$uw['balance'], (int)$uw['is_crypto'] ? 8 : 2, '.', '')) ?>"
+                value="<?= htmlspecialchars(number_format((float)$uw['total_balance'], (int)$uw['is_crypto'] ? 8 : 2, '.', '')) ?>"
+                class="w-36 rounded-lg border border-gray-300 px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+              <input type="number" step="0.00000001" name="w_available_balance"
+                value="<?= htmlspecialchars(number_format((float)$uw['available_balance'], (int)$uw['is_crypto'] ? 8 : 2, '.', '')) ?>"
                 class="w-36 rounded-lg border border-gray-300 px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
               <button type="submit" name="wallet_upsert" class="inline-flex items-center gap-1 bg-blue-600 hover:bg-blue-700 text-white text-xs font-medium px-3 py-1.5 rounded-lg transition-colors">
                 <i class="fa-solid fa-floppy-disk text-[10px]"></i> Save
@@ -536,6 +639,7 @@ require_once __DIR__ . '/partials/admin-shell-open.php';
           </td>
           <td class="py-2.5">
             <form method="POST">
+              <input type="hidden" name="ea_csrf" value="<?= htmlspecialchars($eaCsrfToken) ?>">
               <input type="hidden" name="del_currency_code" value="<?= htmlspecialchars($uw['currency_code']) ?>">
               <button type="submit" name="wallet_delete" class="inline-flex items-center gap-1 bg-red-50 hover:bg-red-100 text-red-600 text-xs font-medium px-3 py-1.5 rounded-lg transition-colors border border-red-200">
                 <i class="fa-solid fa-trash text-[10px]"></i> Remove
@@ -553,6 +657,7 @@ require_once __DIR__ . '/partials/admin-shell-open.php';
 
   <!-- Add new wallet -->
   <form method="POST" class="flex flex-wrap items-end gap-3 border-t border-gray-100 pt-4">
+    <input type="hidden" name="ea_csrf" value="<?= htmlspecialchars($eaCsrfToken) ?>">
     <div>
       <label class="block text-xs font-medium text-gray-700 mb-1">Add / Top-up Currency</label>
       <select name="w_currency_code" class="rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" required>
@@ -572,6 +677,41 @@ require_once __DIR__ . '/partials/admin-shell-open.php';
     </button>
   </form>
 </div>
+
+<script>
+(function () {
+  var walletMap = <?= json_encode($walletBalancesByCurrency, JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_AMP | JSON_HEX_QUOT) ?>;
+  var currencySelect = document.getElementById('ea-currency');
+  var totalInput = document.getElementById('ea-total-balance');
+  var availableInput = document.getElementById('ea-available-balance');
+  if (!currencySelect || !totalInput || !availableInput) {
+    return;
+  }
+
+  function toFixedSafe(value) {
+    var num = Number(value || 0);
+    if (!isFinite(num)) {
+      num = 0;
+    }
+    return String(num.toFixed(2));
+  }
+
+  function applyCurrencyWallet() {
+    var code = String(currencySelect.value || '').toUpperCase().trim();
+    var wallet = walletMap[code] || null;
+    if (!wallet) {
+      totalInput.value = '0.00';
+      availableInput.value = '0.00';
+      return;
+    }
+    totalInput.value = toFixedSafe(wallet.total_balance);
+    availableInput.value = toFixedSafe(wallet.available_balance);
+  }
+
+  currencySelect.addEventListener('change', applyCurrencyWallet);
+  applyCurrencyWallet();
+})();
+</script>
 
 <!-- IBAN Management -->
 <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 max-w-5xl mt-6">
@@ -642,6 +782,7 @@ require_once __DIR__ . '/partials/admin-shell-open.php';
           <td class="py-2.5 pr-4 text-gray-500 text-xs"><?= !empty($ui['iban_updated_at']) ? htmlspecialchars(date('Y-m-d H:i', strtotime($ui['iban_updated_at']))) : '—' ?></td>
           <td class="py-2.5 space-x-2">
             <form method="POST" class="inline-flex items-center gap-2">
+              <input type="hidden" name="ea_csrf" value="<?= htmlspecialchars($eaCsrfToken) ?>">
               <input type="hidden" name="customer_account_id" value="<?= (int)$ui['id'] ?>">
               <input type="hidden" name="iban_reason" value="Manual regeneration">
               <button type="submit" name="update_iban" value="regenerate" class="inline-flex items-center gap-1 bg-amber-50 hover:bg-amber-100 text-amber-600 text-xs font-medium px-3 py-1.5 rounded-lg transition-colors border border-amber-200" title="Generate a new system IBAN">
@@ -658,6 +799,7 @@ require_once __DIR__ . '/partials/admin-shell-open.php';
   <div class="border-t border-gray-100 pt-4">
     <p class="text-xs font-medium text-gray-700 mb-3">Set Custom IBAN</p>
     <form method="POST" class="space-y-3">
+      <input type="hidden" name="ea_csrf" value="<?= htmlspecialchars($eaCsrfToken) ?>">
       <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
         <div>
           <label class="block text-xs font-medium text-gray-700 mb-1">Select Account</label>

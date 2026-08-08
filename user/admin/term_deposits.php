@@ -2,6 +2,10 @@
 session_start();
 require_once 'class.admin.php';
 include_once 'session.php';
+require_once '../../config.php';
+if (is_file(__DIR__ . '/../partials/wallet-ledger.php')) {
+  require_once __DIR__ . '/../partials/wallet-ledger.php';
+}
 
 if (!isset($_SESSION['email'])) {
     header('Location: login.php');
@@ -76,8 +80,39 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['settle_td'])) {
             $accNo = (string)$td['acc_no'];
             $amt = (float)$td['maturity_amount'];
 
-            $credit = $reg_user->runQuery('UPDATE account SET a_bal = a_bal + :amt, t_bal = t_bal + :amt WHERE acc_no = :acc_no');
-            $credit->execute([':amt' => $amt, ':acc_no' => $accNo]);
+            $accountCurrency = '';
+            $accountStmt = $reg_user->runQuery('SELECT currency, t_bal, a_bal FROM account WHERE acc_no = :acc_no LIMIT 1');
+            $accountStmt->execute([':acc_no' => $accNo]);
+            $accountRow = $accountStmt->fetch(PDO::FETCH_ASSOC) ?: [];
+            $accountCurrency = strtoupper(trim((string)($accountRow['currency'] ?? 'USD')));
+
+            if (function_exists('fw_wallet_seed_from_legacy')) {
+              fw_wallet_seed_from_legacy($GLOBALS['conn'], $accNo, $accountCurrency);
+            }
+            $walletRow = fw_wallet_get($GLOBALS['conn'], $accNo, $accountCurrency);
+            $walletTotal = (float)($walletRow['total_balance'] ?? ($accountRow['t_bal'] ?? 0));
+            $walletAvailable = (float)($walletRow['available_balance'] ?? ($accountRow['a_bal'] ?? $walletTotal));
+
+            fw_wallet_set(
+              $GLOBALS['conn'],
+              $accNo,
+              $accountCurrency,
+              $walletTotal + $amt,
+              $walletAvailable + $amt
+            );
+            fw_wallet_sync_legacy_account($GLOBALS['conn'], $accNo, $accountCurrency);
+
+            try {
+              $caCredit = $reg_user->runQuery('UPDATE customer_accounts
+                SET balance = balance + :amt
+                WHERE owner_acc_no = :acc_no AND currency_code = :currency_code');
+              $caCredit->execute([
+                ':amt' => $amt,
+                ':acc_no' => $accNo,
+                ':currency_code' => $accountCurrency,
+              ]);
+            } catch (Throwable $e) {
+            }
 
             $updTd = $reg_user->runQuery('UPDATE term_deposits SET status = :status, updated_at = :updated_at WHERE id = :id');
             $updTd->execute([

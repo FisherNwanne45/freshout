@@ -4,6 +4,7 @@ require_once 'class.admin.php';
 require dirname(__DIR__, 2) . '/config.php';
 $conn = $GLOBALS['conn'] ?? null;
 require_once dirname(__DIR__) . '/partials/auto-migrate.php';
+require_once dirname(__DIR__) . '/partials/wallet-ledger.php';
 require_once dirname(__DIR__) . '/partials/iban-tools.php';
 include_once ('session.php');
 if(!isset($_SESSION['email'])){
@@ -32,6 +33,7 @@ if ($_fcRes) { while ($_fc = $_fcRes->fetch_assoc()) $fiatCurrencies[] = $_fc; }
 if (!$fiatCurrencies) $fiatCurrencies = [['code'=>'USD','symbol'=>'$','name'=>'US Dollar']];
 
 $statusOptions = ['Active','Dormant/Inactive','Disabled','Closed'];
+$maritalStatusOptions = ['Single', 'Married', 'Divorced', 'Separated', 'Widowed'];
 $loginMethodOptions = ['pin' => 'PIN','otp' => 'OTP'];
 $authMethodOptions = [
   'pin'       => 'PIN only',
@@ -91,6 +93,9 @@ if(isset($_POST['create']))
     }
     if ($currency === '') {
         $currency = 'USD';
+    }
+    if (!in_array($marry, $maritalStatusOptions, true)) {
+      $marry = 'Single';
     }
 
     $uploadOne = static function (string $field, string $label) use (&$createErrors, $allowedImageExt, $uploadDir): string {
@@ -659,10 +664,21 @@ td[class='spechide']
       if ($curCode === '') {
         $curCode = 'USD';
       }
+      $walletTotal = (float)$t_bal;
+      $walletAvailable = (float)$a_bal;
+      if ($walletAvailable > $walletTotal) {
+        $walletAvailable = $walletTotal;
+      }
+
+      if ($conn instanceof mysqli) {
+        fw_wallet_set($conn, (string)$acc_no, $curCode, $walletTotal, $walletAvailable);
+        fw_wallet_sync_legacy_account($conn, (string)$acc_no, $curCode);
+      }
+
       $curEsc = $conn->real_escape_string($curCode);
       $walletNo = $acc_no . '-' . $curCode;
       $walletNoEsc = $conn->real_escape_string($walletNo);
-      $walletBal = (float)$a_bal;
+      $walletBal = $walletAvailable;
       $conn->query("INSERT INTO customer_accounts (owner_acc_no, account_no, currency_code, balance, status, is_primary)
                     VALUES ('{$ownerEsc}', '{$walletNoEsc}', '{$curEsc}', {$walletBal}, 'active', 1)
                     ON DUPLICATE KEY UPDATE
@@ -783,9 +799,9 @@ require_once __DIR__ . '/partials/admin-shell-open.php';
 
       <div><label class="block text-xs font-medium text-gray-700 mb-1">Marital Status</label>
         <select name="marry" class="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
-          <option value="Single">Single</option>
-          <option value="Married">Married</option>
-          <option value="Divorced">Divorced</option>
+          <?php foreach ($maritalStatusOptions as $_ms): ?>
+          <option value="<?= htmlspecialchars($_ms) ?>" <?= $_ms === 'Single' ? 'selected' : '' ?>><?= htmlspecialchars($_ms) ?></option>
+          <?php endforeach; ?>
         </select>
       </div>
 

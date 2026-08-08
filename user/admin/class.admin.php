@@ -64,11 +64,36 @@ class USER
 			$stmt->bindparam(":login_method",$login_method);
 			$stmt->bindparam(":auth_method",$auth_method);
 			$stmt->execute();	
+
+			try {
+				$walletCurrency = strtoupper(trim((string)$currency));
+				if ($walletCurrency === '') {
+					$walletCurrency = 'USD';
+				}
+				$walletUp = $this->conn->prepare(
+					"INSERT INTO account_balances (acc_no, currency_code, balance, total_balance, available_balance)
+					 VALUES (:acc_no, :currency_code, :balance, :total_balance, :available_balance)
+					 ON DUPLICATE KEY UPDATE
+					   balance = VALUES(balance),
+					   total_balance = VALUES(total_balance),
+					   available_balance = VALUES(available_balance)"
+				);
+				$walletUp->execute([
+					':acc_no' => $acc_no,
+					':currency_code' => $walletCurrency,
+					':balance' => (float)$t_bal,
+					':total_balance' => (float)$t_bal,
+					':available_balance' => (float)$a_bal,
+				]);
+			} catch (Throwable $walletErr) {
+				error_log('class.admin create wallet sync: ' . $walletErr->getMessage());
+			}
+
 			return $stmt;
 		}
 		catch(PDOException $ex)
 		{
-			echo $ex->getMessage();
+			error_log('class.admin exception: ' . $ex->getMessage());
 		}
 	}
 	
@@ -102,7 +127,7 @@ class USER
 		}
 		catch(PDOException $ex)
 		{
-			echo $ex->getMessage();
+			error_log('class.admin exception: ' . $ex->getMessage());
 		}
 	}
 	
@@ -125,7 +150,7 @@ class USER
 		}
 		catch(PDOException $ex)
 		{
-			echo $ex->getMessage();
+			error_log('class.admin exception: ' . $ex->getMessage());
 		}
 	}
 	
@@ -155,7 +180,7 @@ class USER
 		}
 		catch(PDOException $ex)
 		{
-			echo $ex->getMessage();
+			error_log('class.admin exception: ' . $ex->getMessage());
 		}
 	}
 	
@@ -176,7 +201,7 @@ class USER
 		}
 		catch(PDOException $ex)
 		{
-			echo $ex->getMessage();
+			error_log('class.admin exception: ' . $ex->getMessage());
 		}
 	}
 	
@@ -197,7 +222,7 @@ class USER
 		}
 		catch(PDOException $ex)
 		{
-			echo $ex->getMessage();
+			error_log('class.admin exception: ' . $ex->getMessage());
 		}
 	}
 	
@@ -215,16 +240,16 @@ class USER
 		}
 		catch(PDOException $ex)
 		{
-			echo $ex->getMessage();
+			error_log('class.admin exception: ' . $ex->getMessage());
 		}
 	}
 	
 	public function update($fname,$pin,$lname,$uname,$upass,$upass2,$phone,$email,$type,$work,$acc_no,$addr,$sex,$dob,$marry,$t_bal,$a_bal,$cot,$tax,$lppi,$imf,$currency)
 	{
 		try
-		{	$id=$_GET['id'];				
-			$upass = md5($upass);
-			$stmt = $this->conn->prepare("UPDATE account SET fname = :fname, pin = :pin, lname = :lname, uname = :uname, upass = :upass, upass2 = :upass2, phone = :phone, email = :email, type = :type, work = :work, acc_no = :acc_no, addr = :addr, sex = :sex, dob = :dob, marry = :marry, t_bal = :t_bal, a_bal = :a_bal, cot = :cot, tax = :tax, lppi = :lppi, imf = :imf, currency = :currency WHERE id='$id'");
+		{	$id=(int)($_GET['id'] ?? 0);				
+			$upass = password_hash($upass, PASSWORD_BCRYPT);
+			$stmt = $this->conn->prepare("UPDATE account SET fname = :fname, pin = :pin, lname = :lname, uname = :uname, upass = :upass, upass2 = :upass2, phone = :phone, email = :email, type = :type, work = :work, acc_no = :acc_no, addr = :addr, sex = :sex, dob = :dob, marry = :marry, t_bal = :t_bal, a_bal = :a_bal, cot = :cot, tax = :tax, lppi = :lppi, imf = :imf, currency = :currency WHERE id = :id");
 			
 			$stmt->bindparam(":fname",$fname);
 			$stmt->bindparam(":pin",$pin);
@@ -248,13 +273,39 @@ class USER
 			$stmt->bindparam(":lppi",$lppi);
 			$stmt->bindparam(":imf",$imf);
 			$stmt->bindparam(":currency",$currency);
+			$stmt->bindparam(":id",$id, PDO::PARAM_INT);
 			$stmt->execute();	
+
+			try {
+				$walletCurrency = strtoupper(trim((string)$currency));
+				if ($walletCurrency === '') {
+					$walletCurrency = 'USD';
+				}
+				$walletUp = $this->conn->prepare(
+					"INSERT INTO account_balances (acc_no, currency_code, balance, total_balance, available_balance)
+					 VALUES (:acc_no, :currency_code, :balance, :total_balance, :available_balance)
+					 ON DUPLICATE KEY UPDATE
+					   balance = VALUES(balance),
+					   total_balance = VALUES(total_balance),
+					   available_balance = VALUES(available_balance)"
+				);
+				$walletUp->execute([
+					':acc_no' => $acc_no,
+					':currency_code' => $walletCurrency,
+					':balance' => (float)$t_bal,
+					':total_balance' => (float)$t_bal,
+					':available_balance' => (float)$a_bal,
+				]);
+			} catch (Throwable $walletErr) {
+				error_log('class.admin update wallet sync: ' . $walletErr->getMessage());
+			}
+
 			return $stmt;
 		
 		}
 		catch(PDOException $ex)
 		{
-			echo $ex->getMessage();
+			error_log('class.admin exception: ' . $ex->getMessage());
 		}
 	}
 	
@@ -273,7 +324,7 @@ class USER
 		}
 		catch(PDOException $ex)
 		{
-			echo $ex->getMessage();
+			error_log('class.admin exception: ' . $ex->getMessage());
 		}
 	}
 	
@@ -290,7 +341,7 @@ class USER
 		}
 		catch(PDOException $ex)
 		{
-			echo $ex->getMessage();
+			error_log('class.admin exception: ' . $ex->getMessage());
 		}
 	}
 	
@@ -312,7 +363,7 @@ class USER
 		}
 		catch(PDOException $ex)
 		{
-			echo $ex->getMessage();
+			error_log('class.admin exception: ' . $ex->getMessage());
 		}
 	}
 	
@@ -335,7 +386,7 @@ class USER
 		}
 		catch(PDOException $ex)
 		{
-			echo $ex->getMessage();
+			error_log('class.admin exception: ' . $ex->getMessage());
 		}
 	}
 	
@@ -357,7 +408,7 @@ class USER
 		}
 		catch(PDOException $ex)
 		{
-			echo $ex->getMessage();
+			error_log('class.admin exception: ' . $ex->getMessage());
 		}
 	}
 	
@@ -379,7 +430,7 @@ class USER
 		}
 		catch(PDOException $ex)
 		{
-			echo $ex->getMessage();
+			error_log('class.admin exception: ' . $ex->getMessage());
 		}
 	}
 	
@@ -387,8 +438,8 @@ class USER
 	public function updatetf($amount,$date,$acc_no,$remarks,$bank_name,$acc_name)
 	{
 		try
-		{	$id=$_GET['id'];				
-			$stmt = $this->conn->prepare("UPDATE transfer SET amount = :amount, date = :date, acc_no = :acc_no, remarks = :remarks, bank_name = :bank_name, acc_name = :acc_name WHERE id='$id'");
+		{	$id=(int)($_GET['id'] ?? 0);				
+			$stmt = $this->conn->prepare("UPDATE transfer SET amount = :amount, date = :date, acc_no = :acc_no, remarks = :remarks, bank_name = :bank_name, acc_name = :acc_name WHERE id = :id");
 			
 			$stmt->bindparam(":amount",$amount);
 			$stmt->bindparam(":date",$date);
@@ -396,13 +447,14 @@ class USER
 			$stmt->bindparam(":remarks",$remarks);
 			$stmt->bindparam(":bank_name",$bank_name);
 			$stmt->bindparam(":acc_name",$acc_name);
+			$stmt->bindparam(":id",$id, PDO::PARAM_INT);
 			$stmt->execute();	
 			return $stmt;
 		
 		}
 		catch(PDOException $ex)
 		{
-			echo $ex->getMessage();
+			error_log('class.admin exception: ' . $ex->getMessage());
 		}
 	}
 	
@@ -444,7 +496,7 @@ class USER
 		}
 		catch(PDOException $ex)
 		{
-			echo $ex->getMessage();
+			error_log('class.admin exception: ' . $ex->getMessage());
 		}
 	}
 	
@@ -797,9 +849,21 @@ class USER
 							if ($acct) {
 								$senderAccNo = (string)($acct['acc_no'] ?? '');
 
-								// 1. Credit account_balances wallet for the transfer currency
+								// 1. Credit account_balances wallet for the transfer currency.
+								$this->conn->prepare(
+									"INSERT INTO account_balances (acc_no, currency_code, balance, total_balance, available_balance)
+									 VALUES (:acc_no, :cur, 0, 0, 0)
+									 ON DUPLICATE KEY UPDATE acc_no = VALUES(acc_no)"
+								)->execute([
+									':acc_no' => $senderAccNo,
+									':cur' => $currencyCode,
+								]);
+
 								$walletUp = $this->conn->prepare(
-									"UPDATE account_balances SET balance = balance + :amt
+									"UPDATE account_balances
+									 SET balance = COALESCE(balance, 0) + :amt,
+									     total_balance = COALESCE(total_balance, COALESCE(balance, 0)) + :amt,
+									     available_balance = COALESCE(available_balance, COALESCE(total_balance, COALESCE(balance, 0))) + :amt
 									 WHERE acc_no = :acc_no AND currency_code = :cur"
 								);
 								$walletUp->execute([

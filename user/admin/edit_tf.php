@@ -23,11 +23,24 @@ if(isset($_GET['id'])){
     }
 }
 
+$transferTimeValue = '';
+if (!empty($row['date'])) {
+    $ts = strtotime((string)$row['date']);
+    if ($ts !== false) {
+        $transferTimeValue = date('H:i', $ts);
+    }
+}
+
 // Handle basic transfer info update
 if(isset($_POST['updatetf']) && isset($row)){
     $id = (int)$_GET['id'];
     $amount = trim($_POST['amount'] ?? '');
-    $date = trim($_POST['date'] ?? '');
+    $dateOnly = trim($_POST['date'] ?? '');
+    $timeOnly = trim($_POST['time'] ?? '');
+    $date = $dateOnly;
+    if ($dateOnly !== '' && $timeOnly !== '') {
+        $date = $dateOnly . ' ' . $timeOnly . ':00';
+    }
     $acc_no = trim($_POST['acc_no'] ?? '');
     $remarks = trim($_POST['remarks'] ?? '');
     $bank_name = trim($_POST['bank_name'] ?? '');
@@ -53,6 +66,13 @@ if(isset($_POST['updatetf']) && isset($row)){
         $stmt = $reg_user->runQuery("SELECT * FROM transfer WHERE id = :id");
         $stmt->execute([':id' => $id]);
         $row = $stmt->fetch(PDO::FETCH_ASSOC);
+        $transferTimeValue = '';
+        if (!empty($row['date'])) {
+            $ts = strtotime((string)$row['date']);
+            if ($ts !== false) {
+                $transferTimeValue = date('H:i', $ts);
+            }
+        }
     } else {
         $errorMsg = 'Failed to update transfer information.';
     }
@@ -162,6 +182,11 @@ require_once __DIR__ . '/partials/admin-shell-open.php';
                         <label class="block text-sm font-medium text-gray-700 mb-1">Date</label>
                         <input type="date" name="date" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500" 
                                value="<?= htmlspecialchars(substr($row['date'] ?? '', 0, 10)) ?>" required>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Time</label>
+                        <input type="time" name="time" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500" 
+                               value="<?= htmlspecialchars($transferTimeValue) ?>" required>
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-1">Description/Remarks</label>

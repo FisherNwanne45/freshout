@@ -224,6 +224,80 @@ function get_frontend_logo_url($conn): string
     return is_string($candidate) && $candidate !== '' ? htmlspecialchars($candidate) : '';
 }
 
+function get_auth_logo_url($conn): string
+{
+    if (!($conn instanceof mysqli)) {
+        return '';
+    }
+
+    $candidate = null;
+    try {
+        $res = $conn->query("SELECT setting_value AS v FROM site_settings WHERE setting_key='auth_logo_url' LIMIT 1");
+        if ($res && $res->num_rows > 0) {
+            $row = $res->fetch_assoc();
+            $candidate = $row['v'] ?? null;
+        }
+    } catch (Throwable $e) {
+    }
+
+    if ($candidate === null) {
+        try {
+            $res = $conn->query("SELECT `value` AS v FROM site_settings WHERE `key`='auth_logo_url' LIMIT 1");
+            if ($res && $res->num_rows > 0) {
+                $row = $res->fetch_assoc();
+                $candidate = $row['v'] ?? null;
+            }
+        } catch (Throwable $e) {
+        }
+    }
+
+    if (is_string($candidate) && $candidate !== '') {
+        return htmlspecialchars($candidate);
+    }
+
+    // Backward compatibility for existing installs.
+    return get_frontend_logo_url($conn);
+}
+
+function get_dashboard_logo_url($conn): string
+{
+    if (!($conn instanceof mysqli)) {
+        return '';
+    }
+
+    $candidate = null;
+    try {
+        $res = $conn->query("SELECT setting_value AS v FROM site_settings WHERE setting_key='dashboard_logo_url' LIMIT 1");
+        if ($res && $res->num_rows > 0) {
+            $row = $res->fetch_assoc();
+            $candidate = $row['v'] ?? null;
+        }
+    } catch (Throwable $e) {
+    }
+
+    if ($candidate === null) {
+        try {
+            $res = $conn->query("SELECT `value` AS v FROM site_settings WHERE `key`='dashboard_logo_url' LIMIT 1");
+            if ($res && $res->num_rows > 0) {
+                $row = $res->fetch_assoc();
+                $candidate = $row['v'] ?? null;
+            }
+        } catch (Throwable $e) {
+        }
+    }
+
+    if (is_string($candidate) && $candidate !== '') {
+        return htmlspecialchars($candidate);
+    }
+
+    $adminLogo = get_admin_logo_url($conn);
+    if ($adminLogo !== '') {
+        return $adminLogo;
+    }
+
+    return get_frontend_logo_url($conn);
+}
+
 function get_admin_logo_url($conn): string
 {
     if (!($conn instanceof mysqli)) {

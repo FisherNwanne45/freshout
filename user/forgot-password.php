@@ -19,7 +19,8 @@ $authScheme = get_auth_color_scheme($conn);
 $palette = get_auth_palette($authScheme);
 
 $bankName = $site ? htmlspecialchars((string)$site['name']) : 'Secure Banking';
-$bankLogo = $site ? 'admin/site/' . htmlspecialchars((string)$site['image']) : '';
+$authLogoSettingsUrl = get_auth_logo_url($conn);
+$bankLogo = $authLogoSettingsUrl !== '' ? $authLogoSettingsUrl : ($site ? 'admin/site/' . htmlspecialchars((string)$site['image']) : '');
 $tawk = $site ? (string)$site['tawk'] : '';
 
 $msg = '';

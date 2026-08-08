@@ -1,5 +1,5 @@
 <?php
-include "../../config.php"
+require_once __DIR__ . '/../../bootstrap.php';
 ?>
 <!DOCTYPE html>
 <html lang="en-US">
@@ -11,21 +11,22 @@ include "../../config.php"
 <head>
 	<meta charset="UTF-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<base href="<?php echo $url; ?>/" />
 	<link rel="profile" href="https://gmpg.org/xfn/11">
 
 	<title>Community Programs | <?php echo $name; ?></title>
 
 	<!-- All in One SEO 4.1.0.2 -->
 	<meta name="description" content="From basic checking to Account Analysis, we offer a wide range of checking products and services for every customer." />
-	<link rel="canonical" href="index.php" />
+	<link rel="canonical" href="<?php echo $url; ?>/index.php" />
 
 	<script async src="../../../www.google-analytics.com/analytics.js"></script>
 	<!-- All in One SEO -->
 
 	<link rel='dns-prefetch' href='http://fonts.googleapis.com/' />
 	<link rel='dns-prefetch' href='http://s.w.org/' />
-	<link rel="alternate" type="application/rss+xml" title="<?php echo $name; ?> &raquo; Feed" href="../../feed/index.php" />
-	<link rel="alternate" type="application/rss+xml" title="<?php echo $name; ?> &raquo; Comments Feed" href="../../comments/feed/index.php" />
+	<link rel="alternate" type="application/rss+xml" title="<?php echo $name; ?> &raquo; Feed" href="<?php echo $url; ?>/feed/index.php" />
+	<link rel="alternate" type="application/rss+xml" title="<?php echo $name; ?> &raquo; Comments Feed" href="<?php echo $url; ?>/comments/feed/index.php" />
 
 	<style>
 		img.wp-smiley,
@@ -41,7 +42,8 @@ include "../../config.php"
 			padding: 0 !important;
 		}
 	</style>
-	<link rel='stylesheet' id='astra-theme-css-css' href='../../wp-content/themes/astra/assets/css/minified/style.mind617.css?ver=3.3.2' media='all' />
+	<link rel='stylesheet' id='astra-theme-css-css' href='<?php echo $appBase; ?>/themes/<?php echo ACTIVE_THEME; ?>/css/minified/style.mind617.css?ver=3.3.2' media='all' />
+
 	<style id='astra-theme-css-inline-css'>
 		html {
 			font-size: 100%;
@@ -597,13 +599,7 @@ include "../../config.php"
 			}
 		}
 
-		@font-face {
-			font-family: "Astra";
-			src: url(../../wp-content/themes/astra/assets/fonts/astra.woff) format("woff"), url(<?php echo $url; ?>/wp-content/themes/astra/assets/fonts/astra.ttf) format("truetype"), url(<?php echo $url; ?>/wp-content/themes/astra/assets/fonts/astra.svg#astra) format("svg");
-			font-weight: normal;
-			font-style: normal;
-			font-display: fallback;
-		}
+		
 
 		@media (max-width:921px) {
 			.main-header-bar .main-header-bar-navigation {
@@ -886,9 +882,9 @@ include "../../config.php"
 		}
 	</style>
 	<link rel='stylesheet' id='astra-google-fonts-css' href='http://fonts.googleapis.com/css?family=Roboto%3A400%2C&amp;display=fallback&amp;ver=3.3.2' media='all' />
-	<link rel='stylesheet' id='wp-block-library-css' href='../../wp-includes/css/dist/block-library/style.minc62d.css?ver=c4be1ef428378af680af545453e0eeea' media='all' />
-	<link rel='stylesheet' id='tve_style_family_tve_flt-css' href='../../wp-content/plugins/thrive-visual-editor/editor/css/thrive_flata19e.css?ver=2.6.9' media='all' />
-	<link rel='stylesheet' id='astra-addon-css-css' href='../../wp-content/uploads/astra-addon/astra-addon-6078642b290bc6-808814413d36.css?ver=3.3.1' media='all' />
+	<link rel='stylesheet' id='wp-block-library-css' href='<?php echo $appBase; ?>/themes/<?php echo ACTIVE_THEME; ?>/wp-includes/css/dist/block-library/style.minc62d.css?ver=c4be1ef428378af680af545453e0eeea' media='all' />
+	<link rel='stylesheet' id='tve_style_family_tve_flt-css' href='<?php echo $appBase; ?>/themes/<?php echo ACTIVE_THEME; ?>/wp-content/plugins/thrive-visual-editor/editor/css/thrive_flata19e.css?ver=2.6.9' media='all' />
+	<link rel='stylesheet' id='astra-addon-css-css' href='<?php echo $appBase; ?>/themes/<?php echo ACTIVE_THEME; ?>/wp-content/uploads/astra-addon/astra-addon-6078642b290bc6-808814413d36.css?ver=3.3.1' media='all' />
 	<style id='astra-addon-css-inline-css'>
 		.ast-separate-container .blog-layout-1,
 		.ast-separate-container .blog-layout-2,
@@ -1210,19 +1206,19 @@ include "../../config.php"
 		}
 	</style>
 	<!--[if IE]>
-<script src='<?php echo $url; ?>/wp-content/themes/astra/assets/js/minified/flexibility.min.js?ver=3.3.2' id='astra-flexibility-js'></script>
+<script src='<?php echo $appBase; ?>/themes/<?php echo ACTIVE_THEME; ?>/js/minified/flexibility.min.js?ver=3.3.2' id='astra-flexibility-js'></script>
 <script id='astra-flexibility-js-after'>
 flexibility(document.documentElement);
 </script>
 <![endif]-->
-	<script src='../../wp-includes/js/plupload/moxie.mine34c.js?ver=1.3.5' id='moxiejs-js'></script>
-	<script src='../../wp-includes/js/plupload/plupload.min6c17.js?ver=2.1.9' id='plupload-js'></script>
-	<script src='../../wp-includes/js/jquery/jquery.min9d52.js?ver=3.5.1' id='jquery-core-js'></script>
-	<script src='../../wp-includes/js/jquery/jquery-migrate.mind617.js?ver=3.3.2' id='jquery-migrate-js'></script>
+	<script src='<?php echo $appBase; ?>/themes/<?php echo ACTIVE_THEME; ?>/wp-includes/js/plupload/moxie.mine34c.js?ver=1.3.5' id='moxiejs-js'></script>
+	<script src='<?php echo $appBase; ?>/themes/<?php echo ACTIVE_THEME; ?>/wp-includes/js/plupload/plupload.min6c17.js?ver=2.1.9' id='plupload-js'></script>
+	<script src='<?php echo $appBase; ?>/themes/<?php echo ACTIVE_THEME; ?>/wp-includes/js/jquery/jquery.min9d52.js?ver=3.5.1' id='jquery-core-js'></script>
+	<script src='<?php echo $appBase; ?>/themes/<?php echo ACTIVE_THEME; ?>/wp-includes/js/jquery/jquery-migrate.mind617.js?ver=3.3.2' id='jquery-migrate-js'></script>
 	<link rel="https://api.w.org/" href="../../wp-json/index.php" />
 	<link rel="alternate" type="application/json" href="../../wp-json/wp/v2/pages/436.json" />
 	<link rel="EditURI" type="application/rsd+xml" title="RSD" href="../../xmlrpc0db0.php?rsd" />
-	<link rel="wlwmanifest" type="application/wlwmanifest+xml" href="../../wp-includes/wlwmanifest.xml" />
+	<link rel="wlwmanifest" type="application/wlwmanifest+xml" href="<?php echo $url; ?>/wp-includes/wlwmanifest.xml" />
 
 	<link rel='shortlink' href='../../indexc1f6.php?p=436' />
 
@@ -1230,9 +1226,9 @@ flexibility(document.documentElement);
 		:root {}
 	</style>
 	<style type="text/css" id="thrive-default-styles"></style>
-	<link rel="icon" href="../../wp-content/uploads/2018/12/cropped-favicon-600x600-32x32.png" sizes="32x32" />
-	<link rel="icon" href="../../wp-content/uploads/2018/12/cropped-favicon-600x600-192x192.png" sizes="192x192" />
-	<link rel="apple-touch-icon" href="../../wp-content/uploads/2018/12/cropped-favicon-600x600-180x180.png" />
+	<link rel="icon" href="<?php echo $url; ?>/wp-content/uploads/2018/12/cropped-favicon-600x600-32x32.png" sizes="32x32" />
+	<link rel="icon" href="<?php echo $url; ?>/wp-content/uploads/2018/12/cropped-favicon-600x600-192x192.png" sizes="192x192" />
+	<link rel="apple-touch-icon" href="<?php echo $url; ?>/wp-content/uploads/2018/12/cropped-favicon-600x600-180x180.png" />
 	<meta name="msapplication-TileImage" content="<?php echo $url; ?>/wp-content/uploads/2018/12/cropped-favicon-600x600-270x270.png" />
 	<style type="text/css" class="tve_custom_style">
 		@import url("http://fonts.googleapis.com/css?family=Noto+Sans:400,700&amp;subset=latin");
@@ -1729,97 +1725,84 @@ Makes bullets line up correctly
 							<div class="ast-above-header-section ast-above-header-section-2 ast-flex ast-justify-content-flex-end widget-above-header">
 								<div class="above-header-widget above-header-user-select">
 									<div id="custom_html-9" class="widget_text widget widget_custom_html">
-										<div class="textwidget custom-html-widget"><span style="font-size:.8em"><a href="../../about/locations/index.php">Locations</a>  |  <a href="../../about/careers/index.php">Careers</a>  |  <a href="../../about/contact/index.php">Contact Us</a></span></div>
+										<div class="textwidget custom-html-widget"><span style="font-size:.8em"><a href="<?php echo $url; ?>/about/locations/index.php">Locations</a>  |  <a href="<?php echo $url; ?>/about/careers/index.php">Careers</a>  |  <a href="<?php echo $url; ?>/about/contact/index.php">Contact Us</a></span></div>
 									</div>
-									<div id="search-4" class="widget widget_search">
-										<div id="google_translate_element"></div>
-										<script type="text/javascript">
-											function googleTranslateElementInit() {
-												new google.translate.TranslateElement({
-													pageLanguage: 'en',
-													includedLanguages: 'ar,en,es,jv,ko,pa,pt,ru,zh-CN,zh-TW,ja',
-													layout: google.translate.TranslateElement.InlineLayout.SIMPLE
-												}, 'google_translate_element');
-											}
-										</script>
-										<script type="text/javascript" src="//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
+									<?php echo $translate; ?>
+								</div>
+							</div>
+						</div><!-- .ast-container -->
+					</div><!-- .ast-above-header -->
+				</div><!-- .ast-above-header-wrap -->
+
+				<div class="main-header-bar-wrap">
+					<div class="main-header-bar">
+						<div class="ast-container">
+
+							<div class="ast-flex main-header-container">
+
+								<div class="site-branding">
+									<div
+										class="ast-site-identity" itemtype="https://schema.org/Organization" itemscope="itemscope">
+										<span class="site-logo-img"><a href="<?php echo $url; ?>/index.php" class="custom-logo-link" rel="home"><img width="329" height="56" src="<?php echo $logo_url ?: ($url . '/admin/assets/images/logo/' . $image); ?>" class="custom-logo" alt="<?php echo $name; ?> Logo" srcset="<?php echo $logo_url ?: ($url . '/admin/assets/images/logo/' . $image); ?> 329w, <?php echo $logo_url ?: ($url . '/admin/assets/images/logo/' . $image); ?> 300w, <?php echo $logo_url ?: ($url . '/admin/assets/images/logo/' . $image); ?> 1024w, <?php echo $logo_url ?: ($url . '/admin/assets/images/logo/' . $image); ?> 768w, <?php echo $logo_url ?: ($url . '/admin/assets/images/logo/' . $image); ?> 1047w" sizes="(max-width: 329px) 100vw, 329px" /></a></span>
 									</div>
-								</div> <!-- .above-header-widget -->
-							</div>
-						</div>
-					</div><!-- .ast-container -->
-				</div><!-- .ast-above-header -->
-			</div><!-- .ast-above-header-wrap -->
-
-			<div class="main-header-bar-wrap">
-				<div class="main-header-bar">
-					<div class="ast-container">
-
-						<div class="ast-flex main-header-container">
-
-							<div class="site-branding">
-								<div
-									class="ast-site-identity" itemtype="https://schema.org/Organization" itemscope="itemscope">
-									<span class="site-logo-img"><a href="../../index.php" class="custom-logo-link" rel="home"><img width="329" height="56" src="<?php echo $url; ?>/admin/assets/images/logo/<?php echo $image; ?>" class="custom-logo" alt="<?php echo $name; ?> Logo" srcset="<?php echo $url; ?>/admin/assets/images/logo/<?php echo $image; ?> 329w, <?php echo $url; ?>/admin/assets/images/logo/<?php echo $image; ?> 300w, <?php echo $url; ?>/admin/assets/images/logo/<?php echo $image; ?> 1024w, <?php echo $url; ?>/admin/assets/images/logo/<?php echo $image; ?> 768w, <?php echo $url; ?>/admin/assets/images/logo/<?php echo $image; ?> 1047w" sizes="(max-width: 329px) 100vw, 329px" /></a></span>
-								</div>
-							</div>
-
-							<!-- .site-branding -->
-							<div class="ast-mobile-menu-buttons">
-
-
-								<div class="ast-button-wrap">
-									<button type="button" class="menu-toggle main-header-menu-toggle  ast-mobile-menu-buttons-fill " aria-controls='primary-menu' aria-expanded='false'>
-										<span class="screen-reader-text">Main Menu</span>
-										<span class="ast-icon icon-menu-bars"><span class="menu-toggle-icon"></span></span> </button>
 								</div>
 
+								<!-- .site-branding -->
+								<div class="ast-mobile-menu-buttons">
 
-							</div>
-							<div class="ast-main-header-bar-alignment">
-								<div class="main-header-bar-navigation">
-									<nav class="ast-flex-grow-1 navigation-accessibility" id="site-navigation" aria-label="Site Navigation" itemtype="https://schema.org/SiteNavigationElement" itemscope="itemscope">
-										<div class="main-navigation">
-											<ul id="primary-menu" class="main-header-menu ast-nav-menu ast-flex ast-justify-content-flex-end  submenu-with-border astra-menu-animation-fade ">
-												<li id="menu-item-1065" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-has-children menu-item-1065"><a href="../../business/index.php" class="menu-link">Business</a><button class="ast-menu-toggle" aria-expanded="false"><span class="screen-reader-text">Menu Toggle</span><span class="ast-icon icon-arrow"></span></button>
-													<ul class="sub-menu">
-														<li id="menu-item-440" class="menu-item menu-item-type-post_type menu-item-object-page  menu-item-440"><a href="../../business/checking/index.php" class="menu-link">Business Checking</a></li>
-														<li id="menu-item-448" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-448"><a href="../../business/savings/index.php" class="menu-link">Business Savings</a></li>
-														<li id="menu-item-435" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-435"><a href="../../business/online-banking/index.php" class="menu-link">Business Online Banking</a></li>
-														<li id="menu-item-446" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-446"><a href="../../business/loans-and-credit/index.php" class="menu-link">Business Loans and Credit</a></li>
 
-														<li id="menu-item-445" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-445"><a href="../../business/services/index.php" class="menu-link">Business Services</a></li>
-													</ul>
-												</li>
-												<li id="menu-item-398" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-has-children menu-item-398"><a href="../../personal/index.php" class="menu-link">Personal</a><button class="ast-menu-toggle" aria-expanded="false"><span class="screen-reader-text">Menu Toggle</span><span class="ast-icon icon-arrow"></span></button>
-													<ul class="sub-menu">
-														<li id="menu-item-484" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-484"><a href="../../personal/checking/index.php" aria-current="page" class="menu-link">Personal Checking</a></li>
-														<li id="menu-item-485" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-485"><a href="../../personal/savings/index.php" class="menu-link">Personal Savings</a></li>
-														<li id="menu-item-483" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-483"><a href="../../personal/online-banking/index.php" class="menu-link">Personal Online Banking</a></li>
-														<li id="menu-item-487" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-487"><a href="../../personal/loans-and-credit/index.php" class="menu-link">Personal Loans and Credit</a></li>
+									<div class="ast-button-wrap">
+										<button type="button" class="menu-toggle main-header-menu-toggle  ast-mobile-menu-buttons-fill " aria-controls='primary-menu' aria-expanded='false'>
+											<span class="screen-reader-text">Main Menu</span>
+											<span class="ast-icon icon-menu-bars"><span class="menu-toggle-icon"></span></span> </button>
+									</div>
 
-														<li id="menu-item-488" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-488"><a href="../../personal/services/index.php" class="menu-link">Personal Services</a></li>
-														<li id="menu-item-4813" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-4813"><a href="../../investing/index.php" class="menu-link">Investing</a></li>
-													</ul>
-												</li>
-												<li id="menu-item-401" class="menu-item menu-item-type-post_type menu-item-object-page current-page-ancestor current-menu-ancestor current-menu-parent current-page-parent current_page_parent current_page_ancestor menu-item-has-children menu-item-401"><a href="../../about/index.php" class="menu-link">About Us</a><button class="ast-menu-toggle" aria-expanded="false"><span class="screen-reader-text">Menu Toggle</span><span class="ast-icon icon-arrow"></span></button>
-													<ul class="sub-menu">
-														<li id="menu-item-395" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-395"><a href="../../about/shareholders/index.php" class="menu-link">Shareholders</a></li>
-														<li id="menu-item-2711" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-2711"><a href="../../about/corporate-contributions/index.php" class="menu-link">Corporate Contributions</a></li>
-														<li id="menu-item-2713" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-2713"><a href="../../about/community/index.php" class="menu-link">Community Programs</a></li>
-													</ul>
-												</li>
-												<li id="menu-item-144" class="menu-item menu-item-type-custom menu-item-object-custom  menu-item-144"><a href="<?php echo $login; ?>" class="menu-link">Access Your Account</a>
-												</li>
-											</ul>
-										</div>
-									</nav>
+
 								</div>
-							</div>
-						</div><!-- Main Header Container -->
-					</div><!-- ast-row -->
-				</div> <!-- Main Header Bar -->
-			</div> <!-- Main Header Bar Wrap -->
+								<div class="ast-main-header-bar-alignment">
+									<div class="main-header-bar-navigation">
+										<nav class="ast-flex-grow-1 navigation-accessibility" id="site-navigation" aria-label="Site Navigation" itemtype="https://schema.org/SiteNavigationElement" itemscope="itemscope">
+											<div class="main-navigation">
+												<ul id="primary-menu" class="main-header-menu ast-nav-menu ast-flex ast-justify-content-flex-end  submenu-with-border astra-menu-animation-fade ">
+													<li id="menu-item-1065" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-has-children menu-item-1065"><a href="<?php echo $url; ?>/business/index.php" class="menu-link">Business</a><button class="ast-menu-toggle" aria-expanded="false"><span class="screen-reader-text">Menu Toggle</span><span class="ast-icon icon-arrow"></span></button>
+														<ul class="sub-menu">
+															<li id="menu-item-440" class="menu-item menu-item-type-post_type menu-item-object-page  menu-item-440"><a href="<?php echo $url; ?>/business/checking/index.php" class="menu-link">Business Checking</a></li>
+															<li id="menu-item-448" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-448"><a href="<?php echo $url; ?>/business/savings/index.php" class="menu-link">Business Savings</a></li>
+															<li id="menu-item-435" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-435"><a href="<?php echo $url; ?>/business/online-banking/index.php" class="menu-link">Business Online Banking</a></li>
+															<li id="menu-item-446" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-446"><a href="<?php echo $url; ?>/business/loans-and-credit/index.php" class="menu-link">Business Loans and Credit</a></li>
+
+															<li id="menu-item-445" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-445"><a href="<?php echo $url; ?>/business/services/index.php" class="menu-link">Business Services</a></li>
+														</ul>
+													</li>
+													<li id="menu-item-398" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-has-children menu-item-398"><a href="<?php echo $url; ?>/personal/index.php" class="menu-link">Personal</a><button class="ast-menu-toggle" aria-expanded="false"><span class="screen-reader-text">Menu Toggle</span><span class="ast-icon icon-arrow"></span></button>
+														<ul class="sub-menu">
+															<li id="menu-item-484" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-484"><a href="<?php echo $url; ?>/personal/checking/index.php" aria-current="page" class="menu-link">Personal Checking</a></li>
+															<li id="menu-item-485" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-485"><a href="<?php echo $url; ?>/personal/savings/index.php" class="menu-link">Personal Savings</a></li>
+															<li id="menu-item-483" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-483"><a href="<?php echo $url; ?>/personal/online-banking/index.php" class="menu-link">Personal Online Banking</a></li>
+															<li id="menu-item-487" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-487"><a href="<?php echo $url; ?>/personal/loans-and-credit/index.php" class="menu-link">Personal Loans and Credit</a></li>
+
+															<li id="menu-item-488" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-488"><a href="<?php echo $url; ?>/personal/services/index.php" class="menu-link">Personal Services</a></li>
+															<li id="menu-item-4813" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-4813"><a href="<?php echo $url; ?>/investing/index.php" class="menu-link">Investing</a></li>
+														</ul>
+													</li>
+													<li id="menu-item-401" class="menu-item menu-item-type-post_type menu-item-object-page current-page-ancestor current-menu-ancestor current-menu-parent current-page-parent current_page_parent current_page_ancestor menu-item-has-children menu-item-401"><a href="<?php echo $url; ?>/about/index.php" class="menu-link">About Us</a><button class="ast-menu-toggle" aria-expanded="false"><span class="screen-reader-text">Menu Toggle</span><span class="ast-icon icon-arrow"></span></button>
+														<ul class="sub-menu">
+															<li id="menu-item-395" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-395"><a href="<?php echo $url; ?>/about/shareholders/index.php" class="menu-link">Shareholders</a></li>
+															<li id="menu-item-2711" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-2711"><a href="<?php echo $url; ?>/about/corporate-contributions/index.php" class="menu-link">Corporate Contributions</a></li>
+															<li id="menu-item-2713" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-2713"><a href="<?php echo $url; ?>/about/community/index.php" class="menu-link">Community Programs</a></li>
+														</ul>
+													</li>
+													<li id="menu-item-144" class="menu-item menu-item-type-custom menu-item-object-custom  menu-item-144"><a href="<?php echo $login; ?>" class="menu-link">Access Your Account</a>
+													</li>
+												</ul>
+											</div>
+										</nav>
+									</div>
+								</div>
+							</div><!-- Main Header Container -->
+						</div><!-- ast-row -->
+					</div> <!-- Main Header Bar -->
+				</div> <!-- Main Header Bar Wrap -->
 		</header><!-- #masthead -->
 		<div id="content" class="site-content">
 			<div class="ast-container">
@@ -1845,7 +1828,7 @@ Makes bullets line up correctly
 											<div class="tcb-flex-row tcb-resized tcb--cols--2" data-css="tve-u-1689c2db64d">
 												<div class="tcb-flex-col c-66" data-css="tve-u-1689c2db649" style="">
 													<div class="tcb-col" data-css="tve-u-1689c2db648">
-														<div class="thrv_wrapper tve_image_caption tcb-mobile-hidden tcb-tablet-hidden" data-css="tve-u-1689c2db64c"><span class="tve_image_frame" style="width: 100%;"><img class="tve_image wp-image-5352" alt="About <?php echo $name; ?>" width="877" height="219" title="WAB_SITE_MERCHANDISING_ABOUT_US" data-id="5352" src="../../wp-content/uploads/2021/01/WAB_SITE_MERCHANDISING_ABOUT_US.png" style="" scale="0" data-width="877" data-height="219" data-init-width="2048" data-init-height="512" loading="lazy" srcset="<?php echo $url; ?>/wp-content/uploads/2021/01/WAB_SITE_MERCHANDISING_ABOUT_US.png 1200w, <?php echo $url; ?>/wp-content/uploads/2021/01/WAB_SITE_MERCHANDISING_ABOUT_US-300x75.png 300w, <?php echo $url; ?>/wp-content/uploads/2021/01/WAB_SITE_MERCHANDISING_ABOUT_US-1024x256.png 1024w, <?php echo $url; ?>/wp-content/uploads/2021/01/WAB_SITE_MERCHANDISING_ABOUT_US-768x192.png 768w" sizes="(max-width: 877px) 100vw, 877px" /></span></div>
+														<div class="thrv_wrapper tve_image_caption tcb-mobile-hidden tcb-tablet-hidden" data-css="tve-u-1689c2db64c"><span class="tve_image_frame theme6-site-name-banner" data-site-name="<?php echo htmlspecialchars($name, ENT_QUOTES, 'UTF-8'); ?>" style="width: 100%;"><img class="tve_image wp-image-5352" alt="About <?php echo $name; ?>" width="877" height="219" title="WAB_SITE_MERCHANDISING_ABOUT_US" data-id="5352" src="<?php echo $url; ?>/wp-content/uploads/2021/01/WAB_SITE_MERCHANDISING_HOME_PAGE_BANNER.png" style="" scale="0" data-width="877" data-height="219" data-init-width="2048" data-init-height="512" loading="lazy" srcset="<?php echo $url; ?>/wp-content/uploads/2021/01/WAB_SITE_MERCHANDISING_HOME_PAGE_BANNER.png 1200w, <?php echo $url; ?>/wp-content/uploads/2021/01/WAB_SITE_MERCHANDISING_HOME_PAGE_BANNER.png 300w, <?php echo $url; ?>/wp-content/uploads/2021/01/WAB_SITE_MERCHANDISING_HOME_PAGE_BANNER.png 1024w, <?php echo $url; ?>/wp-content/uploads/2021/01/WAB_SITE_MERCHANDISING_HOME_PAGE_BANNER.png 768w" sizes="(max-width: 877px) 100vw, 877px" /></span></div>
 														<div class="thrv_wrapper thrv_text_element" data-tag="h1">
 															<h1 class="">Community Programs</h1>
 														</div>
@@ -1881,7 +1864,7 @@ Makes bullets line up correctly
 																				<div class="thrv_wrapper thrv_icon tve_no_drag tcb-no-delete tcb-no-clone tcb-no-save tcb-icon-inherit-style tcb-icon-display" data-css="tve-u-168a4e3b588" data-tcb_hover_state_parent=""><svg class="tcb-icon" viewBox="0 0 448 512" data-id="icon-long-arrow-right-light" data-name="">
 																						<path d="M311.03 131.515l-7.071 7.07c-4.686 4.686-4.686 12.284 0 16.971L387.887 239H12c-6.627 0-12 5.373-12 12v10c0 6.627 5.373 12 12 12h375.887l-83.928 83.444c-4.686 4.686-4.686 12.284 0 16.971l7.071 7.07c4.686 4.686 12.284 4.686 16.97 0l116.485-116c4.686-4.686 4.686-12.284 0-16.971L328 131.515c-4.686-4.687-12.284-4.687-16.97 0z"></path>
 																					</svg></div>
-																			</div><span class="thrv-advanced-inline-text tve_editable tcb-styled-list-icon-text tcb-no-delete tcb-no-save tve-froala fr-box" data-css="tve-u-168a4e3b58a"><a href="index.php" class="tve-froala" style="outline: none;">Community</a></span>
+																			</div><span class="thrv-advanced-inline-text tve_editable tcb-styled-list-icon-text tcb-no-delete tcb-no-save tve-froala fr-box" data-css="tve-u-168a4e3b58a"><a href="<?php echo $url; ?>/index.php" class="tve-froala" style="outline: none;">Community</a></span>
 																		</li>
 																	</ul>
 																</div>
@@ -1935,21 +1918,21 @@ Makes bullets line up correctly
 							<div class="ast-col-lg-3 ast-col-md-3 ast-col-sm-12 ast-col-xs-12 footer-adv-widget footer-adv-widget-2">
 								<div id="custom_html-3" class="widget_text widget widget_custom_html">
 									<h2 class="widget-title">Personal</h2>
-									<div class="textwidget custom-html-widget"><a href="../../personal/online-banking/index.php">Personal Online Banking</a><br />
-										<a href="../../personal/checking/index.php">Personal Checking</a><br />
-										<a href="../../personal/savings/index.php">Personal Savings</a><br />
+									<div class="textwidget custom-html-widget"><a href="<?php echo $url; ?>/personal/online-banking/index.php">Personal Online Banking</a><br />
+										<a href="<?php echo $url; ?>/personal/checking/index.php">Personal Checking</a><br />
+										<a href="<?php echo $url; ?>/personal/savings/index.php">Personal Savings</a><br />
 
-										<a href="../../personal/loans-and-credit/index.php">Personal Loans and Credit</a><br />
-										<a href="../../personal/services/index.php">Personal Services</a>
+										<a href="<?php echo $url; ?>/personal/loans-and-credit/index.php">Personal Loans and Credit</a><br />
+										<a href="<?php echo $url; ?>/personal/services/index.php">Personal Services</a>
 									</div>
 								</div>
 							</div>
 							<div class="ast-col-lg-3 ast-col-md-3 ast-col-sm-12 ast-col-xs-12 footer-adv-widget footer-adv-widget-3">
 								<div id="custom_html-4" class="widget_text widget widget_custom_html">
 									<h2 class="widget-title">Info</h2>
-									<div class="textwidget custom-html-widget"><a href="../../about/privacy/index.php">Privacy Policies</a><br />
-										<a href="../../about/patriot-act-policy/index.php">Patriot Act Policy</a><br />
-										<a href="../../about/accessibility/index.php">Web Accessibility</a>
+									<div class="textwidget custom-html-widget"><a href="<?php echo $url; ?>/about/privacy/index.php">Privacy Policies</a><br />
+										<a href="<?php echo $url; ?>/about/patriot-act-policy/index.php">Patriot Act Policy</a><br />
+										<a href="<?php echo $url; ?>/about/accessibility/index.php">Web Accessibility</a>
 									</div>
 								</div>
 							</div>
@@ -1959,7 +1942,7 @@ Makes bullets line up correctly
 									<div class="textwidget custom-html-widget"><strong>Corporate Headquarters</strong><br />
 										<?php echo $addr; ?><br /><br />
 
-										<a href="https://www.facebook.com/ " target="_blank" rel="noopener"><img src="../../wp-content/uploads/2019/01/social-fb-20x20.png" alt="Facebook Icon" /></a> &nbsp;<a href="https://www.linkedin.com/ " target="_blank" rel="noopener"><img src="../../wp-content/uploads/2019/01/social-li-20x20.png" alt="LinkedIn Icon" /></a>
+										<a href="https://www.facebook.com/ " target="_blank" rel="noopener"><img src="<?php echo $url; ?>/wp-content/uploads/2019/01/social-fb-20x20.png" alt="Facebook Icon" /></a> &nbsp;<a href="https://www.linkedin.com/ " target="_blank" rel="noopener"><img src="<?php echo $url; ?>/wp-content/uploads/2019/01/social-li-20x20.png" alt="LinkedIn Icon" /></a>
 									</div>
 								</div>
 							</div>
@@ -1975,7 +1958,7 @@ Makes bullets line up correctly
 							<div class="ast-row ast-flex">
 
 								<div class="ast-small-footer-section ast-small-footer-section-1 ast-small-footer-section-equally ast-col-md-6">
-									<span style="font-size:11px"><img src="../../wp-content/uploads/2019/01/equal_housing_logo.png" alt="Equal Housing Lender Logo"> <?php echo $footertext; ?> </span>
+									<span style="font-size:11px"><img src="<?php echo $url; ?>/wp-content/uploads/2019/01/equal_housing_logo.png" alt="Equal Housing Lender Logo"> <?php echo $footertext; ?> </span>
 								</div>
 
 								<div class="ast-small-footer-section ast-small-footer-section-2 ast-small-footer-section-equally ast-col-md-6">
@@ -2048,14 +2031,12 @@ Makes bullets line up correctly
 			"isRtl": ""
 		};
 	</script>
-	<script src='../../wp-content/themes/astra/assets/js/minified/style.mind617.js?ver=3.3.2' id='astra-theme-js-js'></script>
-	<script src='../../wp-includes/js/imagesloaded.mineda1.js?ver=4.1.4' id='imagesloaded-js'></script>
-	<script src='../../wp-includes/js/masonry.min3a05.js?ver=4.2.2' id='masonry-js'></script>
-	<script src='../../wp-includes/js/jquery/jquery.masonry.minef70.js?ver=3.1.2b' id='jquery-masonry-js'></script>
+	<script src='<?php echo $appBase; ?>/themes/<?php echo ACTIVE_THEME; ?>/js/minified/style.mind617.js?ver=3.3.2' id='astra-theme-js-js'></script>
+	<script src='<?php echo $appBase; ?>/themes/<?php echo ACTIVE_THEME; ?>/wp-includes/js/imagesloaded.mineda1.js?ver=4.1.4' id='imagesloaded-js'></script>
+	<script src='<?php echo $appBase; ?>/themes/<?php echo ACTIVE_THEME; ?>/wp-includes/js/masonry.min3a05.js?ver=4.2.2' id='masonry-js'></script>
+	<script src='<?php echo $appBase; ?>/themes/<?php echo ACTIVE_THEME; ?>/wp-includes/js/jquery/jquery.masonry.minef70.js?ver=3.1.2b' id='jquery-masonry-js'></script>
 
-	<script src='../../wp-content/plugins/thrive-visual-editor/editor/js/dist/frontend.mina19e.js?ver=2.6.9' id='tve_frontend-js'></script>
 
-	<script src='../../wp-content/plugins/thrive-visual-editor/thrive-dashboard/js/dist/frontend.mina305.js?ver=2.4.2' id='tve-dash-frontend-js'></script>
 	<script id='astra-addon-js-js-extra'>
 		var astraAddon = {
 			"sticky_active": "1",
@@ -2090,8 +2071,8 @@ Makes bullets line up correctly
 			"is_header_builder_active": ""
 		};
 	</script>
-	<script src='../../wp-content/uploads/astra-addon/astra-addon-6078642b295655-171800443d36.js?ver=3.3.1' id='astra-addon-js-js'></script>
-	<script src='../../wp-includes/js/wp-embed.minc62d.js?ver=c4be1ef428378af680af545453e0eeea' id='wp-embed-js'></script>
+	<script src='<?php echo $appBase; ?>/themes/<?php echo ACTIVE_THEME; ?>/wp-content/uploads/astra-addon/astra-addon-6078642b295655-171800443d36.js?ver=3.3.1' id='astra-addon-js-js'></script>
+	<script src='<?php echo $appBase; ?>/themes/<?php echo ACTIVE_THEME; ?>/wp-includes/js/wp-embed.minc62d.js?ver=c4be1ef428378af680af545453e0eeea' id='wp-embed-js'></script>
 	<script type="text/javascript">
 		var tcb_post_lists = JSON.parse('[]');
 	</script>

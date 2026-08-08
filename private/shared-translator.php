@@ -63,6 +63,7 @@ $_gtsNameMap = [
     'vi'=>'Tiếng Việt','yi'=>'ייִדיש','zh-CN'=>'中文(简体)','zh-TW'=>'中文(繁體)',
 ];
 $_gtsCodes = array_filter(array_map('trim', explode(',', $_gtsLangs)));
+$_gtsDisableMobileClone = defined('ACTIVE_THEME') && in_array(ACTIVE_THEME, ['theme6', 'theme7'], true);
 ?>
 <script>
 (function () {
@@ -218,6 +219,8 @@ function gtsApplyLanguage(lang, onFail){
 }
 
 (function(){
+  var gtsDisableMobileClone = <?= $_gtsDisableMobileClone ? 'true' : 'false' ?>;
+
   function gtsSuppressInjectedUi(){
     var selectors = [
       '#google_translate_element',
@@ -245,6 +248,9 @@ function gtsApplyLanguage(lang, onFail){
     }
   }
 
+  // googleTranslateElementInit() is global; expose this helper globally too.
+  window.gtsSuppressInjectedUi = gtsSuppressInjectedUi;
+
   // Sync selector to the active translation cookie on load
   function gtsSync(){
     var lang = gtsReadPreferredLang();
@@ -255,8 +261,11 @@ function gtsApplyLanguage(lang, onFail){
     if(mobileSel) mobileSel.value = val;
   }
 
-  // Ensure translator remains visible on mobile even when nav containers are collapsed.
+  // Theme6 keeps only the header selector; other themes retain the mobile mount.
   function gtsEnsureMobileMount(){
+    if (gtsDisableMobileClone) {
+      return;
+    }
     if (!window.matchMedia('(max-width: 900px)').matches) {
       return;
     }
@@ -376,6 +385,40 @@ select.goog-te-combo * { display: none !important; visibility: hidden !important
   color: #0f172a;
 }
 
+<?php if (defined('ACTIVE_THEME') && ACTIVE_THEME === 'theme6'): ?>
+@media only screen and (max-width: 921px) {
+  .ast-above-header .ast-above-header-section-wrap {
+    flex-wrap: nowrap !important;
+    align-items: center !important;
+  }
+  .ast-above-header .above-header-user-select {
+    display: flex !important;
+    align-items: center !important;
+    gap: 8px !important;
+    white-space: nowrap !important;
+    width: auto !important;
+  }
+  .ast-above-header .above-header-user-select #custom_html-9,
+  .ast-above-header .above-header-user-select #search-4 {
+    display: inline-block !important;
+    margin: 0 !important;
+  }
+  .ast-above-header .above-header-user-select .textwidget {
+    font-size: 11px !important;
+    line-height: 1.2 !important;
+  }
+  .ast-above-header .above-header-user-select .gts-wrap {
+    margin-left: 0 !important;
+  }
+  .ast-above-header .above-header-user-select .gts-select {
+    min-width: 96px !important;
+    font-size: 10.5px !important;
+    padding: 4px 24px 4px 26px !important;
+  }
+}
+<?php endif; ?>
+
+<?php if (!$_gtsDisableMobileClone): ?>
 @media only screen and (max-width: 900px) {
   .gts-mobile-wrap {
     position: fixed !important;
@@ -393,6 +436,8 @@ select.goog-te-combo * { display: none !important; visibility: hidden !important
     font-size: 12px;
   }
 }
+<?php endif; ?>
+
 /* ── Banner / body-shift suppression ─────────────────── */
 .goog-te-banner-frame,
 iframe.skiptranslate,

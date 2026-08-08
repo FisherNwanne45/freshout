@@ -71,6 +71,7 @@ if (isset($_POST['acc_no']) && isset($_POST['upass'])) {
         $log = $reg_user->runQuery('UPDATE account SET logins = logins + 1 WHERE acc_no = :acc_no');
         $log->execute([':acc_no' => $acc_no]);
 
+        session_regenerate_id(true);
         $_SESSION['acc_no'] = $acc_no;
         unset($_SESSION['pin_verified']);
 
@@ -109,8 +110,8 @@ $authScheme = get_auth_color_scheme($conn);
 $palette = get_auth_palette($authScheme);
 
 $bankName = $site ? htmlspecialchars($site['name']) : 'Secure Banking';
-$frontendLogoSettingsUrl = get_frontend_logo_url($conn);
-$bankLogo = $frontendLogoSettingsUrl !== '' ? $frontendLogoSettingsUrl : ($site ? 'admin/site/' . htmlspecialchars($site['image']) : '');
+$authLogoSettingsUrl = get_auth_logo_url($conn);
+$bankLogo = $authLogoSettingsUrl !== '' ? $authLogoSettingsUrl : ($site ? 'admin/site/' . htmlspecialchars($site['image']) : '');
 $tawk = $site ? $site['tawk'] : '';
 ?>
 <!DOCTYPE html>

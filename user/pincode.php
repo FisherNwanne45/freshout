@@ -5,6 +5,7 @@ require_once 'class.user.php';
 require_once '../config.php';
 $conn = $GLOBALS['conn'] ?? null;
 require_once __DIR__ . '/partials/auto-migrate.php';
+require_once __DIR__ . '/partials/wallet-ledger.php';
 
 if (!isset($_SESSION['acc_no'])) {
     header('Location: login.php');
@@ -59,6 +60,11 @@ $transferTypeLabelMap = [
 $transferTypeLabel = $transferTypeLabelMap[strtolower(trim($transferType))] ?? ucfirst($transferType);
 
 $flashError = '';
+if (empty($_SESSION['transfer_csrf'])) {
+    $_SESSION['transfer_csrf'] = bin2hex(random_bytes(32));
+}
+$transferCsrfToken = (string)($_SESSION['transfer_csrf'] ?? '');
+$pincodeCsrfValid = true;
 
 function completeTransferFromTempPin(USER $reg_user, array $row, array $tempRow, mysqli $conn): void
 {
@@ -75,6 +81,7 @@ function completeTransferFromTempPin(USER $reg_user, array $row, array $tempRow,
     $curCode = strtoupper((string)($tempRow['currency_code'] ?? ($row['currency'] ?? 'USD')));
     $sourceAccountNo = (string)($tempRow['source_account_no'] ?? '');
     $destinationAccountNo = (string)($tempRow['destination_account_no'] ?? '');
+    $senderAccNo = (string)($row['acc_no'] ?? '');
 
     $normalizedXferType = strtolower(trim($xferType));
     if ($normalizedXferType === 'interbank' || $normalizedXferType === 'internal') {
@@ -142,7 +149,17 @@ function completeTransferFromTempPin(USER $reg_user, array $row, array $tempRow,
     } catch (Throwable $e) {
     }
 
-    if ($sourceBal === null) {
+    $sourceWallet = null;
+    if ($senderAccNo !== '') {
+        $sourceWallet = fw_wallet_get($conn, $senderAccNo, $curCode);
+        if (!$sourceWallet && strtoupper(trim((string)($row['currency'] ?? ''))) === strtoupper($curCode)) {
+            fw_wallet_seed_from_legacy($conn, $senderAccNo, $curCode);
+            $sourceWallet = fw_wallet_get($conn, $senderAccNo, $curCode);
+        }
+    }
+    if ($sourceWallet) {
+        $sourceBal = (float)($sourceWallet['available_balance'] ?? 0);
+    } elseif ($sourceBal === null) {
         $sourceBal = (float)($row['a_bal'] ?? $row['t_bal'] ?? 0);
     }
 
@@ -187,14 +204,18 @@ function completeTransferFromTempPin(USER $reg_user, array $row, array $tempRow,
         } catch (Throwable $e) {
         }
 
+        $senderTotalAfter = max(0, (float)($row['t_bal'] ?? 0) - (float)$amount);
+        $senderAvailAfter = max(0, (float)($row['a_bal'] ?? 0) - (float)$amount);
         try {
-            $reg_user->runQuery(
-                'UPDATE account_balances SET balance = balance - :amount WHERE acc_no = :acc_no AND currency_code = :currency_code'
-            )->execute([
-                ':amount' => $amount,
-                ':acc_no' => (string)($row['acc_no'] ?? ''),
-                ':currency_code' => $curCode,
-            ]);
+            if ($senderAccNo !== '') {
+                $sourceWallet = fw_wallet_get($conn, $senderAccNo, $curCode);
+                $sourceTotalBefore = (float)($sourceWallet['total_balance'] ?? 0);
+                $sourceAvailBefore = (float)($sourceWallet['available_balance'] ?? $sourceTotalBefore);
+                $senderTotalAfter = max(0, $sourceTotalBefore - (float)$amount);
+                $senderAvailAfter = max(0, $sourceAvailBefore - (float)$amount);
+                fw_wallet_set($conn, $senderAccNo, $curCode, $senderTotalAfter, $senderAvailAfter);
+                fw_wallet_sync_legacy_account($conn, $senderAccNo, $curCode);
+            }
         } catch (Throwable $e) {
         }
 
@@ -226,33 +247,23 @@ function completeTransferFromTempPin(USER $reg_user, array $row, array $tempRow,
                         ':account_no' => $destinationAccountNo,
                     ]);
 
-                    $reg_user->runQuery(
-                        'INSERT INTO account_balances (acc_no, currency_code, balance)
-                         VALUES (:acc_no, :currency_code, 0)
-                         ON DUPLICATE KEY UPDATE acc_no = VALUES(acc_no)'
-                    )->execute([
-                        ':acc_no' => $destOwner,
-                        ':currency_code' => $destCurrency,
-                    ]);
-
-                    $reg_user->runQuery(
-                        'UPDATE account_balances SET balance = balance + :amount WHERE acc_no = :acc_no AND currency_code = :currency_code'
-                    )->execute([
-                        ':amount' => $amount,
-                        ':acc_no' => $destOwner,
-                        ':currency_code' => $destCurrency,
-                    ]);
+                    $destWallet = fw_wallet_get($conn, $destOwner, $destCurrency);
+                    $destTotalBefore = (float)($destWallet['total_balance'] ?? 0);
+                    $destAvailBefore = (float)($destWallet['available_balance'] ?? $destTotalBefore);
+                    fw_wallet_set(
+                        $conn,
+                        $destOwner,
+                        $destCurrency,
+                        $destTotalBefore + (float)$amount,
+                        $destAvailBefore + (float)$amount
+                    );
                 }
             } catch (Throwable $e) {
             }
         }
 
-        $total = max(0, (float)($row['t_bal'] ?? 0) - $amount);
-        $avail = max(0, (float)($row['a_bal'] ?? 0) - $amount);
-        try {
-            $reg_user->runQuery("UPDATE account SET t_bal = '$total', a_bal = '$avail' WHERE email = '$email'")->execute();
-        } catch (Throwable $e) {
-        }
+        $total = $senderTotalAfter;
+        $avail = $senderAvailAfter;
 
         try {
             $beneficiaryName = trim((string)$accName);
@@ -291,6 +302,14 @@ function completeTransferFromTempPin(USER $reg_user, array $row, array $tempRow,
 }
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $postedCsrf = (string)($_POST['transfer_csrf'] ?? '');
+    if ($transferCsrfToken === '' || $postedCsrf === '' || !hash_equals($transferCsrfToken, $postedCsrf)) {
+        $pincodeCsrfValid = false;
+        $flashError = 'Your session security token expired. Please refresh and try again.';
+    }
+}
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && $pincodeCsrfValid) {
     $submittedPin = trim((string)($_POST['pin'] ?? ''));
     $storedPin = trim((string)($row['pin'] ?? ''));
 
@@ -349,6 +368,7 @@ require_once __DIR__ . '/partials/shell-open.php';
         <?php endif; ?>
 
         <form method="POST" class="space-y-4" id="pinForm" novalidate>
+            <input type="hidden" name="transfer_csrf" value="<?= htmlspecialchars($transferCsrfToken) ?>">
             <div>
                 <label for="pin" class="block text-sm font-semibold text-brand-navy mb-2">PIN Code</label>
                 <input id="pin" name="pin" type="password" inputmode="numeric" autocomplete="one-time-code" maxlength="12"

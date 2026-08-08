@@ -30,7 +30,10 @@ if (!$authMethod) {
 // Load wallets: account_balances is the authoritative balance source.
 // customer_accounts provides only metadata (account_no, iban, status).
 $walletsRes = $reg_user->runQuery(
-  'SELECT ab.currency_code, ab.balance,
+  'SELECT ab.currency_code,
+          COALESCE(ab.available_balance, COALESCE(ab.total_balance, ab.balance)) AS balance,
+          COALESCE(ab.total_balance, ab.balance) AS total_balance,
+          COALESCE(ab.available_balance, COALESCE(ab.total_balance, ab.balance)) AS available_balance,
           COALESCE(ca.account_no, CONCAT(:acc_no_pfx, \'-\', ab.currency_code)) AS account_no,
           COALESCE(ca.iban, \'\') AS iban,
           c.symbol, c.name AS cur_name, c.is_crypto, c.flag_code,
@@ -249,9 +252,15 @@ if (isset($_POST['transfer'])) {
     }
 
     $sourceAcctStmt = $reg_user->runQuery(
-      'SELECT account_no, currency_code, balance
-       FROM customer_accounts
-       WHERE owner_acc_no = :owner_acc_no AND account_no = :account_no AND status = :status
+      'SELECT ca.account_no,
+              ca.currency_code,
+              ca.balance,
+              COALESCE(ab.available_balance, COALESCE(ab.total_balance, ab.balance), ca.balance) AS spendable_balance
+       FROM customer_accounts ca
+       LEFT JOIN account_balances ab
+              ON ab.acc_no = ca.owner_acc_no
+             AND ab.currency_code = ca.currency_code
+       WHERE ca.owner_acc_no = :owner_acc_no AND ca.account_no = :account_no AND ca.status = :status
        LIMIT 1'
     );
     $sourceAcctStmt->execute([
@@ -346,7 +355,7 @@ if (isset($_POST['transfer'])) {
 
       if ($flashError === '' && (float)$amount <= 0) {
         $flashError = 'Please enter a valid amount.';
-      } elseif ($flashError === '' && $sourceAcct && (float)$sourceAcct['balance'] < (float)$amount) {
+      } elseif ($flashError === '' && $sourceAcct && (float)($sourceAcct['spendable_balance'] ?? 0) < (float)$amount) {
         $flashError = 'Insufficient balance in selected source account.';
     } else {
         if ($flashError === '' && $reg_user->temp($email, $amount, $accNoR, $accName, $bankName, $swift, $routing, $transferType, $remarks)) {

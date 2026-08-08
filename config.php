@@ -5,7 +5,7 @@ $defaultConfig = [
 		'host' => '127.0.0.1',
 		'username' => 'root',
 		'password' => '',
-		'name' => 'fisher2'
+		'name' => 'fresh2'
 	],
 	'smtp' => [
 		'host' => '127.0.0.1',

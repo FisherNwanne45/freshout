@@ -11,12 +11,24 @@ function gen_acc_id($length = 10) {
 }
 $rand = gen_acc_id(10);
 $newAccountCodePlaceholder = 'NOT SET - NEW ACC';
+$maritalStatusOptions = ['Single', 'Married', 'Divorced', 'Separated', 'Widowed'];
+
+if (empty($_SESSION['open_account_csrf'])) {
+    $_SESSION['open_account_csrf'] = bin2hex(random_bytes(16));
+}
+if (empty($_SESSION['open_account_form_loaded_at'])) {
+    $_SESSION['open_account_form_loaded_at'] = time();
+}
+
+$openAccountToken = (string)($_SESSION['open_account_csrf'] ?? '');
+$openAccountLoadedAt = (int)($_SESSION['open_account_form_loaded_at'] ?? time());
 
 /* ── Site branding ────────────────────────────────────────────────── */
 include_once '../config.php';
 $conn = $GLOBALS['conn'] ?? null;
 require_once __DIR__ . '/auth-theme.php';
 require_once __DIR__ . '/partials/auto-migrate.php';
+require_once __DIR__ . '/partials/wallet-ledger.php';
 require_once __DIR__ . '/partials/iban-tools.php';
 $site = null;
 $res  = $conn->query("SELECT * FROM site LIMIT 1");
@@ -26,8 +38,8 @@ if ($res && $res->num_rows > 0) {
 $authScheme = get_auth_color_scheme($conn);
 $palette    = get_auth_palette($authScheme);
 $bankName = $site ? htmlspecialchars($site['name']) : 'Secure Banking';
-$frontendLogoSettingsUrl = get_frontend_logo_url($conn);
-$bankLogo = $frontendLogoSettingsUrl !== '' ? $frontendLogoSettingsUrl : ($site ? 'admin/site/' . htmlspecialchars($site['image']) : '');
+$authLogoSettingsUrl = get_auth_logo_url($conn);
+$bankLogo = $authLogoSettingsUrl !== '' ? $authLogoSettingsUrl : ($site ? 'admin/site/' . htmlspecialchars($site['image']) : '');
 $tawk     = $site ? $site['tawk'] : '';
 
 /* ── Load currencies from DB (fallback to defaults) ──────────────── */
@@ -109,6 +121,16 @@ $alertClass = '';
 
 
 if (isset($_POST['register'])) {
+    $minimumFillSeconds = 3;
+    $cooldownSeconds = 20;
+
+    $postedToken = trim((string)($_POST['open_account_token'] ?? ''));
+    $sessionToken = (string)($_SESSION['open_account_csrf'] ?? '');
+    $honeypotValue = trim((string)($_POST['website'] ?? ''));
+    $startedAtPost = (int)($_POST['form_started_at'] ?? 0);
+    $startedAtSession = (int)($_SESSION['open_account_form_loaded_at'] ?? 0);
+    $nowTs = time();
+
     $fname = trim($_POST['fname'] ?? '');
     $lname = trim($_POST['lname'] ?? '');
     $uname = trim($_POST['uname'] ?? '');
@@ -130,8 +152,27 @@ if (isset($_POST['register'])) {
         $regDate = date('Y-m-d');
     }
     $marry = trim($_POST['marry'] ?? '');
+    if (!in_array($marry, $maritalStatusOptions, true)) {
+        $marry = 'Single';
+    }
 
     $errors = [];
+    if ($honeypotValue !== '') {
+        $errors[] = 'We could not verify your request. Please try again.';
+    }
+    if ($postedToken === '' || $sessionToken === '' || !hash_equals($sessionToken, $postedToken)) {
+        $errors[] = 'We could not verify your request. Please refresh and try again.';
+    }
+    $baselineStartedAt = $startedAtPost > 0 ? $startedAtPost : $startedAtSession;
+    if ($baselineStartedAt > 0 && ($nowTs - $baselineStartedAt) < $minimumFillSeconds) {
+        $errors[] = 'Please take a moment to complete the form and try again.';
+    }
+    $lastSubmitAt = (int)($_SESSION['open_account_last_submit_at'] ?? 0);
+    if ($lastSubmitAt > 0 && ($nowTs - $lastSubmitAt) < $cooldownSeconds) {
+        $errors[] = 'Please wait a few seconds and submit again.';
+    }
+    $_SESSION['open_account_last_submit_at'] = $nowTs;
+
     if ($fname === '' || $lname === '' || $email === '' || $upass === '' || $upass2 === '' || $dob === '' || $addr === '' || $phone === '' || $work === '' || $currency === '' || $type === '') {
         $errors[] = 'Please complete all required fields.';
     }
@@ -268,6 +309,16 @@ if (isset($_POST['register'])) {
                 $tBal, $aBal, $status, $loginMethod, $authMethod, $currency, $cot, $tax, $lppi, $imf, $pp, $image, $ccard, $ccdate, $cvv, $loan, $intra, $lodur
             );
             if ($stmt->execute()) {
+                if ($conn instanceof mysqli) {
+                    $walletTotal = (float)$tBal;
+                    $walletAvailable = (float)$aBal;
+                    if ($walletAvailable > $walletTotal) {
+                        $walletAvailable = $walletTotal;
+                    }
+                    fw_wallet_set($conn, $accNo, $currencyCode, $walletTotal, $walletAvailable);
+                    fw_wallet_sync_legacy_account($conn, $accNo, $currencyCode);
+                }
+
                 // Keep acc_no as internal Customer ID, while creating a per-currency
                 // customer wallet row for transfer settlement and external references.
                 try {
@@ -349,6 +400,11 @@ if (isset($_POST['register'])) {
         $alertClass = 'alert-danger';
         $alertMessage = implode(' ', $errors);
     }
+
+    $_SESSION['open_account_csrf'] = bin2hex(random_bytes(16));
+    $_SESSION['open_account_form_loaded_at'] = time();
+    $openAccountToken = $_SESSION['open_account_csrf'];
+    $openAccountLoadedAt = (int)$_SESSION['open_account_form_loaded_at'];
 }
 ?>
 <!DOCTYPE html>
@@ -644,6 +700,13 @@ if (isset($_POST['register'])) {
         .file-label:hover { border-color: var(--navy); color: var(--navy); }
         .file-label svg { width: 16px; height: 16px; fill: currentColor; }
         #attachment { display: none; }
+        .bot-field {
+            position: absolute !important;
+            left: -9999px !important;
+            width: 1px !important;
+            height: 1px !important;
+            overflow: hidden !important;
+        }
 
         /* Progress steps */
         .steps-bar {
@@ -816,6 +879,14 @@ if (isset($_POST['register'])) {
                         <option value="Female">Female</option>
                     </select>
                 </div>
+                <div class="form-group">
+                    <label>Marital Status</label>
+                    <select class="form-control" name="marry">
+                        <?php foreach ($maritalStatusOptions as $ms): ?>
+                        <option value="<?= htmlspecialchars($ms) ?>" <?= $ms === 'Single' ? 'selected' : '' ?>><?= htmlspecialchars($ms) ?></option>
+                        <?php endforeach; ?>
+                    </select>
+                </div>
             </div>
 
             <!-- ── Contact ───────────────────────────────────────── -->
@@ -918,6 +989,12 @@ if (isset($_POST['register'])) {
             <input type="hidden" name="admin"    value="<?= htmlspecialchars($site['email']) ?>">
             <input type="hidden" name="adminurl" value="<?= htmlspecialchars($site['url']) ?>">
             <?php endif; ?>
+            <input type="hidden" name="open_account_token" value="<?= htmlspecialchars($openAccountToken) ?>">
+            <input type="hidden" name="form_started_at" value="<?= (int)$openAccountLoadedAt ?>">
+            <div class="bot-field" aria-hidden="true">
+                <label for="website">Website</label>
+                <input type="text" id="website" name="website" tabindex="-1" autocomplete="off">
+            </div>
 
             <div class="submit-area">
                 <button type="submit" name="register" class="btn-primary">Open My Account</button>

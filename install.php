@@ -56,6 +56,116 @@ function install_redirect_step(int $n): void {
     exit;
 }
 
+function install_prepare_logo_setting(string $rawPath): string {
+  $rawPath = trim($rawPath);
+  if ($rawPath === '') {
+    return '';
+  }
+
+  $fileName = basename($rawPath);
+  if ($fileName === '') {
+    return '';
+  }
+
+  $targetDir = __DIR__ . '/user/admin/site';
+  if (!is_dir($targetDir)) {
+    @mkdir($targetDir, 0755, true);
+  }
+
+  $sourceCandidates = [
+    __DIR__ . '/' . ltrim($rawPath, '/'),
+    __DIR__ . '/img/' . $fileName,
+    __DIR__ . '/user/admin/site/' . $fileName,
+  ];
+
+  $sourcePath = '';
+  foreach ($sourceCandidates as $candidate) {
+    if (is_file($candidate)) {
+      $sourcePath = $candidate;
+      break;
+    }
+  }
+  if ($sourcePath === '') {
+    return '';
+  }
+
+  $targetPath = $targetDir . '/' . $fileName;
+  if (!is_file($targetPath)) {
+    @copy($sourcePath, $targetPath);
+  }
+
+  return is_file($targetPath) ? ('admin/site/' . $fileName) : '';
+}
+
+function install_prepare_favicon_setting(string $rawPath): string {
+  $rawPath = trim($rawPath);
+  if ($rawPath === '') {
+    return '';
+  }
+
+  $fileName = basename($rawPath);
+  if ($fileName === '') {
+    return '';
+  }
+
+  $targetDir = __DIR__ . '/user/admin/site';
+  if (!is_dir($targetDir)) {
+    @mkdir($targetDir, 0755, true);
+  }
+
+  $sourceCandidates = [
+    __DIR__ . '/' . ltrim($rawPath, '/'),
+    __DIR__ . '/img/' . $fileName,
+    __DIR__ . '/user/admin/site/' . $fileName,
+  ];
+
+  $sourcePath = '';
+  foreach ($sourceCandidates as $candidate) {
+    if (is_file($candidate)) {
+      $sourcePath = $candidate;
+      break;
+    }
+  }
+  if ($sourcePath === '') {
+    return '';
+  }
+
+  $targetPath = $targetDir . '/' . $fileName;
+  if (!is_file($targetPath)) {
+    @copy($sourcePath, $targetPath);
+  }
+  if (!is_file($targetPath)) {
+    return '';
+  }
+
+  $faviconMirrorPaths = [
+    __DIR__ . '/user/img/favicon.png',
+    __DIR__ . '/user/img/favicon-32x32.png',
+    __DIR__ . '/user/img/favicon-96x96.png',
+    __DIR__ . '/user/img/favicon-16x16.png',
+    __DIR__ . '/img/favicon.png',
+    __DIR__ . '/img/favicon-32x32.png',
+    __DIR__ . '/img/favicon-96x96.png',
+    __DIR__ . '/img/favicon-16x16.png',
+    __DIR__ . '/themes/theme1/img/favicon-32x32.png',
+    __DIR__ . '/themes/theme1/img/favicon-96x96.png',
+    __DIR__ . '/themes/theme1/img/favicon-16x16.png',
+    __DIR__ . '/themes/theme1/images/favicon.png',
+  ];
+  foreach ($faviconMirrorPaths as $path) {
+    $dir = dirname($path);
+    if (!is_dir($dir)) {
+      @mkdir($dir, 0755, true);
+    }
+    if (is_dir($dir) && is_writable($dir)) {
+      @copy($targetPath, $path);
+    }
+  }
+
+  // site_favicon setting stores filename, not a relative folder path.
+  return $fileName;
+}
+
 /* ──────────────────────────────────────────────────────────────
    STEP HANDLERS (POST processors)
 ────────────────────────────────────────────────────────────── */
@@ -177,16 +287,30 @@ if ($step === 4 && $_SERVER['REQUEST_METHOD'] === 'POST') {
         return 'img/' . $name;
     }
 
-    $frontend_logo = install_handle_upload('frontend_logo', $imgDir, $allowedMimes, $errors);
-    $admin_logo    = install_handle_upload('admin_logo',    $imgDir, $allowedMimes, $errors);
-    $favicon       = install_handle_upload('favicon',       $imgDir, $allowedMimes, $errors);
+    $auth_logo      = install_handle_upload('auth_logo',      $imgDir, $allowedMimes, $errors);
+    $dashboard_logo = install_handle_upload('dashboard_logo', $imgDir, $allowedMimes, $errors);
+    $frontend_logo  = install_handle_upload('frontend_logo',  $imgDir, $allowedMimes, $errors);
+    $admin_logo     = install_handle_upload('admin_logo',     $imgDir, $allowedMimes, $errors);
+    $favicon        = install_handle_upload('favicon',        $imgDir, $allowedMimes, $errors);
 
-    // If no files uploaded for optional fields, keep previous values or empty string
-    if ($frontend_logo === '' && !isset($_FILES['frontend_logo']['tmp_name'])) $frontend_logo = $_SESSION['install']['frontend_logo_url'] ?? '';
-    if ($admin_logo    === '' && !isset($_FILES['admin_logo']['tmp_name']))    $admin_logo    = $_SESSION['install']['admin_logo_url']    ?? '';
-    if ($favicon       === '' && !isset($_FILES['favicon']['tmp_name']))       $favicon       = $_SESSION['install']['site_favicon']      ?? '';
+    // If no files uploaded for optional fields, keep previous values from the session.
+    if ($auth_logo === '') $auth_logo = $_SESSION['install']['auth_logo_url'] ?? '';
+    if ($dashboard_logo === '') $dashboard_logo = $_SESSION['install']['dashboard_logo_url'] ?? '';
+    if ($frontend_logo === '') $frontend_logo = $_SESSION['install']['frontend_logo_url'] ?? '';
+    if ($admin_logo === '') $admin_logo = $_SESSION['install']['admin_logo_url'] ?? '';
+    if ($favicon === '') $favicon = $_SESSION['install']['site_favicon'] ?? '';
+
+    // Keep legacy fields populated for templates expecting frontend/admin naming.
+    if ($frontend_logo === '' && $auth_logo !== '') {
+      $frontend_logo = $auth_logo;
+    }
+    if ($admin_logo === '' && $dashboard_logo !== '') {
+      $admin_logo = $dashboard_logo;
+    }
 
     if (empty($errors)) {
+      $_SESSION['install']['auth_logo_url'] = $auth_logo;
+      $_SESSION['install']['dashboard_logo_url'] = $dashboard_logo;
         $_SESSION['install']['frontend_logo_url'] = $frontend_logo;
         $_SESSION['install']['admin_logo_url']    = $admin_logo;
         $_SESSION['install']['site_favicon']      = $favicon;
@@ -324,6 +448,30 @@ if ($step === 7 && $_SERVER['REQUEST_METHOD'] === 'POST') {
     }
     if ($ok) $log[] = ['ok', 'Legacy tables — created or already exist.'];
 
+    // Ensure admin password column can store modern hashes (bcrypt/argon).
+    if ($ok) {
+      $lenRes = mysqli_query(
+        $conn,
+        "SELECT CHARACTER_MAXIMUM_LENGTH AS max_len
+         FROM INFORMATION_SCHEMA.COLUMNS
+         WHERE TABLE_SCHEMA = DATABASE()
+           AND TABLE_NAME = 'admin'
+           AND COLUMN_NAME = 'upass'
+         LIMIT 1"
+      );
+      if ($lenRes) {
+        $lenRow = mysqli_fetch_assoc($lenRes);
+        $maxLen = (int)($lenRow['max_len'] ?? 0);
+        if ($maxLen > 0 && $maxLen < 255) {
+          if (mysqli_query($conn, "ALTER TABLE `admin` MODIFY COLUMN `upass` VARCHAR(255) NOT NULL")) {
+            $log[] = ['ok', 'Admin password column normalized to VARCHAR(255).'];
+          } else {
+            $log[] = ['warn', 'Admin password column normalization failed: ' . mysqli_error($conn)];
+          }
+        }
+      }
+    }
+
     // ── 7d. Create feature tables
     foreach (fw_schema_feature_tables() as $sql) {
         $res = mysqli_query($conn, $sql);
@@ -343,6 +491,44 @@ if ($step === 7 && $_SERVER['REQUEST_METHOD'] === 'POST') {
     }
     $log[] = ['ok', 'Seed data — currencies, account types, exchange rates, transfer settings inserted.'];
 
+    $authLogoSetting = install_prepare_logo_setting((string)($d['auth_logo_url'] ?? ''));
+    $dashboardLogoSetting = install_prepare_logo_setting((string)($d['dashboard_logo_url'] ?? ''));
+    $frontendLogoSetting = install_prepare_logo_setting((string)($d['frontend_logo_url'] ?? ''));
+    $adminLogoSetting = install_prepare_logo_setting((string)($d['admin_logo_url'] ?? ''));
+    $faviconSetting = install_prepare_favicon_setting((string)($d['site_favicon'] ?? ''));
+
+    if ($authLogoSetting === '') {
+      $authLogoSetting = $frontendLogoSetting;
+    }
+    if ($dashboardLogoSetting === '') {
+      $dashboardLogoSetting = $adminLogoSetting !== '' ? $adminLogoSetting : $frontendLogoSetting;
+    }
+
+    // Keep legacy keys in sync for older themes/pages.
+    if ($frontendLogoSetting === '' && $authLogoSetting !== '') {
+      $frontendLogoSetting = $authLogoSetting;
+    }
+    if ($adminLogoSetting === '' && $dashboardLogoSetting !== '') {
+      $adminLogoSetting = $dashboardLogoSetting;
+    }
+
+    $siteImageFile = '';
+    if ($frontendLogoSetting !== '') {
+      $siteImageFile = basename($frontendLogoSetting);
+    } elseif ($adminLogoSetting !== '') {
+      $siteImageFile = basename($adminLogoSetting);
+    }
+
+    if ($siteImageFile !== '') {
+      $siteLogoSource = __DIR__ . '/user/admin/site/' . $siteImageFile;
+      if (is_file($siteLogoSource)) {
+        @copy($siteLogoSource, __DIR__ . '/img/logo.png');
+        @copy($siteLogoSource, __DIR__ . '/img/sc.png');
+        @copy($siteLogoSource, __DIR__ . '/themes/theme1/images/logo.png');
+        @copy($siteLogoSource, __DIR__ . '/themes/theme1/images/logo-footer.png');
+      }
+    }
+
     // ── 7f. Insert site row (id=1, no AUTO_INCREMENT on id)
     $site_name  = mysqli_real_escape_string($conn, $d['site_name']  ?? '');
     $site_addr  = mysqli_real_escape_string($conn, $d['site_addr']  ?? '');
@@ -352,13 +538,15 @@ if ($step === 7 && $_SERVER['REQUEST_METHOD'] === 'POST') {
     $site_url   = mysqli_real_escape_string($conn, $d['site_url']   ?? '');
     $site_year  = date('Y');
 
+    $site_image = mysqli_real_escape_string($conn, $siteImageFile);
+
     mysqli_query($conn, "INSERT INTO `site`
         (id, image, qr, name, addr, phone, email, tawk, tawkk, tawk2, year, url, urlh, login, color, code1, code2, code3, code1b, code2b, code3b)
-        VALUES (1, '', '', '$site_name', '$site_addr', '$site_phone', '$site_email', '', '', '', '$site_year',
+      VALUES (1, '$site_image', '', '$site_name', '$site_addr', '$site_phone', '$site_email', '', '', '', '$site_year',
                 '$site_url', '$site_url', 'user', '$site_color', '', '', '', '', '', '')
         ON DUPLICATE KEY UPDATE
             name  = VALUES(name),  addr  = VALUES(addr),  phone = VALUES(phone),
-            email = VALUES(email), color = VALUES(color), url   = VALUES(url),
+        email = VALUES(email), image = IF(VALUES(image) <> '', VALUES(image), image), color = VALUES(color), url   = VALUES(url),
             urlh  = VALUES(urlh),  year  = VALUES(year)");
     if (mysqli_error($conn)) {
         $log[] = ['warn', 'Site row: ' . mysqli_error($conn)];
@@ -398,9 +586,11 @@ if ($step === 7 && $_SERVER['REQUEST_METHOD'] === 'POST') {
         'smtp_from'         => $d['smtp_from']      ?? '',
         'smtp_from_name'    => $d['smtp_from_name'] ?? '',
         'smtp_reply_to'     => $d['smtp_reply_to']  ?? '',
-        'frontend_logo_url' => $d['frontend_logo_url'] ?? '',
-        'admin_logo_url'    => $d['admin_logo_url']    ?? '',
-        'site_favicon'      => $d['site_favicon']      ?? '',
+      'auth_logo_url'     => $authLogoSetting,
+      'dashboard_logo_url'=> $dashboardLogoSetting,
+      'frontend_logo_url' => $frontendLogoSetting,
+      'admin_logo_url'    => $adminLogoSetting,
+      'site_favicon'      => $faviconSetting,
     ];
     $settings = array_merge($defaults, $overrides);
 
@@ -414,7 +604,7 @@ if ($step === 7 && $_SERVER['REQUEST_METHOD'] === 'POST') {
         $v = mysqli_real_escape_string($conn, (string)$value);
 
         $isSmtp     = strncmp($key, 'smtp_', 5) === 0;
-        $isBranding = in_array($key, ['frontend_logo_url', 'admin_logo_url', 'site_favicon'], true);
+        $isBranding = in_array($key, ['auth_logo_url', 'dashboard_logo_url', 'frontend_logo_url', 'admin_logo_url', 'site_favicon'], true);
 
         if (($isSmtp && !$smtpProvided) || ($isBranding && $value === '')) {
             // INSERT IGNORE — do not overwrite already-configured credentials / logos with empty strings
@@ -783,7 +973,31 @@ $stepTitles = [
       <div class="form-grid one" style="gap:1.25rem">
 
         <div class="field">
-          <label>Frontend / Customer Logo <span style="font-weight:400;color:#94a3b8">(optional)</span></label>
+          <label>Auth Logo <span style="font-weight:400;color:#94a3b8">(optional — login/register/OTP/forgot password)</span></label>
+          <label class="file-zone" id="lz-auth_logo">
+            <input type="file" name="auth_logo" accept="image/*" onchange="previewFile(this,'lz-auth_logo','prev-auth_logo')">
+            <i class="fa-solid fa-cloud-arrow-up fa-lg"></i>
+            <span id="prev-auth_logo">
+              <?= install_val('auth_logo_url') ? '&#10003; ' . install_val('auth_logo_url') . ' (re-upload to replace)' : 'Click or drag PNG / JPG / SVG — max 2 MB' ?>
+            </span>
+          </label>
+          <?= install_field_err($errors,'auth_logo') ?>
+        </div>
+
+        <div class="field">
+          <label>Dashboard Logo <span style="font-weight:400;color:#94a3b8">(optional — customer dashboard pages)</span></label>
+          <label class="file-zone" id="lz-dashboard_logo">
+            <input type="file" name="dashboard_logo" accept="image/*" onchange="previewFile(this,'lz-dashboard_logo','prev-dashboard_logo')">
+            <i class="fa-solid fa-cloud-arrow-up fa-lg"></i>
+            <span id="prev-dashboard_logo">
+              <?= install_val('dashboard_logo_url') ? '&#10003; ' . install_val('dashboard_logo_url') . ' (re-upload to replace)' : 'Click or drag PNG / JPG / SVG — max 2 MB' ?>
+            </span>
+          </label>
+          <?= install_field_err($errors,'dashboard_logo') ?>
+        </div>
+
+        <div class="field">
+          <label>Frontend / Customer Logo (Legacy) <span style="font-weight:400;color:#94a3b8">(optional fallback for older templates)</span></label>
           <label class="file-zone" id="lz-frontend_logo">
             <input type="file" name="frontend_logo" accept="image/*" onchange="previewFile(this,'lz-frontend_logo','prev-frontend_logo')">
             <i class="fa-solid fa-cloud-arrow-up fa-lg"></i>
@@ -795,7 +1009,7 @@ $stepTitles = [
         </div>
 
         <div class="field">
-          <label>Admin Panel Logo <span style="font-weight:400;color:#94a3b8">(optional)</span></label>
+          <label>Admin Panel Logo (Legacy) <span style="font-weight:400;color:#94a3b8">(optional fallback for older templates)</span></label>
           <label class="file-zone" id="lz-admin_logo">
             <input type="file" name="admin_logo" accept="image/*" onchange="previewFile(this,'lz-admin_logo','prev-admin_logo')">
             <i class="fa-solid fa-cloud-arrow-up fa-lg"></i>
@@ -927,6 +1141,8 @@ $stepTitles = [
       </tbody>
       <thead><tr><th colspan="2">Branding</th></tr></thead>
       <tbody>
+        <tr><td>Auth Logo</td><td><?= install_val('auth_logo_url') ?: '— (not set)' ?></td></tr>
+        <tr><td>Dashboard Logo</td><td><?= install_val('dashboard_logo_url') ?: '— (not set)' ?></td></tr>
         <tr><td>Frontend Logo</td><td><?= install_val('frontend_logo_url') ?: '— (not set)' ?></td></tr>
         <tr><td>Admin Logo</td><td><?= install_val('admin_logo_url') ?: '— (not set)' ?></td></tr>
         <tr><td>Favicon</td><td><?= install_val('site_favicon') ?: '— (not set)' ?></td></tr>

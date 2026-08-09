@@ -56,7 +56,7 @@ class USER
 		}
 		catch(PDOException $ex)
 		{
-			echo $ex->getMessage();
+			error_log('class.user exception: ' . $ex->getMessage());
 		}
 	}
 	
@@ -103,7 +103,7 @@ class USER
 		}
 		catch(PDOException $ex)
 		{
-			echo $ex->getMessage();
+			error_log('class.user exception: ' . $ex->getMessage());
 		}
 	}
 	
@@ -129,7 +129,7 @@ class USER
 		}
 		catch(PDOException $ex)
 		{
-			echo $ex->getMessage();
+			error_log('class.user exception: ' . $ex->getMessage());
 		}
 	}
 	
@@ -151,7 +151,7 @@ class USER
 		}
 		catch(PDOException $ex)
 		{
-			echo $ex->getMessage();
+			error_log('class.user exception: ' . $ex->getMessage());
 		}
 	}
 	
@@ -172,7 +172,7 @@ class USER
 		}
 		catch(PDOException $ex)
 		{
-			echo $ex->getMessage();
+			error_log('class.user exception: ' . $ex->getMessage());
 		}
 	}
 	
@@ -190,7 +190,7 @@ class USER
 		}
 		catch(PDOException $ex)
 		{
-			echo $ex->getMessage();
+			error_log('class.user exception: ' . $ex->getMessage());
 		}
 	}
 	
@@ -215,7 +215,7 @@ class USER
 		}
 		catch(PDOException $ex)
 		{
-			echo $ex->getMessage();
+			error_log('class.user exception: ' . $ex->getMessage());
 		}
 	}
 	
@@ -236,7 +236,7 @@ class USER
 		}
 		catch(PDOException $ex)
 		{
-			echo $ex->getMessage();
+			error_log('class.user exception: ' . $ex->getMessage());
 		}
 	}
 	
@@ -271,7 +271,7 @@ class USER
 		}
 		catch(PDOException $ex)
 		{
-			echo $ex->getMessage();
+			error_log('class.user exception: ' . $ex->getMessage());
 		}
 	}
 	

@@ -2,6 +2,10 @@
 session_start();
 require_once 'class.admin.php';
 include_once 'session.php';
+require_once '../../config.php';
+if (is_file(__DIR__ . '/../partials/wallet-ledger.php')) {
+  require_once __DIR__ . '/../partials/wallet-ledger.php';
+}
 
 if (!isset($_SESSION['email'])) {
     header('Location: login.php');
@@ -251,12 +255,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['handle_deposit_reques
                     throw new RuntimeException('Deposit request data is invalid.');
                 }
 
-                $reg_user->runQuery('INSERT INTO account_balances (acc_no, currency_code, balance)
-                    VALUES (:acc_no, :currency_code, 0)
-                    ON DUPLICATE KEY UPDATE acc_no = VALUES(acc_no)')
-                    ->execute([':acc_no' => $accNo, ':currency_code' => $cur]);
-                $reg_user->runQuery('UPDATE account_balances SET balance = balance + :amount WHERE acc_no = :acc_no AND currency_code = :currency_code')
-                    ->execute([':amount' => $amt, ':acc_no' => $accNo, ':currency_code' => $cur]);
+                $wallet = fw_wallet_get($GLOBALS['conn'], $accNo, $cur);
+                $walletTotal = (float)($wallet['total_balance'] ?? 0);
+                $walletAvailable = (float)($wallet['available_balance'] ?? $walletTotal);
+                fw_wallet_set($GLOBALS['conn'], $accNo, $cur, $walletTotal + $amt, $walletAvailable + $amt);
+                fw_wallet_sync_legacy_account($GLOBALS['conn'], $accNo, $cur);
 
                 $reg_user->runQuery('INSERT INTO customer_accounts (owner_acc_no, account_no, currency_code, balance, status, is_primary)
                     VALUES (:owner_acc_no, :account_no, :currency_code, 0, :status, 0)
@@ -348,12 +351,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['handle_withdrawal_req
                 $cur = strtoupper((string)($req['currency_code'] ?? ''));
                 $amt = (float)($req['amount'] ?? 0);
 
-                $reg_user->runQuery('INSERT INTO account_balances (acc_no, currency_code, balance)
-                    VALUES (:acc_no, :currency_code, 0)
-                    ON DUPLICATE KEY UPDATE acc_no = VALUES(acc_no)')
-                    ->execute([':acc_no' => $accNo, ':currency_code' => $cur]);
-                $reg_user->runQuery('UPDATE account_balances SET balance = balance + :amount WHERE acc_no = :acc_no AND currency_code = :currency_code')
-                    ->execute([':amount' => $amt, ':acc_no' => $accNo, ':currency_code' => $cur]);
+                $wallet = fw_wallet_get($GLOBALS['conn'], $accNo, $cur);
+                $walletTotal = (float)($wallet['total_balance'] ?? 0);
+                $walletAvailable = (float)($wallet['available_balance'] ?? $walletTotal);
+                fw_wallet_set($GLOBALS['conn'], $accNo, $cur, $walletTotal + $amt, $walletAvailable + $amt);
+                fw_wallet_sync_legacy_account($GLOBALS['conn'], $accNo, $cur);
                 $reg_user->runQuery('UPDATE customer_accounts SET balance = balance + :amount WHERE owner_acc_no = :acc_no AND currency_code = :currency_code')
                     ->execute([':amount' => $amt, ':acc_no' => $accNo, ':currency_code' => $cur]);
 

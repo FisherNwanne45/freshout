@@ -25,10 +25,11 @@ RewriteRule ^([A-Za-z0-9_@%./-]+\.(css|js|json|png|jpe?g|gif|svg|webp|ico|woff2?
 # Static asset directories — resolved at runtime by asset.php.
 RewriteRule ^(css|js|img|fonts|assets|images|js\.locatorsearch\.com|maxcdn\.bootstrapcdn\.com|static\.ctctcdn\.com|www\.google-analytics\.com)/(.*)$ asset.php?path=$1/$2 [L,QSA]
 
-# PHP page requests — dispatched through the theme front controller.
+# PHP page requests — dispatched through the theme front controller (Updated to allow subfolders)
 RewriteCond %{REQUEST_FILENAME} !-f
 RewriteCond %{REQUEST_FILENAME} !-d
-RewriteRule ^([A-Za-z0-9_%-][A-Za-z0-9_.%-]*)\.php$ index.php?_page=$1.php [L,QSA]
+RewriteRule ^([A-Za-z0-9_%./-]*)\.php$ index.php?_page=$1.php [L,QSA]
+
 
 # Root request → index page.
 RewriteRule ^$ index.php [L]

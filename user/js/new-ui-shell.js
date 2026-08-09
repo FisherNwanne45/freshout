@@ -17,7 +17,7 @@
       '    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 7h16M4 12h16M4 17h16"/></svg>' +
       '  </button>' +
       '  <a class="new-shell-logo-link" href="index.php" aria-label="Dashboard">' +
-      '    <img class="new-shell-logo" src="img/logo.png" alt="Logo" onerror="this.onerror=null;this.src=\'assets/img/logo.png\';">' +
+      '    <img class="new-shell-logo" alt="Logo">' +
       '  </a>' +
       '</div>' +
       '<div class="new-shell-right">' +
@@ -49,6 +49,28 @@
       '</div>';
 
     document.body.insertBefore(topbar, document.body.firstChild);
+
+    // Mirror the server-resolved sidebar logo (dashboard setting / fallbacks)
+    // so the JS topbar never drifts to a hardcoded asset.
+    var sidebarLogo = document.querySelector('#app-sidebar img');
+    var topbarLogo = document.querySelector('#new-shell-topbar .new-shell-logo');
+    if (sidebarLogo && topbarLogo) {
+      var resolvedSrc = sidebarLogo.getAttribute('src') || '';
+      var resolvedAlt = sidebarLogo.getAttribute('alt') || '';
+      if (resolvedSrc) {
+        topbarLogo.setAttribute('src', resolvedSrc);
+      } else {
+        topbarLogo.removeAttribute('src');
+      }
+      if (resolvedAlt) {
+        topbarLogo.setAttribute('alt', resolvedAlt);
+      }
+      topbarLogo.onerror = function () {
+        this.style.display = 'none';
+      };
+    } else if (topbarLogo) {
+      topbarLogo.style.display = 'none';
+    }
 
     var openSidebar = document.getElementById('sidebar-open');
     var sidebar = document.getElementById('app-sidebar');

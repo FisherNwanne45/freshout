@@ -16,7 +16,7 @@
             }
         }());
     </script>
-    <script src="js/new-ui-shell.js?v=20260407"></script>
+    <script src="js/new-ui-shell.js?v=<?= (int)@filemtime(__DIR__ . '/../js/new-ui-shell.js') ?>"></script>
 
     <!-- Mobile bottom nav -->
     <nav class="mobile-bottom-nav fixed bottom-3 left-3 right-3 z-40 lg:hidden">

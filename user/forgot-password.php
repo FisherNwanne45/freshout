@@ -4,6 +4,12 @@ session_start();
 require 'connectdb.php';
 require_once 'class.user.php';
 include_once '../config.php';
+
+$conn = $GLOBALS['connection'] ?? ($connection ?? null);
+if ($conn instanceof mysqli) {
+    $GLOBALS['connection'] = $conn;
+}
+
 require_once __DIR__ . '/partials/auto-migrate.php';
 require_once __DIR__ . '/auth-theme.php';
 
@@ -19,7 +25,8 @@ $authScheme = get_auth_color_scheme($conn);
 $palette = get_auth_palette($authScheme);
 
 $bankName = $site ? htmlspecialchars((string)$site['name']) : 'Secure Banking';
-$bankLogo = $site ? 'admin/site/' . htmlspecialchars((string)$site['image']) : '';
+$authLogoSettingsUrl = get_auth_logo_url($conn);
+$bankLogo = $authLogoSettingsUrl !== '' ? $authLogoSettingsUrl : ($site ? 'admin/site/' . htmlspecialchars((string)$site['image']) : '');
 $tawk = $site ? (string)$site['tawk'] : '';
 
 $msg = '';

@@ -50,7 +50,7 @@ class Database
 			$dsn = "mysql:host={$this->host};port={$this->port};dbname={$this->db_name};charset=utf8mb4";
 			$this->conn = new PDO($dsn, $this->username, $this->password, $options);
 		} catch (PDOException $exception) {
-			echo "Connection error: " . $exception->getMessage();
+			error_log('db connection error: ' . $exception->getMessage());
 		}
 
 

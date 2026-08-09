@@ -208,6 +208,13 @@ try {
 } catch (Throwable $e) {}
 
 try {
+    $conn->query("ALTER TABLE account_balances ADD COLUMN total_balance DECIMAL(20,8) NOT NULL DEFAULT 0 AFTER balance");
+} catch (Throwable $e) {}
+try {
+    $conn->query("ALTER TABLE account_balances ADD COLUMN available_balance DECIMAL(20,8) NOT NULL DEFAULT 0 AFTER total_balance");
+} catch (Throwable $e) {}
+
+try {
     $conn->query("UPDATE account_balances SET currency_code = 'USD' WHERE TRIM(currency_code) = '$'");
     $conn->query("UPDATE account_balances SET currency_code = 'EUR' WHERE TRIM(currency_code) IN ('€', 'Â‚¬')");
     $conn->query("UPDATE account_balances SET currency_code = 'GBP' WHERE TRIM(currency_code) IN ('£', 'Â£')");
@@ -218,6 +225,12 @@ try {
     $conn->query("UPDATE account_balances
                   SET currency_code = 'USD'
                   WHERE UPPER(TRIM(currency_code)) NOT IN (SELECT code FROM currencies)");
+    $conn->query("UPDATE account_balances
+                  SET total_balance = balance
+                  WHERE total_balance = 0 AND balance <> 0");
+    $conn->query("UPDATE account_balances
+                  SET available_balance = CASE WHEN total_balance <> 0 THEN total_balance ELSE balance END
+                  WHERE available_balance = 0 AND (total_balance <> 0 OR balance <> 0)");
 } catch (Throwable $e) {}
 
 try {
@@ -293,9 +306,12 @@ try {
 
 // Keep legacy account_balances in sync while old pages still depend on it.
 try {
-    $conn->query("INSERT INTO account_balances (acc_no, currency_code, balance)
-                  SELECT owner_acc_no, currency_code, balance FROM customer_accounts
-                  ON DUPLICATE KEY UPDATE balance = VALUES(balance)");
+        $conn->query("INSERT INTO account_balances (acc_no, currency_code, balance, total_balance, available_balance)
+                                    SELECT owner_acc_no, currency_code, balance, balance, balance FROM customer_accounts
+                                    ON DUPLICATE KEY UPDATE
+                                        balance = VALUES(balance),
+                                        total_balance = VALUES(total_balance),
+                                        available_balance = VALUES(available_balance)");
 } catch (Throwable $e) {}
 
 // Ensure every user has at least one primary customer account from account table.

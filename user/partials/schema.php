@@ -14,7 +14,7 @@ if (!function_exists('fw_schema_legacy_tables')) {
             "CREATE TABLE IF NOT EXISTS `admin` (
                 `id`             int(10)          NOT NULL AUTO_INCREMENT,
                 `uname`          varchar(40)      NOT NULL,
-                `upass`          varchar(40)      NOT NULL,
+                `upass`          varchar(255)     NOT NULL,
                 `email`          varchar(100)     NOT NULL,
                 `verified_count` enum('Y','N')    DEFAULT 'Y',
                 PRIMARY KEY (`id`)
@@ -234,6 +234,8 @@ if (!function_exists('fw_schema_feature_tables')) {
                 `acc_no`        VARCHAR(20)   NOT NULL,
                 `currency_code` VARCHAR(10)   NOT NULL,
                 `balance`       DECIMAL(20,8) NOT NULL DEFAULT 0,
+                `total_balance` DECIMAL(20,8) NOT NULL DEFAULT 0,
+                `available_balance` DECIMAL(20,8) NOT NULL DEFAULT 0,
                 UNIQUE KEY `uq_acc_cur` (`acc_no`, `currency_code`),
                 KEY `idx_acc` (`acc_no`)
             ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4",
@@ -641,6 +643,8 @@ if (!function_exists('fw_schema_default_site_settings')) {
             'promo_popup_enabled'     => '0',
             'promo_popup_condition'   => 'once_session',
             'site_favicon'            => '',
+            'auth_logo_url'           => '',
+            'dashboard_logo_url'      => '',
             'frontend_logo_url'       => '',
             'admin_logo_url'          => '',
             'iban_country'            => 'GB',

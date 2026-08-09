@@ -1,13 +1,13 @@
 <?php
 include('session.php');
 ?>
-<?php session_start(); ?>
 
   
 <!DOCTYPE html>
 <html lang="en">
  <?php
         include('config.php');
+	/** @var mysqli|null $conn */
         $result = $conn->query("SELECT * FROM site");
         if(!$result->num_rows > 0){ echo '<h2 style="text-align:center;">No Data Found</h2>'; }
         while($row = $result->fetch_assoc())
@@ -148,7 +148,7 @@ include('session.php');
 					<div id="logo">
 						<h1><?php echo $row['name']; ?></h1>
 						<a href="index-2.php">
-							<img src="images/logo.png" class="logo-desktop" alt="<?php echo $row['name']; ?>" title="<?php echo $row['name']; ?> Logo">
+								<img src="<?= htmlspecialchars($theme1DashboardLogoUrl) ?>" class="logo-desktop" alt="<?php echo $row['name']; ?>" title="<?php echo $row['name']; ?> Logo">
 						</a>
 					</div><!--/logo-->
 
@@ -166,7 +166,7 @@ include('session.php');
 				<nav id="nav" class="nav">
 					<div class="inner-content">
 						<div id="logomark">
-							<img src="images/logo.png" alt="">
+							<img src="<?= htmlspecialchars($theme1DashboardLogoUrl) ?>" alt="">
 						</div><!--/logomark-->
 						<nav class="secondary">
 							<ul>
@@ -483,7 +483,7 @@ include('session.php');
                 					<table>
                 						<tbody>
                 							<tr>
-                								<td width="40%"><img src="images/logo-footer.png" alt="235 1st Cap Logo" border="0" /></td>
+													<td width="40%"><img src="<?= htmlspecialchars($theme1AuthLogoUrl) ?>" alt="235 1st Cap Logo" border="0" /></td>
                 								<td width="60%"><span class="greeting1">Welcome,</span> <span class="firstname">Guest</span>
                 									<h2><?php echo $row['name']; ?> Provides Financing to Local Businesses.</h2>
                 									<h3>If your business needs financing for acquisitions, working capital, investments, commercial real estate, inventory or equipment.</h3>
@@ -587,7 +587,7 @@ include('session.php');
               	<section class="inner-content">
               		<div id="footer-info">
               			<div id="footer-logo">
-              				<img src="images/logo-footer.png" alt="<?php echo $row['name']; ?> Logo">
+									<img src="<?= htmlspecialchars($theme1AuthLogoUrl) ?>" alt="<?php echo $row['name']; ?> Logo">
               			</div>
               			<p class="slogan">Your 1st Choice in<br />
               			Community Banking</p>

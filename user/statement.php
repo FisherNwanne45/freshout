@@ -71,22 +71,47 @@ foreach ($allAlerts as $al) {
     $aDate = trim((string)($al['date'] ?? ''));
     $aTime = trim((string)($al['time'] ?? ''));
     $ts    = strtotime($aDate . ($aTime !== '' ? ' ' . $aTime : ' 00:00:00')) ?: 0;
+
+  $alertTypeRaw = trim((string)($al['type'] ?? ''));
+  $alertType    = strtoupper($alertTypeRaw);
+  $isDebitAlert = (
+    strpos($alertType, 'DEBIT') !== false
+    || strpos($alertType, 'WITHDRAW') !== false
+    || strpos($alertType, 'EXCHANGE') !== false
+    || strpos($alertType, 'SENT') !== false
+  );
+
+  $remarksRaw = (string)($al['remarks'] ?? '');
+  $alertCur = '';
+  if (preg_match('/\[CUR:([A-Z0-9]{2,10})\]/', $remarksRaw, $m)) {
+    $alertCur = strtoupper(trim((string)$m[1]));
+  }
+  if (!preg_match('/^[A-Z0-9]{2,10}$/', $alertCur)) {
+    $alertCur = $curCode;
+  }
+
+  $cleanRemarks = trim((string)preg_replace('/\[CUR:[A-Z0-9]{2,10}\]\s*/', '', $remarksRaw));
+  $description  = trim((string)($al['sender_name'] ?? ''));
+  if ($description === '') {
+    $description = $cleanRemarks !== '' ? $cleanRemarks : '—';
+  }
+
     $allActivity[] = [
         'source'        => 'alert',
-        'direction'     => 'credit',
-        'type_label'    => 'Credit',
+    'direction'     => $isDebitAlert ? 'debit' : 'credit',
+    'type_label'    => $isDebitAlert ? 'Debit' : 'Credit',
         'amount'        => (float)($al['amount'] ?? 0),
-        'currency'      => $curCode,
-        'description'   => trim((string)($al['sender_name'] ?? '—')),
+    'currency'      => $alertCur,
+    'description'   => $description,
         'date_str'      => $ts > 0 ? date('d F, Y', $ts) : $aDate,
         'sort_key'      => $ts,
         'bank_name'     => '',
         'acc_no'        => '',
         'reci_name'     => '',
-        'transfer_type' => trim((string)($al['type'] ?? '')),
+    'transfer_type' => $alertTypeRaw,
         'swift'         => '',
         'routing'       => '',
-        'remarks'       => (string)($al['remarks'] ?? ''),
+    'remarks'       => $cleanRemarks,
         'status'        => '',
     ];
 }

@@ -14,6 +14,37 @@ if (!function_exists('shellNavClass')) {
     }
 }
 
+if (!isset($shellCurrentPage) || !is_string($shellCurrentPage) || $shellCurrentPage === '') {
+    $shellCurrentPage = basename((string)($_SERVER['SCRIPT_NAME'] ?? ''));
+}
+
+if (!isset($shellPalette) || !is_array($shellPalette)) {
+    $shellPalette = [
+        'navy' => '#0d1f3c',
+        'navy2' => '#162847',
+        'gold' => '#c9a84c',
+        'gold2' => '#e8c96e',
+        'muted' => '#8895a7',
+        'success' => '#16a34a',
+        'danger' => '#c0392b',
+        'border' => '#dce3ec',
+        'light' => '#f5f6fa',
+    ];
+}
+
+if (!isset($shellDisplayStatus) || !is_string($shellDisplayStatus) || $shellDisplayStatus === '') {
+    $shellDisplayStatus = 'Active';
+}
+if (!isset($shellStatusColor) || !is_string($shellStatusColor) || $shellStatusColor === '') {
+    $shellStatusColor = '#16a34a';
+}
+if (!isset($shellFullName) || !is_string($shellFullName) || $shellFullName === '') {
+    $shellFullName = 'Customer';
+}
+if (!isset($shellIdentityLine) || !is_string($shellIdentityLine) || $shellIdentityLine === '') {
+    $shellIdentityLine = 'Account ID: -';
+}
+
 $shellCryptoTab = strtolower(trim((string)($_GET['tab'] ?? '')));
 $shellCryptoMenuOpen = $shellCurrentPage === 'crypto-vault.php';
 

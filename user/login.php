@@ -10,6 +10,10 @@ require_once __DIR__ . '/auth-theme.php';
 
 $reg_user = new USER();
 $msg = null;
+$flashSuccess = trim((string)($_SESSION['flash_success'] ?? ''));
+if ($flashSuccess !== '') {
+    unset($_SESSION['flash_success']);
+}
 
 if (isset($_POST['acc_no']) && isset($_POST['upass'])) {
     $loginInput = trim($_POST['acc_no']);
@@ -71,6 +75,7 @@ if (isset($_POST['acc_no']) && isset($_POST['upass'])) {
         $log = $reg_user->runQuery('UPDATE account SET logins = logins + 1 WHERE acc_no = :acc_no');
         $log->execute([':acc_no' => $acc_no]);
 
+        session_regenerate_id(true);
         $_SESSION['acc_no'] = $acc_no;
         unset($_SESSION['pin_verified']);
 
@@ -109,8 +114,8 @@ $authScheme = get_auth_color_scheme($conn);
 $palette = get_auth_palette($authScheme);
 
 $bankName = $site ? htmlspecialchars($site['name']) : 'Secure Banking';
-$frontendLogoSettingsUrl = get_frontend_logo_url($conn);
-$bankLogo = $frontendLogoSettingsUrl !== '' ? $frontendLogoSettingsUrl : ($site ? 'admin/site/' . htmlspecialchars($site['image']) : '');
+$authLogoSettingsUrl = get_auth_logo_url($conn);
+$bankLogo = $authLogoSettingsUrl !== '' ? $authLogoSettingsUrl : ($site ? 'admin/site/' . htmlspecialchars($site['image']) : '');
 $tawk = $site ? $site['tawk'] : '';
 ?>
 <!DOCTYPE html>
@@ -293,6 +298,7 @@ $tawk = $site ? $site['tawk'] : '';
             font-size: 13px;
             margin-bottom: 16px;
         }
+        .alert-success { background: #f0faf5; border: 1px solid #b8dfc9; color: var(--success); }
         .alert-danger { background: #fdf2f2; border: 1px solid #f5c6cb; color: var(--danger); }
         .alert-info { background: #eef4ff; border: 1px solid #bed3f5; color: #1a4480; }
         .submit-area {
@@ -401,6 +407,10 @@ $tawk = $site ? $site['tawk'] : '';
 
             <?php if (isset($_GET['inactive'])): ?>
                 <div class="alert alert-info">This account is not activated yet. Please check your inbox and activate it first.</div>
+            <?php endif; ?>
+
+            <?php if ($flashSuccess !== ''): ?>
+                <div class="alert alert-success"><?= htmlspecialchars($flashSuccess) ?></div>
             <?php endif; ?>
 
             <?php if ($msg): ?>

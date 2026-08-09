@@ -2,6 +2,10 @@
 session_start();
 require_once ('class.admin.php');
 include_once ('session.php');
+require_once '../../config.php';
+if (is_file(__DIR__ . '/../partials/wallet-ledger.php')) {
+  require_once __DIR__ . '/../partials/wallet-ledger.php';
+}
 
 $reg_user = new USER();
 
@@ -20,6 +24,52 @@ $credit->execute();
 
 $debit = $reg_user->runQuery("SELECT * FROM account");
 $debit->execute();
+
+$adminAccountCurrencyMap = [];
+try {
+  $accMapStmt = $reg_user->runQuery('SELECT acc_no, currency, t_bal FROM account ORDER BY id ASC');
+  $accMapStmt->execute();
+  while ($accMapRow = $accMapStmt->fetch(PDO::FETCH_ASSOC)) {
+    $accNoMap = trim((string)($accMapRow['acc_no'] ?? ''));
+    if ($accNoMap === '') {
+      continue;
+    }
+
+    $currencyBalances = [];
+    $primaryCode = strtoupper(trim((string)($accMapRow['currency'] ?? '')));
+    if (preg_match('/^[A-Z0-9]{2,10}$/', $primaryCode)) {
+      $currencyBalances[$primaryCode] = (float)($accMapRow['t_bal'] ?? 0);
+    }
+
+    if (($GLOBALS['conn'] ?? null) instanceof mysqli && function_exists('fw_wallet_all_for_account')) {
+      $walletMap = fw_wallet_all_for_account($GLOBALS['conn'], $accNoMap);
+      foreach ($walletMap as $walletCode => $walletRow) {
+        $walletCode = strtoupper(trim((string)$walletCode));
+        if (preg_match('/^[A-Z0-9]{2,10}$/', $walletCode)) {
+          $currencyBalances[$walletCode] = (float)($walletRow['total_balance'] ?? 0);
+        }
+      }
+    }
+
+    if (empty($currencyBalances)) {
+      $currencyBalances['USD'] = 0.0;
+    }
+
+    $currencyCodes = array_keys($currencyBalances);
+    sort($currencyCodes, SORT_STRING);
+    $accountCurrencyRows = [];
+    foreach ($currencyCodes as $currencyCode) {
+      $accountCurrencyRows[] = [
+        'code' => $currencyCode,
+        'balance' => (float)($currencyBalances[$currencyCode] ?? 0),
+      ];
+    }
+
+    $adminAccountCurrencyMap[$accNoMap] = $accountCurrencyRows;
+  }
+} catch (Throwable $e) {
+  $adminAccountCurrencyMap = [];
+}
 
 $mail = $_SESSION['email'];
 
@@ -59,6 +109,11 @@ if(isset($_POST['his']))
 	$uname = trim($_POST['uname']);
 	$uname = strip_tags($uname);
 	$uname = htmlspecialchars($uname);
+
+  $walletCurrencyInput = strtoupper(trim((string)($_POST['wallet_currency'] ?? '')));
+  if (!preg_match('/^[A-Z0-9]{2,10}$/', $walletCurrencyInput)) {
+    $walletCurrencyInput = '';
+  }
 	
 	$amount = trim($_POST['amount']);
 	$amount = strip_tags($amount);
@@ -83,11 +138,29 @@ if(isset($_POST['his']))
 	$time = trim($_POST['time']);
 	$time = strip_tags($time);
 	$time = htmlspecialchars($time);
+
+  $historyCurrencyCode = 'USD';
+  try {
+    $historyAccStmt = $reg_user->runQuery('SELECT currency FROM account WHERE acc_no = :acc_no LIMIT 1');
+    $historyAccStmt->execute([':acc_no' => $uname]);
+    $historyAccRow = $historyAccStmt->fetch(PDO::FETCH_ASSOC);
+    $historyPrimary = strtoupper(trim((string)($historyAccRow['currency'] ?? '')));
+    if (preg_match('/^[A-Z0-9]{2,10}$/', $historyPrimary)) {
+      $historyCurrencyCode = $historyPrimary;
+    }
+  } catch (Throwable $e) {
+  }
+
+  if ($walletCurrencyInput !== '') {
+    $historyCurrencyCode = $walletCurrencyInput;
+  }
+
+  $remarksForAlert = trim('[CUR:' . $historyCurrencyCode . '] ' . (string)$remarks);
 	
 	$alerts = $reg_user->runQuery("SELECT * FROM alerts");
 	$alerts->execute();
 
-	if($reg_user->his($uname,$amount,$sender_name,$type,$remarks,$date,$time))
+  if($reg_user->his($uname,$amount,$sender_name,$type,$remarksForAlert,$date,$time))
 		{			
 			$id = $reg_user->lasdID();		
 			
@@ -130,6 +203,11 @@ if(isset($_POST['credit']))
 	$uname = trim($_POST['uname']);
 	$uname = strip_tags($uname);
 	$uname = htmlspecialchars($uname);
+
+  $walletCurrencyInput = strtoupper(trim((string)($_POST['wallet_currency'] ?? '')));
+  if (!preg_match('/^[A-Z0-9]{2,10}$/', $walletCurrencyInput)) {
+    $walletCurrencyInput = '';
+  }
 	
 	$amount = trim($_POST['amount']);
 	$amount = strip_tags($amount);
@@ -154,10 +232,20 @@ if(isset($_POST['credit']))
 	$time = trim($_POST['time']);
 	$time = strip_tags($time);
 	$time = htmlspecialchars($time);
-	
-	
 
-	if($reg_user->his($uname,$amount,$sender_name,$type,$remarks,$date,$time))
+  $read = $reg_user->runQuery("SELECT * FROM account WHERE acc_no = '$uname'");
+  $read->execute(); 
+  $show = $read->fetch(PDO::FETCH_ASSOC);
+
+  $primaryCurrencyCode = strtoupper(trim((string)($show['currency'] ?? '')));
+  if (!preg_match('/^[A-Z0-9]{2,10}$/', $primaryCurrencyCode)) {
+    $primaryCurrencyCode = 'USD';
+  }
+  $currencyCode = $walletCurrencyInput !== '' ? $walletCurrencyInput : $primaryCurrencyCode;
+
+  $remarksForAlert = trim('[CUR:' . $currencyCode . '] ' . (string)$remarks);
+
+  if($reg_user->his($uname,$amount,$sender_name,$type,$remarksForAlert,$date,$time))
 		{			
 			$stct = $reg_user->runQuery("SELECT * FROM site WHERE id = '20'");
             $stct->execute();
@@ -169,32 +257,53 @@ if(isset($_POST['credit']))
             $addr = $rowp['addr'];
              
 			
-			$read = $reg_user->runQuery("SELECT * FROM account WHERE acc_no = '$uname'");
-			$read->execute(); 
-			$show = $read->fetch(PDO::FETCH_ASSOC);
-			
-			$currency = $show['currency'];
+			$currency = $currencyCode;
 			$acc = $show['acc_no'];
 			$fname = $show['fname'];
 			$mname = $show['pin'] ?? '';
 			$lname = $show['lname'];
 			$email = $show['email'];
 			$phone = $show['phone'];
-			$tbal = $show['t_bal'];
-			$abal = $show['a_bal'];
-			$diff = round((float)$amount + (float)$tbal, 2);
-			$dif  = round((float)$amount + (float)$abal, 2);
-	
-			$credited = $reg_user->runQuery("UPDATE account SET t_bal = '$diff', a_bal = '$dif' WHERE acc_no = '$uname'");
-			$credited->execute();
+			$tbal = (float)($show['t_bal'] ?? 0);
+			$abal = (float)($show['a_bal'] ?? 0);
+			$walletTotal = $tbal;
+			$walletAvailable = $abal;
 
-			// Sync the multi-currency wallet table
-			try {
-				$wupd = $reg_user->runQuery(
-					'UPDATE account_balances SET balance = balance + :amt WHERE acc_no = :an AND currency_code = :cur'
-				);
-				$wupd->execute([':amt' => (float)$amount, ':an' => $acc, ':cur' => strtoupper(trim((string)$currency))]);
-			} catch (Throwable $we) { error_log('account_balances credit sync: ' . $we->getMessage()); }
+      try {
+        if ($currencyCode === $primaryCurrencyCode && function_exists('fw_wallet_seed_from_legacy')) {
+          fw_wallet_seed_from_legacy($GLOBALS['conn'], $acc, $currencyCode);
+        }
+        $wallet = fw_wallet_get($GLOBALS['conn'], $acc, $currencyCode);
+        if ($wallet) {
+          $walletTotal = (float)($wallet['total_balance'] ?? $walletTotal);
+          $walletAvailable = (float)($wallet['available_balance'] ?? $walletAvailable);
+        } elseif ($currencyCode !== $primaryCurrencyCode) {
+          $walletTotal = 0.0;
+          $walletAvailable = 0.0;
+        }
+
+			$diff = round($walletTotal + (float)$amount, 2);
+			$dif = round($walletAvailable + (float)$amount, 2);
+
+        fw_wallet_set($GLOBALS['conn'], $acc, $currencyCode, $diff, $dif);
+        $reg_user->runQuery(
+          'UPDATE customer_accounts
+           SET balance = :balance
+           WHERE owner_acc_no = :owner_acc_no
+             AND currency_code = :currency_code
+             AND status = :status'
+        )->execute([
+          ':balance' => $dif,
+          ':owner_acc_no' => $acc,
+          ':currency_code' => $currencyCode,
+          ':status' => 'active',
+        ]);
+        if ($currencyCode === $primaryCurrencyCode) {
+          fw_wallet_sync_legacy_account($GLOBALS['conn'], $acc, $currencyCode);
+        }
+      } catch (Throwable $we) {
+        error_log('wallet credit sync: ' . $we->getMessage());
+      }
 
 			$id = $reg_user->lasdID();	
 			
@@ -703,6 +812,11 @@ if(isset($_POST['debit']))
 	$uname = trim($_POST['uname']);
 	$uname = strip_tags($uname);
 	$uname = htmlspecialchars($uname);
+
+  $walletCurrencyInput = strtoupper(trim((string)($_POST['wallet_currency'] ?? '')));
+  if (!preg_match('/^[A-Z0-9]{2,10}$/', $walletCurrencyInput)) {
+    $walletCurrencyInput = '';
+  }
 	
 	$amount = trim($_POST['amount']);
 	$amount = strip_tags($amount);
@@ -735,46 +849,100 @@ if(isset($_POST['debit']))
 			$email = $shows['email'];
 			
 			$name = $shows['fname'];
-			$tbal = $shows['t_bal'];
-			$abal = $shows['a_bal'];
+      $tbal = (float)($shows['t_bal'] ?? 0);
+      $abal = (float)($shows['a_bal'] ?? 0);
+      $primaryCurrencyCode = strtoupper(trim((string)($shows['currency'] ?? '')));
+      if (!preg_match('/^[A-Z0-9]{2,10}$/', $primaryCurrencyCode)) {
+        $primaryCurrencyCode = 'USD';
+      }
+      $currencyCode = $walletCurrencyInput !== '' ? $walletCurrencyInput : $primaryCurrencyCode;
+
+      $checkTotal = $tbal;
+      $checkAvailable = $abal;
+      try {
+        if ($currencyCode === $primaryCurrencyCode && function_exists('fw_wallet_seed_from_legacy')) {
+          fw_wallet_seed_from_legacy($GLOBALS['conn'], $uname, $currencyCode);
+        }
+        $checkWallet = fw_wallet_get($GLOBALS['conn'], $uname, $currencyCode);
+        if ($checkWallet) {
+          $checkTotal = (float)($checkWallet['total_balance'] ?? $checkTotal);
+          $checkAvailable = (float)($checkWallet['available_balance'] ?? $checkAvailable);
+        } elseif ($currencyCode !== $primaryCurrencyCode) {
+          $checkTotal = 0.0;
+          $checkAvailable = 0.0;
+        }
+      } catch (Throwable $we) {
+      }
 			
-	if((float)$tbal < (float)$amount || (float)$abal < (float)$amount)
+  $remarksForAlert = trim('[CUR:' . $currencyCode . '] ' . (string)$remarks);
+
+  if((float)$checkTotal < (float)$amount || (float)$checkAvailable < (float)$amount)
 		{
 			$msg = "<div class='alert alert-warning'>
 				<button class='close' data-dismiss='alert'>&times;</button>
-					<strong>The Amount ($amount) to be Debited is Higher Than $name's Account Balance ($tbal)</strong> 
+          <strong>The Amount ($amount) to be Debited is Higher Than $name's $currencyCode Account Balance ($checkTotal)</strong> 
 			  </div>";
 			 
 		}
 			  
-		elseif($reg_user->his($uname,$amount,$sender_name,$type,$remarks,$date,$time))
+    elseif($reg_user->his($uname,$amount,$sender_name,$type,$remarksForAlert,$date,$time))
 		{			
 			$readd = $reg_user->runQuery("SELECT * FROM account WHERE acc_no = '$uname'");
 			$readd->execute(); 
 			$shows = $readd->fetch(PDO::FETCH_ASSOC);
-			
-			$currency = $shows['currency'];
+
+			$primaryCurrencyCode = strtoupper(trim((string)($shows['currency'] ?? '')));
+			if (!preg_match('/^[A-Z0-9]{2,10}$/', $primaryCurrencyCode)) {
+				$primaryCurrencyCode = 'USD';
+			}
+			$currencyCode = $walletCurrencyInput !== '' ? $walletCurrencyInput : $primaryCurrencyCode;
+			$currency = $currencyCode;
 			$acc = $shows['acc_no'];
 			$fname = $shows['fname'];
 			$mname = $shows['pin'] ?? '';
 			$lname = $shows['lname'];
 			$email = $shows['email'];
 			$phone = $shows['phone'];
-			$tbal = $shows['t_bal'];
-			$abal = $shows['a_bal'];
-			$diffi = max(0, round((float)$tbal - (float)$amount, 2));
-			$difi  = max(0, round((float)$abal - (float)$amount, 2));
-			
-			$debited = $reg_user->runQuery("UPDATE account SET t_bal = '$diffi', a_bal = '$difi' WHERE acc_no = '$uname'");
-			$debited->execute();
+			$tbal = (float)($shows['t_bal'] ?? 0);
+			$abal = (float)($shows['a_bal'] ?? 0);
+			$walletTotal = $tbal;
+			$walletAvailable = $abal;
 
-			// Sync the multi-currency wallet table
-			try {
-				$wupd = $reg_user->runQuery(
-					'UPDATE account_balances SET balance = GREATEST(0, balance - :amt) WHERE acc_no = :an AND currency_code = :cur'
-				);
-				$wupd->execute([':amt' => (float)$amount, ':an' => $acc, ':cur' => strtoupper(trim((string)$currency))]);
-			} catch (Throwable $we) { error_log('account_balances debit sync: ' . $we->getMessage()); }
+      try {
+        if ($currencyCode === $primaryCurrencyCode && function_exists('fw_wallet_seed_from_legacy')) {
+          fw_wallet_seed_from_legacy($GLOBALS['conn'], $acc, $currencyCode);
+        }
+        $wallet = fw_wallet_get($GLOBALS['conn'], $acc, $currencyCode);
+        if ($wallet) {
+          $walletTotal = (float)($wallet['total_balance'] ?? $walletTotal);
+          $walletAvailable = (float)($wallet['available_balance'] ?? $walletAvailable);
+        } elseif ($currencyCode !== $primaryCurrencyCode) {
+          $walletTotal = 0.0;
+          $walletAvailable = 0.0;
+        }
+
+			$diffi = max(0, round($walletTotal - (float)$amount, 2));
+			$difi = max(0, round($walletAvailable - (float)$amount, 2));
+
+        fw_wallet_set($GLOBALS['conn'], $acc, $currencyCode, $diffi, $difi);
+        $reg_user->runQuery(
+          'UPDATE customer_accounts
+           SET balance = :balance
+           WHERE owner_acc_no = :owner_acc_no
+             AND currency_code = :currency_code
+             AND status = :status'
+        )->execute([
+          ':balance' => $difi,
+          ':owner_acc_no' => $acc,
+          ':currency_code' => $currencyCode,
+          ':status' => 'active',
+        ]);
+        if ($currencyCode === $primaryCurrencyCode) {
+          fw_wallet_sync_legacy_account($GLOBALS['conn'], $acc, $currencyCode);
+        }
+      } catch (Throwable $we) {
+        error_log('wallet debit sync: ' . $we->getMessage());
+      }
 
 			$id = $reg_user->lasdID();		
 			
@@ -1530,11 +1698,27 @@ require_once __DIR__ . '/partials/admin-shell-open.php';
       <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div>
           <label class="block text-xs font-medium text-gray-700 mb-1">Select Account</label>
-          <select name="uname" class="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" required>
+          <select id="history_uname" name="uname" class="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" required>
             <?php $stmt->execute(); while($r = $stmt->fetch(PDO::FETCH_ASSOC)): ?>
-            <option value="<?= htmlspecialchars($r['acc_no']) ?>"><?= htmlspecialchars($r['fname'].' '.$r['lname']) ?></option>
+            <?php
+              $historyAccNo = (string)($r['acc_no'] ?? '');
+              $historyCurrencies = $adminAccountCurrencyMap[$historyAccNo] ?? [];
+              $historyCurrencyAttr = htmlspecialchars((string)json_encode($historyCurrencies), ENT_QUOTES, 'UTF-8');
+            ?>
+            <option value="<?= htmlspecialchars($historyAccNo) ?>" data-wallet-currencies="<?= $historyCurrencyAttr ?>"><?= htmlspecialchars($r['fname'].' '.$r['lname']) ?></option>
             <?php endwhile; ?>
           </select>
+        </div>
+        <div>
+          <label class="block text-xs font-medium text-gray-700 mb-1">Currency Account</label>
+          <div class="relative" id="history_wallet_wrap">
+            <button type="button" id="history_wallet_btn" class="w-full flex items-center justify-between rounded-lg border border-gray-300 px-3 py-2 text-left text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+              <span id="history_wallet_label" class="text-gray-800">Select currency account</span>
+              <i class="fa-solid fa-chevron-down text-[10px] text-gray-500"></i>
+            </button>
+            <div id="history_wallet_list" class="hidden absolute z-30 mt-1 w-full rounded-lg border border-gray-200 bg-white shadow-lg overflow-hidden"></div>
+            <input type="hidden" id="history_wallet_currency" name="wallet_currency" required>
+          </div>
         </div>
         <div>
           <label class="block text-xs font-medium text-gray-700 mb-1">Transaction Type</label>
@@ -1583,11 +1767,27 @@ require_once __DIR__ . '/partials/admin-shell-open.php';
       <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div>
           <label class="block text-xs font-medium text-gray-700 mb-1">Select Account to Credit</label>
-          <select name="uname" class="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" required>
+          <select id="credit_uname" name="uname" class="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" required>
             <?php $credit->execute(); while($r = $credit->fetch(PDO::FETCH_ASSOC)): ?>
-            <option value="<?= htmlspecialchars($r['acc_no']) ?>"><?= htmlspecialchars($r['fname'].' '.$r['lname']) ?></option>
+            <?php
+              $creditAccNo = (string)($r['acc_no'] ?? '');
+              $creditCurrencies = $adminAccountCurrencyMap[$creditAccNo] ?? [];
+              $creditCurrencyAttr = htmlspecialchars((string)json_encode($creditCurrencies), ENT_QUOTES, 'UTF-8');
+            ?>
+            <option value="<?= htmlspecialchars($creditAccNo) ?>" data-wallet-currencies="<?= $creditCurrencyAttr ?>"><?= htmlspecialchars($r['fname'].' '.$r['lname']) ?></option>
             <?php endwhile; ?>
           </select>
+        </div>
+        <div>
+          <label class="block text-xs font-medium text-gray-700 mb-1">Currency Account</label>
+          <div class="relative" id="credit_wallet_wrap">
+            <button type="button" id="credit_wallet_btn" class="w-full flex items-center justify-between rounded-lg border border-gray-300 px-3 py-2 text-left text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+              <span id="credit_wallet_label" class="text-gray-800">Select currency account</span>
+              <i class="fa-solid fa-chevron-down text-[10px] text-gray-500"></i>
+            </button>
+            <div id="credit_wallet_list" class="hidden absolute z-30 mt-1 w-full rounded-lg border border-gray-200 bg-white shadow-lg overflow-hidden"></div>
+            <input type="hidden" id="credit_wallet_currency" name="wallet_currency" required>
+          </div>
         </div>
         <div>
           <label class="block text-xs font-medium text-gray-700 mb-1">From (Sender)</label>
@@ -1630,11 +1830,27 @@ require_once __DIR__ . '/partials/admin-shell-open.php';
       <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div>
           <label class="block text-xs font-medium text-gray-700 mb-1">Select Account to Debit</label>
-          <select name="uname" class="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" required>
+          <select id="debit_uname" name="uname" class="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" required>
             <?php $debit->execute(); while($r = $debit->fetch(PDO::FETCH_ASSOC)): ?>
-            <option value="<?= htmlspecialchars($r['acc_no']) ?>"><?= htmlspecialchars($r['fname'].' '.$r['lname']) ?></option>
+            <?php
+              $debitAccNo = (string)($r['acc_no'] ?? '');
+              $debitCurrencies = $adminAccountCurrencyMap[$debitAccNo] ?? [];
+              $debitCurrencyAttr = htmlspecialchars((string)json_encode($debitCurrencies), ENT_QUOTES, 'UTF-8');
+            ?>
+            <option value="<?= htmlspecialchars($debitAccNo) ?>" data-wallet-currencies="<?= $debitCurrencyAttr ?>"><?= htmlspecialchars($r['fname'].' '.$r['lname']) ?></option>
             <?php endwhile; ?>
           </select>
+        </div>
+        <div>
+          <label class="block text-xs font-medium text-gray-700 mb-1">Currency Account</label>
+          <div class="relative" id="debit_wallet_wrap">
+            <button type="button" id="debit_wallet_btn" class="w-full flex items-center justify-between rounded-lg border border-gray-300 px-3 py-2 text-left text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+              <span id="debit_wallet_label" class="text-gray-800">Select currency account</span>
+              <i class="fa-solid fa-chevron-down text-[10px] text-gray-500"></i>
+            </button>
+            <div id="debit_wallet_list" class="hidden absolute z-30 mt-1 w-full rounded-lg border border-gray-200 bg-white shadow-lg overflow-hidden"></div>
+            <input type="hidden" id="debit_wallet_currency" name="wallet_currency" required>
+          </div>
         </div>
         <div>
           <label class="block text-xs font-medium text-gray-700 mb-1">Debit To</label>
@@ -1670,6 +1886,119 @@ require_once __DIR__ . '/partials/admin-shell-open.php';
 function adminModal(id) {
   document.getElementById(id).classList.toggle('hidden');
 }
+
+function bindWalletCurrencySelect(accountSelectId, currencyInputId, triggerBtnId, listId, labelId) {
+  var accountSelect = document.getElementById(accountSelectId);
+  var currencyInput = document.getElementById(currencyInputId);
+  var triggerBtn = document.getElementById(triggerBtnId);
+  var list = document.getElementById(listId);
+  var label = document.getElementById(labelId);
+  if (!accountSelect || !currencyInput || !triggerBtn || !list || !label) {
+    return;
+  }
+
+  var state = { currencies: [] };
+
+  function formatBalance(balance, code) {
+    var n = Number.isFinite(balance) ? balance : 0;
+    var num = new Intl.NumberFormat(undefined, {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2
+    }).format(n);
+    return code + num;
+  }
+
+  function renderLabel(code, balance) {
+    label.innerHTML = '<span class="font-medium text-gray-800">' + code + ' Account - </span>' +
+      '<span class="text-[11px] font-bold text-gray-700">' + formatBalance(balance, code) + '</span>';
+  }
+
+  function pickCurrency(code, balance) {
+    currencyInput.value = code;
+    renderLabel(code, balance);
+    list.classList.add('hidden');
+  }
+
+  function hydrateCurrencyOptions() {
+    var selected = accountSelect.options[accountSelect.selectedIndex];
+    var raw = selected ? (selected.getAttribute('data-wallet-currencies') || '[]') : '[]';
+    var currencies = [];
+
+    try {
+      var parsed = JSON.parse(raw);
+      if (Array.isArray(parsed)) {
+        currencies = parsed.map(function (entry) {
+          return {
+            code: String((entry && entry.code) || '').trim().toUpperCase(),
+            balance: Number((entry && entry.balance) || 0)
+          };
+        }).filter(function (entry) {
+          return entry.code !== '';
+        });
+      }
+    } catch (e) {
+      currencies = [];
+    }
+
+    if (!currencies.length) currencies = [{ code: 'USD', balance: 0 }];
+
+    state.currencies = currencies;
+
+    var previousValue = (currencyInput.value || '').toUpperCase();
+    var selectedEntry = currencies[0];
+    for (var i = 0; i < currencies.length; i++) {
+      if (currencies[i].code === previousValue) {
+        selectedEntry = currencies[i];
+        break;
+      }
+    }
+
+    list.innerHTML = '';
+    currencies.forEach(function (entry) {
+      var item = document.createElement('button');
+      item.type = 'button';
+      item.className = 'w-full flex items-center justify-between px-3 py-2 text-left hover:bg-gray-50 border-b border-gray-100 last:border-0';
+      item.innerHTML =
+        '<span class="font-medium text-gray-800">' + entry.code + ' Account</span>' +
+        '<span class="text-[11px] font-bold text-gray-700">' + formatBalance(entry.balance, entry.code) + '</span>';
+      item.addEventListener('click', function () {
+        var codeEl = this.querySelector('span');
+        var codeText = codeEl ? (codeEl.textContent || '') : '';
+        var code = codeText.replace(' Account', '').trim().toUpperCase();
+        var match = null;
+        for (var j = 0; j < state.currencies.length; j++) {
+          if (state.currencies[j].code === code) {
+            match = state.currencies[j];
+            break;
+          }
+        }
+        pickCurrency(code, match ? match.balance : 0);
+      });
+      list.appendChild(item);
+    });
+
+    pickCurrency(selectedEntry.code, selectedEntry.balance);
+  }
+
+  accountSelect.addEventListener('change', hydrateCurrencyOptions);
+  triggerBtn.addEventListener('click', function () {
+    list.classList.toggle('hidden');
+  });
+
+  document.addEventListener('click', function (event) {
+    if (!event.target.closest('#' + triggerBtnId) && !event.target.closest('#' + listId)) {
+      list.classList.add('hidden');
+    }
+  });
+
+  hydrateCurrencyOptions();
+}
+
+document.addEventListener('DOMContentLoaded', function () {
+  bindWalletCurrencySelect('history_uname', 'history_wallet_currency', 'history_wallet_btn', 'history_wallet_list', 'history_wallet_label');
+  bindWalletCurrencySelect('credit_uname', 'credit_wallet_currency', 'credit_wallet_btn', 'credit_wallet_list', 'credit_wallet_label');
+  bindWalletCurrencySelect('debit_uname', 'debit_wallet_currency', 'debit_wallet_btn', 'debit_wallet_list', 'debit_wallet_label');
+});
 </script>
 
 <?php require_once __DIR__ . '/partials/admin-shell-close.php'; ?>

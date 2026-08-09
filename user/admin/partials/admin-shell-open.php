@@ -320,11 +320,25 @@ try {
         <i class="fa-solid fa-bars text-lg"></i>
       </button>
       <h1 class="text-sm font-semibold text-gray-800 flex-1 truncate"><?= htmlspecialchars($pageTitle) ?></h1>
+      <a href="clear-cache.php?return=<?= urlencode($_SERVER['REQUEST_URI'] ?? 'index.php') ?>"
+         onclick="return confirm('Clear application cache now?');"
+         class="inline-flex items-center gap-2 rounded-lg border border-gray-300 bg-white px-3 py-1.5 text-xs font-medium text-gray-700 hover:border-blue-400 hover:bg-blue-50 hover:text-blue-700 transition-colors">
+        <i class="fa-solid fa-broom"></i>
+        <span class="hidden sm:inline">Clear Cache</span>
+      </a>
       <span class="text-xs text-gray-400 hidden sm:block"><?= htmlspecialchars($_SESSION['email'] ?? '') ?></span>
       <a href="logout.php" title="Logout" class="text-gray-400 hover:text-red-500 transition-colors ml-1">
         <i class="fa-solid fa-right-from-bracket text-sm"></i>
       </a>
     </header>
+
+    <?php if (!empty($_GET['cache_cleared']) || !empty($_GET['cache_error'])): ?>
+    <div class="px-5 pt-5 lg:px-6">
+      <div class="rounded-lg border px-4 py-3 text-sm <?= !empty($_GET['cache_error']) ? 'border-red-200 bg-red-50 text-red-700' : 'border-green-200 bg-green-50 text-green-700' ?>">
+        <?= !empty($_GET['cache_error']) ? htmlspecialchars((string)$_GET['cache_error']) : 'Cache cleared successfully.' ?>
+      </div>
+    </div>
+    <?php endif; ?>
 
     <!-- Page content -->
     <main class="flex-1 overflow-y-auto p-5 lg:p-6">

@@ -174,7 +174,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['send_test_email'])) {
 
         if ($emailSent) {
             $alert_type = 'success';
-            $message    = 'Test email sent to ' . htmlspecialchars($test_to) . ' using the &ldquo;' . htmlspecialchars($test_meta['name'] ?? $test_tpl_key) . '&rdquo; template.';
+          $message    = 'Test email sent to ' . htmlspecialchars($test_to) . ' using the "' . htmlspecialchars($test_meta['name'] ?? $test_tpl_key) . '" template.';
         } elseif (empty($smtp_cfg['host'])) {
             $alert_type = 'danger';
             $message    = 'No SMTP host configured. Save your SMTP settings first.';

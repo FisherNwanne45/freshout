@@ -4,6 +4,9 @@ include_once 'session.php';
 require_once 'class.user.php';
 require_once '../config.php';
 require_once __DIR__ . '/partials/auto-migrate.php';
+if (is_file(__DIR__ . '/partials/wallet-ledger.php')) {
+    require_once __DIR__ . '/partials/wallet-ledger.php';
+}
 
 // Bind mysqli handle explicitly so static analysis and runtime both see it.
 $conn = $GLOBALS['conn'] ?? null;
@@ -65,6 +68,11 @@ $transferTypeLabelMap = [
 $transferTypeLabel = $transferTypeLabelMap[strtolower(trim($transferType))] ?? ucfirst($transferType);
 
 $flashError = '';
+if (empty($_SESSION['transfer_csrf'])) {
+    $_SESSION['transfer_csrf'] = bin2hex(random_bytes(32));
+}
+$transferCsrfToken = (string)($_SESSION['transfer_csrf'] ?? '');
+$otpCsrfValid = true;
 
 function completeTransferFromTemp(USER $reg_user, array $row, array $tempRow, mysqli $conn): void
 {
@@ -126,6 +134,12 @@ function completeTransferFromTemp(USER $reg_user, array $row, array $tempRow, my
     }
 
     $sourceBal = null;
+    if ($conn instanceof mysqli && function_exists('fw_wallet_get')) {
+        $srcWallet = fw_wallet_get($conn, (string)($row['acc_no'] ?? ''), $curCode);
+        if ($srcWallet) {
+            $sourceBal = (float)($srcWallet['available_balance'] ?? 0);
+        }
+    }
     try {
         $src = $reg_user->runQuery(
             'SELECT balance FROM customer_accounts
@@ -142,7 +156,7 @@ function completeTransferFromTemp(USER $reg_user, array $row, array $tempRow, my
             ':status' => 'active',
         ]);
         $srcRow = $src->fetch(PDO::FETCH_ASSOC);
-        if ($srcRow) {
+        if ($sourceBal === null && $srcRow) {
             $sourceBal = (float)($srcRow['balance'] ?? 0);
         }
     } catch (Throwable $e) {
@@ -193,14 +207,23 @@ function completeTransferFromTemp(USER $reg_user, array $row, array $tempRow, my
         } catch (Throwable $e) {
         }
 
+        $total = max(0, (float)($row['t_bal'] ?? 0) - $amount);
+        $avail = max(0, (float)($row['a_bal'] ?? 0) - $amount);
         try {
-            $reg_user->runQuery(
-                'UPDATE account_balances SET balance = balance - :amount WHERE acc_no = :acc_no AND currency_code = :currency_code'
-            )->execute([
-                ':amount' => $amount,
-                ':acc_no' => (string)($row['acc_no'] ?? ''),
-                ':currency_code' => $curCode,
-            ]);
+            $ownerAccNo = (string)($row['acc_no'] ?? '');
+            $senderWallet = fw_wallet_get($conn, $ownerAccNo, $curCode);
+            if (!$senderWallet && function_exists('fw_wallet_seed_from_legacy')) {
+                fw_wallet_seed_from_legacy($conn, $ownerAccNo, $curCode);
+                $senderWallet = fw_wallet_get($conn, $ownerAccNo, $curCode);
+            }
+
+            $senderTotal = (float)($senderWallet['total_balance'] ?? ($row['t_bal'] ?? 0));
+            $senderAvailable = (float)($senderWallet['available_balance'] ?? ($row['a_bal'] ?? $senderTotal));
+            $total = max(0, $senderTotal - $amount);
+            $avail = max(0, $senderAvailable - $amount);
+
+            fw_wallet_set($conn, $ownerAccNo, $curCode, $total, $avail);
+            fw_wallet_sync_legacy_account($conn, $ownerAccNo, $curCode);
         } catch (Throwable $e) {
         }
 
@@ -238,31 +261,16 @@ function completeTransferFromTemp(USER $reg_user, array $row, array $tempRow, my
                         ':account_no' => $destinationAccountNo,
                     ]);
 
-                    $reg_user->runQuery(
-                        'INSERT INTO account_balances (acc_no, currency_code, balance)
-                         VALUES (:acc_no, :currency_code, 0)
-                         ON DUPLICATE KEY UPDATE acc_no = VALUES(acc_no)'
-                    )->execute([
-                        ':acc_no' => $destOwner,
-                        ':currency_code' => $destCurrency,
-                    ]);
-
-                    $reg_user->runQuery(
-                        'UPDATE account_balances SET balance = balance + :amount WHERE acc_no = :acc_no AND currency_code = :currency_code'
-                    )->execute([
-                        ':amount' => $amount,
-                        ':acc_no' => $destOwner,
-                        ':currency_code' => $destCurrency,
-                    ]);
+                    $destWallet = fw_wallet_get($conn, $destOwner, $destCurrency);
+                    $destTotal = (float)($destWallet['total_balance'] ?? 0);
+                    $destAvailable = (float)($destWallet['available_balance'] ?? $destTotal);
+                    fw_wallet_set($conn, $destOwner, $destCurrency, $destTotal + $amount, $destAvailable + $amount);
+                    fw_wallet_sync_legacy_account($conn, $destOwner, $destCurrency);
 
                     if ($destEmail !== '') {
                         try {
-                            $destBalStmt = $reg_user->runQuery(
-                                'SELECT balance FROM account_balances WHERE acc_no = :acc_no AND currency_code = :currency_code LIMIT 1'
-                            );
-                            $destBalStmt->execute([':acc_no' => $destOwner, ':currency_code' => $destCurrency]);
-                            $destBalRow = $destBalStmt->fetch(PDO::FETCH_ASSOC);
-                            $destNewBalance = (float)($destBalRow['balance'] ?? 0);
+                            $destWalletAfter = fw_wallet_get($conn, $destOwner, $destCurrency);
+                            $destNewBalance = (float)($destWalletAfter['total_balance'] ?? 0);
 
                             $creditData = [
                                 'fname' => $destFname,
@@ -291,12 +299,7 @@ function completeTransferFromTemp(USER $reg_user, array $row, array $tempRow, my
             }
         }
 
-        $total = max(0, (float)($row['t_bal'] ?? 0) - $amount);
-        $avail = max(0, (float)($row['a_bal'] ?? 0) - $amount);
-        try {
-            $reg_user->runQuery("UPDATE account SET t_bal = '$total', a_bal = '$avail' WHERE email = '$email'")->execute();
-        } catch (Throwable $e) {
-        }
+
 
         try {
             $beneficiaryName = trim((string)$accName);
@@ -334,7 +337,15 @@ function completeTransferFromTemp(USER $reg_user, array $row, array $tempRow, my
     exit();
 }
 
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['resend_otp'])) {
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $postedCsrf = (string)($_POST['transfer_csrf'] ?? '');
+    if ($transferCsrfToken === '' || $postedCsrf === '' || !hash_equals($transferCsrfToken, $postedCsrf)) {
+        $otpCsrfValid = false;
+        $flashError = 'Your session security token expired. Please refresh and try again.';
+    }
+}
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && $otpCsrfValid && isset($_POST['resend_otp'])) {
     $newOtp = $reg_user->createOtp((string)($row['acc_no'] ?? ''), $email, 'transfer', 10);
     if ($newOtp !== '') {
         try {
@@ -353,7 +364,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['resend_otp'])) {
 
 $resentFlash = isset($_GET['resent']) ? 'A new OTP has been sent to your email.' : '';
 
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && $otpCsrfValid) {
     $otp = trim((string)($_POST['otp'] ?? ''));
     if ($otp === '') {
         $flashError = 'Enter the OTP code sent to your email.';
@@ -432,6 +443,7 @@ require_once __DIR__ . '/partials/shell-open.php';
         <?php endif; ?>
 
         <form method="POST" class="space-y-4" id="otpForm" novalidate>
+            <input type="hidden" name="transfer_csrf" value="<?= htmlspecialchars($transferCsrfToken) ?>">
             <div>
                 <label for="otp" class="block text-sm font-semibold text-brand-navy mb-2">OTP Code</label>
                 <input id="otp" name="otp" type="password" inputmode="numeric" autocomplete="one-time-code" maxlength="12"
@@ -448,6 +460,7 @@ require_once __DIR__ . '/partials/shell-open.php';
         <!-- Resend OTP -->
         <div class="mt-5 text-center">
             <form method="POST" id="resendForm">
+                <input type="hidden" name="transfer_csrf" value="<?= htmlspecialchars($transferCsrfToken) ?>">
                 <input type="hidden" name="resend_otp" value="1">
                 <p class="text-xs text-brand-muted mb-2">Didn&rsquo;t receive the code?</p>
                 <button id="resendBtn" type="submit" disabled

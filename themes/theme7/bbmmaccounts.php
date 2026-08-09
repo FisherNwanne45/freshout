@@ -1,0 +1,520 @@
+<?php
+include('session.php');
+?>
+<?php session_start(); ?>
+
+  
+<!DOCTYPE html>
+<html lang="en">
+ <?php require_once __DIR__ . '/bootstrap.php'; ?>
+<head>
+    <meta charset="UTF-8">
+    <meta name="description" content="">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <!-- The above 4 meta tags *must* come first in the head; any other head content must come *after* these tags -->
+
+    <!-- Title -->
+    <title><?php echo $name; ?> - Private Banking - Banking Services</title>
+
+    <!-- Favicon -->
+    <link rel="icon" href="img/core-img/favicon.ico">
+
+    <!-- Stylesheet -->
+    <link rel="stylesheet" href="style.css?v=20260804h">
+
+</head>
+
+<body>
+    <!-- Preloader -->
+    <div class="preloader d-flex align-items-center justify-content-center">
+        <div class="lds-ellipsis">
+          <div></div>
+            <div></div>
+            <div></div>
+            <div></div>
+        </div>
+    </div>
+
+    <!-- ##### Header Area Start ##### -->
+    <header class="header-area">
+        <!-- Top Header Area -->
+        <div class="top-header-area">
+            <div class="container h-100">
+                <div class="row h-100 align-items-center">
+                    <div class="col-12 d-flex justify-content-between">
+                        <!-- Logo Area -->
+                        <div class="logo">
+                            <a href="index.php"><img src="<?php echo $logo_url ?: ($url . '/admin/assets/images/logo/' . $image); ?>" alt="" width='180'></a>
+                        </div>
+
+                        <!-- Top Contact Info -->
+                        <div class="top-contact-info d-flex align-items-center">
+
+
+
+
+<?php echo $translate; ?>
+
+<div class="top-auth-actions d-flex align-items-center">
+    <a class="top-auth-btn top-auth-login" href="<?php echo $login; ?>" aria-label="Login"><i class="fa fa-sign-in" aria-hidden="true"></i><span>Login</span></a>
+    <a class="top-auth-btn top-auth-register" href="<?php echo $register; ?>" aria-label="Open your account"><i class="fa fa-user-plus" aria-hidden="true"></i><span>Open Your Account</span></a>
+</div>
+
+
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Navbar Area -->
+        <div class="credit-main-menu" id="sticker">
+            <div class="classy-nav-container breakpoint-off">
+                <div class="container">
+                    <!-- Menu -->
+                    <nav class="classy-navbar justify-content-between" id="creditNav">
+
+                        <!-- Navbar Toggler -->
+                        <div class="classy-navbar-toggler">
+                            <span class="navbarToggler"><span></span><span></span><span></span></span>
+                        </div>
+
+                        <!-- Menu -->
+                        <div class="classy-menu">
+
+                            <!-- Close Button -->
+                            <div class="classycloseIcon">
+                                <div class="cross-wrap"><span class="top"></span><span class="bottom"></span></div>
+                            </div>
+
+                            
+                            <!-- Nav Start -->
+                            <div class="classynav">
+                                <ul>
+                                    <li><a class="text-warning" href="index.php">Home</a></li>
+                                    
+                                    <li><a href="about.php">About</a></li>
+                                    <li><a href="#">Personal </a>
+                                        <ul class="dropdown">
+                                            <li><a href="pbccards.php">Credit Cards</a></li>
+                                            <li><a href="pbcurrent.php">Current Accounts</a></li>
+                                            <li><a href="pbsavings.php">Savings Accounts</a></li>
+                                            <li><a href="pbloans.php">Personal Loans</a></li>
+                                            <li><a href="pbmortgages.php">Mortgages</a></li>
+                                            <li><a href="pbinsurance.php">Personal Insurance</a></li>
+                                        </ul>
+                                    </li>
+                                    
+                                    
+                                    <li><a href="#">Business </a>
+                                        <div class="megamenu">
+                                            <ul class="single-mega cn-col-3">
+                                                <li><a href="bbbcards.php">Bank Cards</a></li>
+                                                <li><a href="bbdeposits.php">Deposit</a></li>
+                                                <li><a href="bbforeigndrafts.php">Foreign Drafts</a></li>
+                                                <li><a href="bbintchecking.php">Interest Checking</a></li>
+                                            </ul>
+                                            <ul class="single-mega cn-col-3">
+                                                <li><a href="bbebanking.php">Electronic Banking</a></li>
+                                                <li><a href="bbinvestbenefit.php">Investment/ Benefit Care Taking</a></li>
+                                                <li><a href="bbmmaccounts.php">Money Market Account</a></li>
+                                                <li><a href="bbsmallbiz.php">Small Business Checking</a></li>
+                                            </ul>
+                                            <ul class="single-mega cn-col-3">
+                                                <li><a href="bbbizcashmgt.php">Business Cash Management</a></li>
+                                                <li><a href="bbcurrencyriskmgt.php">Currency Risk Management</a></li>
+                                                <li><a href="bbforeignccdept.php">Foreign Currency Call Deposit</a></li>
+                                                <li><a href="bbforexriskmgt.php">Foreign Exchange Risk Management</a></li>
+                                            </ul>
+                                        </div>
+                                    </li>
+                                    <li><a href="invest.php"  >Investment Banking</a>
+                                        <ul class="dropdown">
+                                            <li><a href="pvbservices.php">Asset Management</a></li>
+                                            <li><a href="pvbinsurance.php">Brokerage</a></li>
+                                            <li><a href="pvboffshoremb.php">Corporate Finance</a></li>
+                                            </ul>
+                                    </li>
+                                    <li><a href="ourcareers.php">Careers</a></li>
+                                    <li><a href="faqs.php">FAQs</a></li>
+                                    <li><a href="contact.php">Contact</a></li>
+                                </ul>
+                            </div>
+                            <!-- Nav End -->
+                        </div>
+
+                        <!-- Contact -->
+                        <div class="contact">
+                            <a href="<?php echo $login; ?>"><img src="img/core-img/call2.png"> Online Banking</a>
+                        </div>
+                    </nav>
+                </div>
+            </div>
+        </div>
+    </header>    <!-- ##### Header Area End ##### -->
+
+    <!-- ##### Breadcrumb Area Start ##### -->
+    <section class="breadcrumb-area bg-img bg-overlay jarallax" style="background-image: url(img/bg-img/13.jpg);">
+        <div class="container h-100">
+            <div class="row h-100 align-items-center">
+                <div class="col-12">
+                    <div class="breadcrumb-content">
+                        <h2>Private Banking</h2>
+                        <nav aria-label="breadcrumb">
+                            <ol class="breadcrumb">
+                                <li class="breadcrumb-item"><a href="#">Overview</a></li>
+                                <li class="breadcrumb-item active" aria-current="page">Private Banking</li>
+                            </ol>
+                        </nav>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+    <!-- ##### Breadcrumb Area End ##### -->
+
+    <!-- ##### Post Details Area Start ##### -->
+    <section class="post-news-area section-padding-100-0">
+        <div class="container">
+            <div class="row">
+                <!-- Post Details Content Area -->
+                <div class="col-12 col-lg-8">
+                  <div class="post-details-content mb-100">
+                        <img src="img/bg-img/22.jpg" alt="">
+                    <p><strong>Banking services created exclusively for you</strong><br>
+                    As a customer of our private banking service, we offer a range of solutions that can satisfy your particular financial requirements. From current and savings accounts, to mortgages, credit cards and asset finance, your Relationship Manager will help connect you with products that make your money work harder.</p>
+                    <p>Private Current Account<br>
+                      Current Account Tracker<br>
+                      Private savings<br>
+                      Cash ISAs<br>
+                      Private Mortgages<br>
+                      Private credit card<br>
+                      Private asset finance<br>
+                      Private Current Account<br>
+                      The Private Current Account delivers all the everyday banking services you might need, including instant access to your money, it also comes with the option of linking your surplus credit balances to a Private Savings Account.</p>
+                    <p>You and your family will also receive Worldwide Family Multi-Trip Travel Insurance, provided by  <?php echo $name; ?>. This multi-trip travel insurance policy provides up to 31 days cover per trtip and there's no annual limit on the number of times you can travel. Your travel insurance includes up to 17 days winter sports, business and golf cover. You and your partner are covered, provided you live together and are under 75 years old, plus up to four dependant children under the age of 18. Cover is not provided for undeclared pre-existing medical conditions or for travel in, to or through Afghanistan, Cuba, Liberia and Sudan or areas where, prior to your trip commencing, the Foreign and commonwealth Office have advised against all but essential travel.</p>
+                    <p>Full details of the cover available can be found in the Key Facts and Policy Document.</p>
+                    <p><strong>Current Account Tracke</strong>r<br>
+                      Current Account Tracker provides all the same features as our Private Current Account but without Travel Insurance Cover.</p>
+                    <p><strong>Private savings</strong><br>
+                      Whatever your needs in life, we offer a selection of savings solutions to help preserve and grow your money. Your Relationship Manager can discuss your options with you, including Private Savings Account, Cash Individual Savings Accounts (Cash ISAs)^ and Term Deposits.</p>
+                    <p><strong>Cash ISAs</strong><br>
+                      Your annual Cash ISA Subscription limit from the 8th April 2019 to 7th April 2020 is AED 5,760.</p>
+                    <p>We offer a range of Cash ISAs to help meet your needs, including Instant Access, Fixed Rate Bond(s) and 40 day notice. To find out more about Cash ISAs or about any of the other products and services we offer, speak to your Relationship Manager today.</p>
+                    <p><strong>Private mortgages</strong><br>
+                    We offer a wide range of mortgages that match your personal needs and situation, including current account, offset and fixed rate mortgages. Your Relationship Manager can introduce you to our mortgage specialists to ensure you receive a mortgage that is right for you.</p>
+                </div>
+
+                    <!-- Comment Area Start -->
+                    <div class="comment_area clearfix mb-100">
+                        <h4 class="mb-50"></h4>
+							 <div class="comment-content d-flex">
+                                    <!-- Comment Author -->
+                                    <div class="comment-meta">
+                                        <div class="d-flex">
+                                        </div>
+                                        </p>
+                                    </div>
+                                </div>
+                            </li>
+                        </ol>
+                    </div>
+
+                    <div class="post-a-comment-area mb-100 clearfix">
+                        <h4 class="mb-50"></h4>
+
+                        <!-- Reply Form -->
+                        <div class="contact-form-area">
+                            
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Sidebar Widget -->
+                <div class="col-12 col-sm-9 col-md-6 col-lg-4">
+                    <div class="sidebar-area mb-100">
+
+                        <!-- Single Sidebar Widget -->
+                        <!-- Single Sidebar Widget -->
+                  <div class="single-widget-area cata-widget">
+<div class="widget-heading">
+                                <div class="line"></div>
+                                <h4>Quick Links</h4>
+
+                            <ul>
+                                <li><a href="pvbservices.php" class="text-warning">Banking Services</a></li>
+                                <li><a href="pvbinsurance.php">Insurance</a></li>
+                                <li><a href="pvboffshoremb.php">Offshore &amp; Migrant</a></li>
+                            </ul>
+                        </div>
+
+                        <!-- Single Sidebar Widget -->
+                        
+                                    </li>
+                                </ul>
+
+                                <div class="tab-content" id="myTabContent">
+                                    <div class="tab-pane fade" id="tab1" role="tabpanel" aria-labelledby="tab--1">
+                                        <div class="credit-tab-content">
+                                            <!-- Single News Area -->
+                                            <div class="single-news-area d-flex align-items-center">
+                                                <div class="news-thumbnail">
+                                                    <img src="img/bg-img/10.jpg" alt="">
+                                                </div>
+                                                <div class="news-content">
+                                                    <span>July 18, 2018</span>
+                                                    <a href="#">How to get the best loan online</a>
+                                                    <div class="news-meta">
+                                                        <a href="#" class="post-author"><img src="img/core-img/pencil.png" alt=""> Jane Smith</a>
+                                                        <a href="#" class="post-date"><img src="img/core-img/calendar.png" alt=""> April 26</a>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            <!-- Single News Area -->
+                                            <div class="single-news-area d-flex align-items-center">
+                                                <div class="news-thumbnail">
+                                                    <img src="img/bg-img/11.jpg" alt="">
+                                                </div>
+                                                <div class="news-content">
+                                                    <span>July 18, 2018</span>
+                                                    <a href="#">A new way to finance your dream home</a>
+                                                    <div class="news-meta">
+                                                        <a href="#" class="post-author"><img src="img/core-img/pencil.png" alt=""> Jane Smith</a>
+                                                        <a href="#" class="post-date"><img src="img/core-img/calendar.png" alt=""> April 26</a>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            <!-- Single News Area -->
+                                            <div class="single-news-area d-flex align-items-center">
+                                                <div class="news-thumbnail">
+                                                    <img src="img/bg-img/12.jpg" alt="">
+                                                </div>
+                                                <div class="news-content">
+                                                    <span>July 18, 2018</span>
+                                                    <a href="#">10 tips to get the best loan for you</a>
+                                                    <div class="news-meta">
+                                                        <a href="#" class="post-author"><img src="img/core-img/pencil.png" alt=""> Jane Smith</a>
+                                                        <a href="#" class="post-date"><img src="img/core-img/calendar.png" alt=""> April 26</a>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="tab-pane fade show active" id="tab2" role="tabpanel" aria-labelledby="tab--2">
+                                        <div class="credit-tab-content">
+                                            <!-- Single News Area -->
+                                            <div class="single-news-area d-flex align-items-center">
+                                                <div class="news-thumbnail">
+                                                    <img src="img/bg-img/10.jpg" alt="">
+                                                </div>
+                                                <div class="news-content">
+                                                    <span>July 18, 2018</span>
+                                                    <a href="#">How to get the best loan online</a>
+                                                    <div class="news-meta">
+                                                        <a href="#" class="post-author"><img src="img/core-img/pencil.png" alt=""> Jane Smith</a>
+                                                        <a href="#" class="post-date"><img src="img/core-img/calendar.png" alt=""> April 26</a>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            <!-- Single News Area -->
+                                            <div class="single-news-area d-flex align-items-center">
+                                                <div class="news-thumbnail">
+                                                    <img src="img/bg-img/11.jpg" alt="">
+                                                </div>
+                                                <div class="news-content">
+                                                    <span>July 18, 2018</span>
+                                                    <a href="#">A new way to finance your dream home</a>
+                                                    <div class="news-meta">
+                                                        <a href="#" class="post-author"><img src="img/core-img/pencil.png" alt=""> Jane Smith</a>
+                                                        <a href="#" class="post-date"><img src="img/core-img/calendar.png" alt=""> April 26</a>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            <!-- Single News Area -->
+                                            <div class="single-news-area d-flex align-items-center">
+                                                <div class="news-thumbnail">
+                                                    <img src="img/bg-img/12.jpg" alt="">
+                                                </div>
+                                                <div class="news-content">
+                                                    <span>July 18, 2018</span>
+                                                    <a href="#">10 tips to get the best loan for you</a>
+                                                    <div class="news-meta">
+                                                        <a href="#" class="post-author"><img src="img/core-img/pencil.png" alt=""> Jane Smith</a>
+                                                        <a href="#" class="post-date"><img src="img/core-img/calendar.png" alt=""> April 26</a>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="tab-pane fade" id="tab3" role="tabpanel" aria-labelledby="tab--3">
+                                        <div class="credit-tab-content">
+                                            <!-- Single News Area -->
+                                            <div class="single-news-area d-flex align-items-center">
+                                                <div class="news-thumbnail">
+                                                    <img src="img/bg-img/10.jpg" alt="">
+                                                </div>
+                                                <div class="news-content">
+                                                    <span>July 18, 2018</span>
+                                                    <a href="#">How to get the best loan online</a>
+                                                    <div class="news-meta">
+                                                        <a href="#" class="post-author"><img src="img/core-img/pencil.png" alt=""> Jane Smith</a>
+                                                        <a href="#" class="post-date"><img src="img/core-img/calendar.png" alt=""> April 26</a>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            <!-- Single News Area -->
+                                            <div class="single-news-area d-flex align-items-center">
+                                                <div class="news-thumbnail">
+                                                    <img src="img/bg-img/11.jpg" alt="">
+                                                </div>
+                                                <div class="news-content">
+                                                    <span>July 18, 2018</span>
+                                                    <a href="#">A new way to finance your dream home</a>
+                                                    <div class="news-meta">
+                                                        <a href="#" class="post-author"><img src="img/core-img/pencil.png" alt=""> Jane Smith</a>
+                                                        <a href="#" class="post-date"><img src="img/core-img/calendar.png" alt=""> April 26</a>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            <!-- Single News Area -->
+                                            <div class="single-news-area d-flex align-items-center">
+                                                <div class="news-thumbnail">
+                                                    <img src="img/bg-img/12.jpg" alt="">
+                                                </div>
+                                                <div class="news-content">
+                                                    <span>July 18, 2018</span>
+                                                    <a href="#">10 tips to get the best loan for you</a>
+                                                    <div class="news-meta">
+                                                        <a href="#" class="post-author"><img src="img/core-img/pencil.png" alt=""> Jane Smith</a>
+                                                        <a href="#" class="post-date"><img src="img/core-img/calendar.png" alt=""> April 26</a>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+    <!-- ##### Post Details Area End ##### -->
+
+    <!-- ##### Newsletter Area Start ###### -->
+    <section class="newsletter-area section-padding-100 bg-img" style="background-image: url(img/bg-img/6.jpg);">
+        <div class="container">
+            <div class="row justify-content-center">
+                <div class="col-12 col-sm-10 col-lg-8">
+                    <div class="nl-content text-center">
+                        <h2></h2>
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+    <!-- ##### Newsletter Area End ###### -->
+
+    <!-- ##### Footer Area Start ##### -->
+
+ <footer class="footer-area section-padding-100-0">
+        <div class="container">
+            <div class="row">
+
+                <!-- Single Footer Widget -->
+                <div class="col-12 col-sm-6 col-lg-3">
+                    <div class="single-footer-widget mb-100">
+                        <h5 class="widget-title">Quick Links</h5>
+                        <!-- Nav -->
+                        <nav>
+                            <ul>
+                                <li><a href="ourcareers.php">Careers</a></li>
+                                <li><a href="pbccards.php">Credit Cards</a></li>
+                                <li><a href="pbloans.php">Personal Loans</a></li> 
+                            </ul>
+                        </nav>
+                    </div>
+                </div>
+
+                <!-- Single Footer Widget -->
+                <div class="col-12 col-sm-6 col-lg-3">
+                    <div class="single-footer-widget mb-100">
+                        <h5 class="widget-title">&nbsp;</h5>
+                        <!-- Nav -->
+                        <nav>
+                            <ul>
+                                <li><a href="pbcurrent.php">Current Accounts</a></li>
+                                <li><a href="pbsavings.php">Savings Accounts</a></li>
+                                <li><a href="pbinsurance.php">Personal Insurance</a></li>
+                            </ul>
+                        </nav>
+                    </div>
+                </div>
+
+                <!-- Single Footer Widget -->
+                <div class="col-12 col-sm-6 col-lg-3">
+                    <div class="single-footer-widget mb-100">
+                        <h5 class="widget-title">&nbsp;</h5>
+                        <!-- Nav -->
+                        <nav>
+                            <ul>
+                                <li><a href="pbmortgages.php">Mortgages</a></li>
+                                <li><a href="faqs.php">FAQs</a></li>
+                                <li><a href="contact.php">Contact Us</a></li>
+                            </ul>
+                        </nav>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Copywrite Area -->
+        <div class="copywrite-area">
+            <div class="container">
+                <div class="row">
+                    <div class="col-12">
+                        <div class="copywrite-content d-flex flex-wrap justify-content-between align-items-center">
+                            <!-- Footer Logo -->
+                            <a href="index.php" class="footer-logo"><img src="<?php echo $logo_url ?: ($url . '/admin/assets/images/logo/' . $image); ?>" alt=""width="250"></a>
+
+                            <!-- Copywrite Text -->
+                            <p class="copywrite-text"><a href="#"><!-- Link back to Colorlib can't be removed. Template is licensed under CC BY 3.0. -->
+Copyright &copy;2005 - <script>document.write(new Date().getFullYear());</script> All rights reserved.</a>
+<!-- Link back to Colorlib can't be removed. Template is licensed under CC BY 3.0. --></p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </footer>
+    <!-- ##### Footer Area Start ##### -->
+
+    <!-- ##### All Javascript Script ##### -->
+    <!-- jQuery-2.2.4 js -->
+    <script src="js/jquery/jquery-2.2.4.min.js"></script>
+    <!-- Popper js -->
+    <script src="js/bootstrap/popper.min.js"></script>
+    <!-- Bootstrap js -->
+    <script src="js/bootstrap/bootstrap.min.js"></script>
+    <!-- All Plugins js -->
+    <script src="js/plugins/plugins.js"></script>
+    <!-- Active js -->
+    <script src="js/active.js"></script>
+<?php echo $livechat; ?>
+  </body>
+
+ 
+</html>
+ 

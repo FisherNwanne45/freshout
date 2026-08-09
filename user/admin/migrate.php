@@ -65,6 +65,8 @@ $hardcodedSiteSettings = [
     'promo_popup_condition' => 'once_session',
 
     'site_favicon' => '',
+    'auth_logo_url' => '',
+    'dashboard_logo_url' => '',
     'frontend_logo_url' => '',
     'admin_logo_url' => '',
 
@@ -199,6 +201,8 @@ if ($didRun) {
               acc_no VARCHAR(20) NOT NULL,
               currency_code VARCHAR(10) NOT NULL,
               balance DECIMAL(20,8) NOT NULL DEFAULT 0,
+                            total_balance DECIMAL(20,8) NOT NULL DEFAULT 0,
+                            available_balance DECIMAL(20,8) NOT NULL DEFAULT 0,
               UNIQUE KEY uq_acc_cur (acc_no, currency_code),
               KEY idx_acc (acc_no)
             ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4",
@@ -583,6 +587,27 @@ if ($didRun) {
             } else {
                 $log('[SKIP] Column ' . $tableName . '.' . $columnName . ' already present or table missing.');
             }
+        }
+
+        // Ensure admin password column can store modern hashes (bcrypt/argon).
+        if ($tableExists($conn, 'admin') && $columnExists($conn, 'admin', 'upass')) {
+            $adminUpassLen = $conn->query("SELECT CHARACTER_MAXIMUM_LENGTH AS max_len
+                                           FROM information_schema.columns
+                                           WHERE table_schema = DATABASE()
+                                             AND table_name = 'admin'
+                                             AND column_name = 'upass'
+                                           LIMIT 1");
+            $maxLen = 0;
+            if ($adminUpassLen && ($lenRow = $adminUpassLen->fetch_assoc())) {
+                $maxLen = (int)($lenRow['max_len'] ?? 0);
+            }
+            if ($maxLen > 0 && $maxLen < 255) {
+                $exec($conn, "ALTER TABLE `admin` MODIFY COLUMN `upass` VARCHAR(255) NOT NULL", 'Normalized admin.upass to VARCHAR(255)');
+            } else {
+                $log('[SKIP] admin.upass length already compatible with modern hashes.');
+            }
+        } else {
+            $log('[SKIP] admin.upass check skipped because admin table/column is missing.');
         }
 
         if ($tableExists($conn, 'customer_accounts') && !$indexExists($conn, 'customer_accounts', 'uq_customer_accounts_iban')) {

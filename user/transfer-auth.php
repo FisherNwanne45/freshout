@@ -5,6 +5,7 @@ require_once 'class.user.php';
 require_once '../config.php';
 $conn = $GLOBALS['conn'] ?? null;
 require_once __DIR__ . '/partials/auto-migrate.php';
+require_once __DIR__ . '/partials/wallet-ledger.php';
 
 if (!isset($_SESSION['acc_no']))  { header('Location: login.php');    exit(); }
 if (!isset($_SESSION['pin_verified']))   { header('Location: passcode.php');  exit(); }
@@ -68,8 +69,8 @@ $milestones = $milestonesMap[$txMaxCodes] ?? $milestonesMap[3];
 $email = $row['email'];
 
 // Load latest temp_transfer
-$tempStmt = $reg_user->runQuery("SELECT * FROM temp_transfer WHERE email = '$email' ORDER BY id DESC LIMIT 1");
-$tempStmt->execute();
+$tempStmt = $reg_user->runQuery('SELECT * FROM temp_transfer WHERE email = :email ORDER BY id DESC LIMIT 1');
+$tempStmt->execute([':email' => $email]);
 $tempRow  = $tempStmt->fetch(PDO::FETCH_ASSOC);
 
 // Cancel transfer and clear any staged temp_transfer rows.
@@ -111,6 +112,11 @@ $transferTypeLabelMap = [
 ];
 $transferTypeLabel = $transferTypeLabelMap[strtolower((string)$transferType)] ?? ucfirst((string)$transferType);
 
+if (empty($_SESSION['transfer_csrf'])) {
+  $_SESSION['transfer_csrf'] = bin2hex(random_bytes(32));
+}
+$transferCsrfToken = (string)($_SESSION['transfer_csrf'] ?? '');
+
 // ── Complete transfer (called on successful auth) ──────────────────────────
 if (!function_exists('transfer_auth_completeTransfer')) {
 function transfer_auth_completeTransfer($reg_user, array $row, array $tempRow, $conn): array
@@ -128,6 +134,7 @@ function transfer_auth_completeTransfer($reg_user, array $row, array $tempRow, $
     $curCode   = $tempRow['currency_code'] ?? ($row['currency'] ?? 'USD');
     $sourceAccountNo = (string)($tempRow['source_account_no'] ?? '');
     $destinationAccountNo = (string)($tempRow['destination_account_no'] ?? '');
+    $senderAccNo = (string)($row['acc_no'] ?? '');
 
     $normalizedXferType = strtolower(trim((string)$xferType));
     if ($normalizedXferType === 'interbank' || $normalizedXferType === 'internal') {
@@ -183,31 +190,43 @@ function transfer_auth_completeTransfer($reg_user, array $row, array $tempRow, $
                 ]);
         } catch (Throwable $e) {}
 
+        $senderTotalAfter = max(0, (float)($row['t_bal'] ?? 0) - (float)$amount);
+        $senderAvailAfter = max(0, (float)($row['a_bal'] ?? 0) - (float)$amount);
         try {
-            if ($sourceAccountNo !== '') {
-                $reg_user->runQuery(
-                    'UPDATE customer_accounts
-                     SET balance = balance - :amt
-                     WHERE owner_acc_no = :owner_acc_no
-                       AND account_no = :account_no
-                       AND currency_code = :currency_code'
-                )->execute([
-                    ':amt' => $amount,
-                    ':owner_acc_no' => $row['acc_no'],
-                    ':account_no' => $sourceAccountNo,
-                    ':currency_code' => $curCode,
-                ]);
-            }
-
+          if ($sourceAccountNo !== '') {
             $reg_user->runQuery(
-                'UPDATE account_balances SET balance = balance - :amt WHERE acc_no = :an AND currency_code = :cc'
-            )->execute([':amt' => $amount, ':an' => $row['acc_no'], ':cc' => $curCode]);
+              'UPDATE customer_accounts
+               SET balance = balance - :amt
+               WHERE owner_acc_no = :owner_acc_no
+                 AND account_no = :account_no
+                 AND currency_code = :currency_code'
+            )->execute([
+              ':amt' => $amount,
+              ':owner_acc_no' => $senderAccNo,
+              ':account_no' => $sourceAccountNo,
+              ':currency_code' => $curCode,
+            ]);
+          }
+
+          if ($senderAccNo !== '') {
+            $senderWallet = fw_wallet_get($conn, $senderAccNo, $curCode);
+            if (!$senderWallet && strtoupper(trim((string)($row['currency'] ?? ''))) === strtoupper($curCode)) {
+              fw_wallet_seed_from_legacy($conn, $senderAccNo, $curCode);
+              $senderWallet = fw_wallet_get($conn, $senderAccNo, $curCode);
+            }
+            $senderTotalBefore = (float)($senderWallet['total_balance'] ?? 0);
+            $senderAvailBefore = (float)($senderWallet['available_balance'] ?? $senderTotalBefore);
+            $senderTotalAfter = max(0, $senderTotalBefore - (float)$amount);
+            $senderAvailAfter = max(0, $senderAvailBefore - (float)$amount);
+            fw_wallet_set($conn, $senderAccNo, $curCode, $senderTotalAfter, $senderAvailAfter);
+            fw_wallet_sync_legacy_account($conn, $senderAccNo, $curCode);
+          }
         } catch (Throwable $e) {}
 
         try {
             if ($destinationAccountNo !== '') {
                 $dest = $reg_user->runQuery(
-                    'SELECT ca.owner_acc_no, ca.currency_code, a.email, a.fname, a.lname, a.uname
+                    'SELECT ca.owner_acc_no, ca.currency_code, a.email, a.fname, a.lname, a.uname, a.currency
                      FROM customer_accounts ca
                      LEFT JOIN account a ON a.acc_no = ca.owner_acc_no
                      WHERE (ca.account_no = :account_no OR ca.iban = :iban)
@@ -237,32 +256,26 @@ function transfer_auth_completeTransfer($reg_user, array $row, array $tempRow, $
                         ':owner_acc_no' => $destOwner,
                     ]);
 
-                    $reg_user->runQuery(
-                        'INSERT INTO account_balances (acc_no, currency_code, balance)
-                         VALUES (:acc_no, :currency_code, 0)
-                         ON DUPLICATE KEY UPDATE acc_no = VALUES(acc_no)'
-                    )->execute([
-                        ':acc_no' => $destOwner,
-                        ':currency_code' => $destCurrency,
-                    ]);
+                    $destWallet = fw_wallet_get($conn, $destOwner, $destCurrency);
+                    $destTotalBefore = (float)($destWallet['total_balance'] ?? 0);
+                    $destAvailBefore = (float)($destWallet['available_balance'] ?? $destTotalBefore);
+                    fw_wallet_set(
+                      $conn,
+                      $destOwner,
+                      $destCurrency,
+                      $destTotalBefore + (float)$amount,
+                      $destAvailBefore + (float)$amount
+                    );
 
-                    $reg_user->runQuery(
-                        'UPDATE account_balances SET balance = balance + :amt WHERE acc_no = :acc_no AND currency_code = :currency_code'
-                    )->execute([
-                        ':amt' => $amount,
-                        ':acc_no' => $destOwner,
-                        ':currency_code' => $destCurrency,
-                    ]);
+                    if (strtoupper(trim((string)($destRow['currency'] ?? ''))) === strtoupper($destCurrency)) {
+                      fw_wallet_sync_legacy_account($conn, $destOwner, $destCurrency);
+                    }
 
                     // Notify credited recipient for internal/domestic in-bank transfers.
                     if ($destEmail !== '') {
                       try {
-                        $destBalStmt = $reg_user->runQuery(
-                          'SELECT balance FROM account_balances WHERE acc_no = :acc_no AND currency_code = :currency_code LIMIT 1'
-                        );
-                        $destBalStmt->execute([':acc_no' => $destOwner, ':currency_code' => $destCurrency]);
-                        $destBalRow = $destBalStmt->fetch(PDO::FETCH_ASSOC);
-                        $destNewBalance = (float)($destBalRow['balance'] ?? 0);
+                        $destWalletAfter = fw_wallet_get($conn, $destOwner, $destCurrency);
+                        $destNewBalance = (float)($destWalletAfter['total_balance'] ?? 0);
 
                         $creditData = [
                           'fname' => $destFname,
@@ -290,13 +303,8 @@ function transfer_auth_completeTransfer($reg_user, array $row, array $tempRow, $
             }
         } catch (Throwable $e) {}
 
-        $bal   = (float)($row['t_bal'] ?? 0);
-        $abal  = (float)($row['a_bal'] ?? 0);
-        $total = max(0, $bal  - (float)$amount);
-        $avail = max(0, $abal - (float)$amount);
-        try {
-            $reg_user->runQuery("UPDATE account SET t_bal = '$total', a_bal = '$avail' WHERE email = '$email'")->execute();
-        } catch (Throwable $e) {}
+        $total = $senderTotalAfter;
+        $avail = $senderAvailAfter;
 
         if (strtolower($xferType) === 'crypto') {
             try {
@@ -351,6 +359,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_GET['action'])) {
     if ($_GET['action'] === 'verify_code') {
         $slot    = (int)($_POST['slot'] ?? 0);
         $codeVal = trim((string)($_POST['code'] ?? ''));
+      $postedCsrf = (string)($_POST['transfer_csrf'] ?? '');
+
+      if ($transferCsrfToken === '' || $postedCsrf === '' || !hash_equals($transferCsrfToken, $postedCsrf)) {
+        echo json_encode(['ok' => false, 'error' => 'Session expired. Please refresh and try again.']);
+        exit();
+      }
 
         $expectedSlot = (int)($_SESSION['auth_step'] ?? 1);
       $expectedTransferId = (int)($_SESSION['auth_transfer_id'] ?? 0);
@@ -491,6 +505,7 @@ $jsConfig = json_encode([
     'codeNames'      => $jsCodeNames,
     'authMethod'     => $authMethod,
     'firstFactorDone'=> $firstFactorDone ?? false,
+  'csrfToken'      => $transferCsrfToken,
 ], JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP);
 
 require_once __DIR__ . '/partials/shell-data.php';
@@ -686,7 +701,7 @@ require_once __DIR__ . '/partials/shell-open.php';
     submitBtn.textContent = 'Verifying…';
     errorBox.classList.add('hidden');
 
-    var body = 'slot=' + encodeURIComponent(currentSlot) + '&code=' + encodeURIComponent(code);
+    var body = 'slot=' + encodeURIComponent(currentSlot) + '&code=' + encodeURIComponent(code) + '&transfer_csrf=' + encodeURIComponent(CFG.csrfToken || '');
 
     fetch('transfer-auth.php?action=verify_code', {
       method:  'POST',

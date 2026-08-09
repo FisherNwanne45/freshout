@@ -116,17 +116,6 @@ $promoBtnUrl      = $promoSettings['promo_btn_url'] ?? '';
                         <svg class="h-5 w-5 text-brand-navy" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M12 2v20m4-16.5a4.5 4.5 0 0 0-4-1.5c-2.4 0-4 1.3-4 3.2 0 2 1.7 2.8 4 3.3 2.3.5 4 1.2 4 3.2 0 1.9-1.6 3.3-4 3.3a4.9 4.9 0 0 1-4.5-2"/></svg>
                     </div>
                     <p class="mt-1.5 text-2xl font-bold text-brand-navy"><?= htmlspecialchars($activeAccountCode) ?> <?= number_format($activeAccountBalance, 2) ?></p>
-                  <?php
-                    $_primaryLocalAmt = ($localCurrencyCode !== '' && $localCurrencyCode !== $activeAccountCode)
-                        ? $convertAmount($activeAccountBalance, $activeAccountCode, $localCurrencyCode)
-                        : null;
-                  ?>
-                  <?php if ($_primaryLocalAmt !== null): ?>
-                  <p class="mt-1 flex items-center gap-1 text-xs text-brand-muted">
-                    <span aria-hidden="true"><?= idx_flag_emoji($localCountryCode) ?></span>
-                    <span><?= htmlspecialchars($localCurrencyCode) ?> <?= number_format($_primaryLocalAmt, 2) ?></span>
-                  </p>
-                  <?php endif; ?>
                 </div>
                 <div class="rounded-2xl border border-brand-border bg-white p-4 shadow-sm">
                     <div class="flex items-start justify-between">
@@ -137,7 +126,7 @@ $promoBtnUrl      = $promoSettings['promo_btn_url'] ?? '';
                   <?php if ($walletTotalInLocal !== null && $localCurrencyCode !== '' && $localCurrencyCode !== $activeAccountCode): ?>
                   <p class="mt-1 flex items-center gap-1 text-xs text-brand-muted">
                     <span aria-hidden="true"><?= idx_flag_emoji($localCountryCode) ?></span>
-                    <span><?= htmlspecialchars($localCurrencyCode) ?> <?= number_format($walletTotalInLocal, 2) ?></span>
+                                        <span>Local equivalent (<?= htmlspecialchars($localCurrencyCode) ?>): <?= htmlspecialchars($localCurrencyCode) ?> <?= number_format($walletTotalInLocal, 2) ?></span>
                   </p>
                   <?php endif; ?>
                 </div>
@@ -170,30 +159,35 @@ $promoBtnUrl      = $promoSettings['promo_btn_url'] ?? '';
             </section>
 
             <!-- ═══ Mastercard + My Currency Accounts ═══ -->
-            <section class="mt-6 items-stretch grid gap-6 lg:grid-cols-3">
-                <div class="rounded-2xl border border-brand-border bg-gradient-to-br from-slate-900 via-slate-800 to-brand-navy2 p-5 text-white shadow-xl">
-                    <p class="text-xs uppercase tracking-[0.25em] text-slate-300">Platinum Mastercard</p>
-                    <div class="mt-4 flex items-center justify-between">
-                        <div class="h-10 w-14 rounded-md bg-gradient-to-br from-yellow-200 to-yellow-500/80"></div>
-                        <div class="relative h-10 w-16">
-                            <span class="absolute left-0 top-0 inline-block h-10 w-10 rounded-full bg-red-500/90"></span>
-                            <span class="absolute right-0 top-0 inline-block h-10 w-10 rounded-full bg-orange-400/90 mix-blend-screen"></span>
+            <section class="mt-6 grid items-start gap-6 xl:grid-cols-[minmax(19rem,23rem)_minmax(0,1fr)]">
+                <div class="relative w-full max-w-[28rem] mx-auto xl:mx-0 self-start overflow-hidden rounded-2xl border border-brand-border bg-gradient-to-br from-slate-900 via-slate-800 to-brand-navy2 text-white shadow-xl" style="aspect-ratio: 1.586 / 1;">
+                    <div class="absolute inset-0 flex flex-col" style="padding: clamp(0.9rem, 2.2vw, 1.25rem);">
+                        <p class="uppercase text-slate-300" style="font-size: clamp(0.6rem, 1.15vw, 0.7rem); letter-spacing: 0.24em;">Platinum Mastercard</p>
+
+                        <div class="mt-[clamp(0.4rem,1.4vw,0.7rem)] flex items-center justify-between">
+                            <div class="rounded-md bg-gradient-to-br from-yellow-200 to-yellow-500/80" style="width: clamp(2.5rem, 8.4vw, 3.6rem); height: clamp(1.75rem, 5.6vw, 2.35rem);"></div>
+                            <div class="relative" style="width: clamp(3.2rem, 10.5vw, 4.4rem); height: clamp(2rem, 6.5vw, 2.8rem);">
+                                <span class="absolute left-0 top-0 inline-block rounded-full bg-red-500/90" style="width: clamp(1.85rem, 6.1vw, 2.55rem); height: clamp(1.85rem, 6.1vw, 2.55rem);"></span>
+                                <span class="absolute right-0 top-0 inline-block rounded-full bg-orange-400/90 mix-blend-screen" style="width: clamp(1.85rem, 6.1vw, 2.55rem); height: clamp(1.85rem, 6.1vw, 2.55rem);"></span>
+                            </div>
                         </div>
-                    </div>
-                    <p class="mt-5 text-lg font-semibold tracking-[0.14em] whitespace-nowrap"><?= htmlspecialchars($cardMasked) ?></p>
-                    <div class="mt-4 flex items-end justify-between">
-                        <div>
-                            <p class="text-[10px] uppercase tracking-[0.2em] text-slate-300">Card Holder</p>
-                            <p class="text-sm font-semibold"><?= htmlspecialchars(strtoupper($fullName)) ?></p>
-                        </div>
-                        <div class="text-right">
-                            <p class="text-[10px] uppercase tracking-[0.2em] text-slate-300">Expires</p>
-                            <p class="text-sm font-semibold"><?= htmlspecialchars($cardExpiry) ?></p>
+
+                        <p class="mt-auto whitespace-nowrap font-semibold" style="font-size: clamp(0.88rem, 2.45vw, 1.14rem); letter-spacing: clamp(0.12em, 0.24vw, 0.16em);\"><?= htmlspecialchars($cardMasked) ?></p>
+
+                        <div class="mt-[clamp(0.45rem,1.4vw,0.8rem)] flex items-end justify-between gap-3">
+                            <div class="min-w-0 max-w-[70%]">
+                                <p class="uppercase text-slate-300" style="font-size: clamp(0.55rem, 1.05vw, 0.63rem); letter-spacing: 0.2em;">Card Holder</p>
+                                <p class="truncate font-semibold" style="font-size: clamp(0.72rem, 1.65vw, 0.9rem);\"><?= htmlspecialchars(strtoupper($fullName)) ?></p>
+                            </div>
+                            <div class="text-right">
+                                <p class="uppercase text-slate-300" style="font-size: clamp(0.55rem, 1.05vw, 0.63rem); letter-spacing: 0.2em;">Expires</p>
+                                <p class="font-semibold" style="font-size: clamp(0.72rem, 1.65vw, 0.9rem);\"><?= htmlspecialchars($cardExpiry) ?></p>
+                            </div>
                         </div>
                     </div>
                 </div>
 
-                <div class="lg:col-span-2 rounded-2xl border border-brand-border bg-white p-5 shadow-sm">
+                <div class="rounded-2xl border border-brand-border bg-white p-5 shadow-sm">
                     <div class="mb-4 flex items-center justify-between gap-2">
                         <h2 class="text-lg font-semibold text-brand-navy">My Currency Accounts</h2>
                         <div class="flex items-center gap-2">
@@ -201,7 +195,12 @@ $promoBtnUrl      = $promoSettings['promo_btn_url'] ?? '';
                                 class="inline-flex items-center gap-1.5 rounded-lg border border-brand-border px-3 py-1.5 text-xs font-semibold text-brand-navy hover:bg-brand-light transition-colors">
                                 All Accounts
                             </button>
-                            <button type="button" onclick="document.getElementById('addWalletForm').classList.toggle('hidden')"
+                            <button type="button" onclick="toggleWalletPanel('closeWalletForm','addWalletForm')"
+                                class="inline-flex items-center gap-1.5 rounded-lg border border-red-200 px-3 py-1.5 text-xs font-semibold text-red-600 hover:bg-red-50 transition-colors">
+                                <svg class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path stroke-linecap="round" stroke-linejoin="round" d="M6 7h12M9 7V5h6v2m-7 4v6m4-6v6m4-6v6M5 7l1 12h12l1-12"/></svg>
+                                Close Account
+                            </button>
+                            <button type="button" onclick="toggleWalletPanel('addWalletForm','closeWalletForm')"
                                 class="inline-flex items-center gap-1.5 rounded-lg bg-brand-navy px-3 py-1.5 text-xs font-semibold text-white hover:bg-brand-navy2 transition-colors">
                                 <svg class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/></svg>
                                 Add Currency
@@ -209,7 +208,7 @@ $promoBtnUrl      = $promoSettings['promo_btn_url'] ?? '';
                         </div>
                     </div>
 
-                    <div id="addWalletForm" class="hidden mb-4 rounded-xl border border-brand-border bg-brand-light/50 p-4">
+                    <div id="addWalletForm" class="<?= isset($_POST['add_wallet']) ? '' : 'hidden ' ?>mb-4 rounded-xl border border-brand-border bg-brand-light/50 p-4">
                         <p class="text-xs font-semibold text-brand-muted mb-3">Open a New Currency Account</p>
                         <?php if ($flashError): ?>
                             <p class="mb-2 text-xs text-red-600"><?= htmlspecialchars($flashError) ?></p>
@@ -264,6 +263,53 @@ $promoBtnUrl      = $promoSettings['promo_btn_url'] ?? '';
                             </div>
                             <button type="submit" class="rounded-xl bg-brand-navy px-4 py-2.5 text-sm font-semibold text-white hover:bg-brand-navy2 transition-colors">Open Account</button>
                         </form>
+                    </div>
+
+                    <div id="closeWalletForm" class="<?= isset($_POST['close_wallet']) ? '' : 'hidden ' ?>mb-4 rounded-xl border border-red-200 bg-red-50/80 p-4">
+                        <div class="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
+                            <div>
+                                <p class="text-xs font-semibold text-red-700">Close a Currency Account</p>
+                                <p class="text-[11px] text-red-700/80">If the account still has funds, select another currency and the balance will be converted before the wallet is removed.</p>
+                            </div>
+                        </div>
+                        <form method="post" class="mt-4 grid gap-3 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_auto] lg:items-end">
+                            <input type="hidden" name="close_wallet" value="1">
+                            <div>
+                                <label for="closeWalletSource" class="mb-1.5 block text-[10px] font-bold uppercase tracking-widest text-brand-muted">Account to Close</label>
+                                <select name="close_currency" id="closeWalletSource" onchange="closeWalletSync()"
+                                    class="w-full rounded-xl border-2 border-red-200 bg-white px-3 py-2.5 text-sm font-semibold text-brand-navy outline-none transition-colors focus:border-red-400" required>
+                                    <option value="">Select currency account…</option>
+                                    <?php foreach ($wallets as $wallet): ?>
+                                        <?php $closeCode = strtoupper((string)($wallet['currency_code'] ?? '')); ?>
+                                        <option value="<?= htmlspecialchars($closeCode) ?>"
+                                            data-name="<?= htmlspecialchars((string)($wallet['name'] ?: $closeCode)) ?>"
+                                            data-balance="<?= htmlspecialchars((string)($wallet['balance'] ?? 0)) ?>"
+                                            data-decimals="<?= (int)($wallet['is_crypto'] ?? 0) === 1 ? '8' : '2' ?>"
+                                            data-primary="<?= strtoupper(trim((string)($row['currency'] ?? ''))) === $closeCode ? '1' : '0' ?>"
+                                            <?= isset($_POST['close_currency']) && strtoupper((string)$_POST['close_currency']) === $closeCode ? 'selected' : '' ?>>
+                                            <?= htmlspecialchars($closeCode) ?> - <?= htmlspecialchars((string)($wallet['name'] ?: $closeCode)) ?>
+                                        </option>
+                                    <?php endforeach; ?>
+                                </select>
+                            </div>
+                            <div>
+                                <label for="closeWalletTarget" class="mb-1.5 block text-[10px] font-bold uppercase tracking-widest text-brand-muted">Move Balance To</label>
+                                <select name="close_destination_currency" id="closeWalletTarget" onchange="closeWalletSync()"
+                                    class="w-full rounded-xl border-2 border-red-200 bg-white px-3 py-2.5 text-sm font-semibold text-brand-navy outline-none transition-colors focus:border-red-400">
+                                    <option value="">Only close if the balance is zero</option>
+                                    <?php foreach ($availableCurrencies as $cur): ?>
+                                        <?php $targetCode = strtoupper((string)($cur['code'] ?? '')); ?>
+                                        <option value="<?= htmlspecialchars($targetCode) ?>"
+                                            data-name="<?= htmlspecialchars((string)($cur['name'] ?: $targetCode)) ?>"
+                                            <?= isset($_POST['close_destination_currency']) && strtoupper((string)$_POST['close_destination_currency']) === $targetCode ? 'selected' : '' ?>>
+                                            <?= htmlspecialchars($targetCode) ?> - <?= htmlspecialchars((string)($cur['name'] ?: $targetCode)) ?>
+                                        </option>
+                                    <?php endforeach; ?>
+                                </select>
+                            </div>
+                            <button type="submit" class="rounded-xl bg-red-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-red-700 transition-colors">Confirm Close</button>
+                        </form>
+                        <p id="closeWalletHint" class="mt-3 text-[11px] text-brand-muted">Select an account to close. If it is your main currency account or it still has funds, choose where the balance should go first.</p>
                     </div>
 
                     <?php if ($flashSuccess && !isset($_POST['add_wallet'])): ?>
@@ -340,6 +386,11 @@ $promoBtnUrl      = $promoSettings['promo_btn_url'] ?? '';
                                                 <?php if ($ibanDisplay !== ''): ?>
                                                     <p class="text-[10px] font-mono text-brand-muted break-all" title="<?= htmlspecialchars((string)($wallet['iban'] ?? '')) ?>"><?= htmlspecialchars($ibanDisplay) ?></p>
                                                 <?php endif; ?>
+                                                <button type="button" onclick="openCloseWallet('<?= htmlspecialchars($wCode) ?>')"
+                                                    class="mt-2 inline-flex items-center justify-center gap-1.5 rounded-lg border border-red-200 px-3 py-2 text-xs font-semibold text-red-600 hover:bg-red-50 transition-colors">
+                                                    <svg class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path stroke-linecap="round" stroke-linejoin="round" d="M6 7h12M9 7V5h6v2m-7 4v6m4-6v6m4-6v6M5 7l1 12h12l1-12"/></svg>
+                                                    Close Account
+                                                </button>
                                             </div>
                                         <?php endforeach; ?>
                                     </div>
@@ -427,12 +478,73 @@ $promoBtnUrl      = $promoSettings['promo_btn_url'] ?? '';
                     var img=document.getElementById('addWalletImg');img.src='flag-preview.php?code='+encodeURIComponent(code);img.classList.remove('hidden');
                     document.getElementById('addWalletList').classList.add('hidden');
                 };
+                window.toggleWalletPanel=function(showId,hideId){
+                    var show=document.getElementById(showId),hide=document.getElementById(hideId);
+                    if(hide){hide.classList.add('hidden');}
+                    if(show){show.classList.toggle('hidden');}
+                    if(showId==='closeWalletForm'&&show&&!show.classList.contains('hidden')){closeWalletSync();}
+                };
+                window.openCloseWallet=function(code){
+                    var closeForm=document.getElementById('closeWalletForm');
+                    var addForm=document.getElementById('addWalletForm');
+                    var closeSource=document.getElementById('closeWalletSource');
+                    var closeTarget=document.getElementById('closeWalletTarget');
+                    var accountsModal=document.getElementById('allAccountsModal');
+                    if(addForm){addForm.classList.add('hidden');}
+                    if(closeForm){closeForm.classList.remove('hidden');}
+                    if(accountsModal){accountsModal.classList.add('hidden');}
+                    if(closeSource){closeSource.value=code;}
+                    if(closeTarget&&closeTarget.value===code){closeTarget.value='';}
+                    closeWalletSync();
+                    if(closeForm&&typeof closeForm.scrollIntoView==='function'){
+                        closeForm.scrollIntoView({behavior:'smooth',block:'center'});
+                    }
+                };
+                window.closeWalletSync=function(){
+                    var source=document.getElementById('closeWalletSource');
+                    var target=document.getElementById('closeWalletTarget');
+                    var hint=document.getElementById('closeWalletHint');
+                    if(!source||!target||!hint){return;}
+                    var code=source.value||'';
+                    for(var i=0;i<target.options.length;i++){
+                        var opt=target.options[i];
+                        var disable=(code!==''&&opt.value===code);
+                        opt.disabled=disable;
+                        if(disable&&opt.selected){target.value='';}
+                    }
+                    if(code===''){
+                        hint.textContent='Select an account to close. If it is your main currency account or it still has funds, choose where the balance should go first.';
+                        return;
+                    }
+                    var selected=source.options[source.selectedIndex];
+                    var balance=Number(selected.getAttribute('data-balance')||0);
+                    var decimals=parseInt(selected.getAttribute('data-decimals')||'2',10);
+                    if(!Number.isFinite(balance)){balance=0;}
+                    if(!Number.isFinite(decimals)||decimals<0){decimals=2;}
+                    var primary=selected.getAttribute('data-primary')==='1';
+                    var targetCode=target.value||'';
+                    var formatted=balance.toFixed(decimals);
+                    if(primary&&targetCode===''){
+                        hint.textContent=code+' is your main currency account. Choose another currency to receive the balance and become the new primary account before closing it.';
+                        return;
+                    }
+                    if(balance>0&&targetCode===''){
+                        hint.textContent=code+' currently holds '+formatted+'. Choose a destination currency and the balance will be converted using the configured exchange rate before closure.';
+                        return;
+                    }
+                    if(targetCode!==''){
+                        hint.textContent='Closing '+code+' will move the remaining balance into '+targetCode+' and then remove the '+code+' wallet.';
+                        return;
+                    }
+                    hint.textContent=code+' is ready to close because its balance is zero.';
+                };
+                closeWalletSync();
             })();
             </script>
 
             <?php $ratesPreview = array_slice($rates, 0, 5); $ratesExtra = array_slice($rates, 5); ?>
-            <section class="mt-6 grid gap-6 lg:grid-cols-3">
-                <div class="min-w-0 lg:col-span-2 rounded-2xl border border-brand-border bg-white p-5 shadow-sm">
+            <section class="mt-6 grid gap-6 xl:grid-cols-[minmax(0,3fr)_minmax(0,2fr)]">
+                <div class="min-w-0 rounded-2xl border border-brand-border bg-white p-5 shadow-sm">
                     <div class="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
                         <h2 class="text-lg font-semibold text-brand-navy"><?= htmlspecialchars($bankName) ?> Exchange Rate</h2>
                         <span class="text-xs text-brand-muted">Live configured table</span>

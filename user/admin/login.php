@@ -14,19 +14,49 @@ if (!($connection instanceof mysqli)) {
 if (isset($_POST['uname']) and isset($_POST['upass'])){
 //3.1.1 Assigning posted values to variables.
 $login = trim((string)$_POST['uname']);
-$upass = $_POST['upass'];
-$upass = md5($upass);
+$upass = (string)$_POST['upass'];
+$legacyMd5 = md5($upass);
 //3.1.2 Checking the values are existing in the database or not
-$stmt = $connection->prepare("SELECT * FROM admin WHERE (uname=? OR email=?) AND upass=? LIMIT 1");
-$stmt->bind_param("sss", $login, $login, $upass);
+$stmt = $connection->prepare("SELECT * FROM admin WHERE (uname=? OR email=?) LIMIT 1");
+$stmt->bind_param("ss", $login, $login);
 $stmt->execute();
 $result = $stmt->get_result();
-$count = $result->num_rows;
+$count = 0;
 //3.1.2 If the posted values are equal to the database values, then session will be created for the user.
-if ($count == 1){
+if ($result && $result->num_rows === 1){
 $row = $result->fetch_assoc();
-$_SESSION['uname'] = $row['uname'];
-$_SESSION['email'] = $row['email'];
+$storedHash = (string)($row['upass'] ?? '');
+$passwordOk = false;
+
+if ($storedHash !== '' && password_verify($upass, $storedHash)) {
+  $passwordOk = true;
+} elseif ($storedHash !== '' && hash_equals($legacyMd5, $storedHash)) {
+  $passwordOk = true;
+  // Upgrade legacy MD5 hash to bcrypt on successful login.
+  try {
+    $rehash = password_hash($upass, PASSWORD_BCRYPT);
+    if ($rehash !== '') {
+      $up = $connection->prepare("UPDATE admin SET upass = ? WHERE id = ? LIMIT 1");
+      if ($up) {
+        $id = (int)($row['id'] ?? 0);
+        $up->bind_param("si", $rehash, $id);
+        $up->execute();
+      }
+    }
+  } catch (Throwable $e) {}
+}
+
+if ($passwordOk) {
+  session_regenerate_id(true);
+  $_SESSION['uname'] = $row['uname'];
+  $_SESSION['email'] = $row['email'];
+} else {
+  $msg = "<div class='alert alert-danger'>
+						<button class='close' data-dismiss='alert'>&times;</button>
+						  Invalid Email or Password!
+                   
+			  </div>";
+}
 }else{
 //3.1.3 If the login credentials doesn't match, he will be shown with an error message.
 $msg = "<div class='alert alert-danger'>

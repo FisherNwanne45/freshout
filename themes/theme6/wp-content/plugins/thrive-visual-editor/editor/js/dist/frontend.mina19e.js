@@ -1,3 +1,4 @@
+var tve_frontend_options=window.tve_frontend_options=window.tve_frontend_options||{};
 /*! Thrive Architect - 2021-04-14
 * http://www.thrivethemes.com/
 * Copyright (c) 2021 Thrive Themes */

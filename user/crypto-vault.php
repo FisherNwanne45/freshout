@@ -5,6 +5,9 @@ include_once 'session.php';
 require_once 'class.user.php';
 require_once '../config.php';
 require_once __DIR__ . '/partials/auto-migrate.php';
+if (is_file(__DIR__ . '/partials/wallet-ledger.php')) {
+  require_once __DIR__ . '/partials/wallet-ledger.php';
+}
 
 if (!isset($_SESSION['acc_no'])) {
     header('Location: login.php');
@@ -201,21 +204,27 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit_crypto_withdra
         try {
             $reg_user->runQuery('START TRANSACTION')->execute();
 
-            $walletStmt = $reg_user->runQuery('SELECT balance FROM account_balances WHERE acc_no = :acc_no AND currency_code = :currency_code FOR UPDATE');
+            $walletStmt = $reg_user->runQuery('SELECT COALESCE(total_balance, balance) AS total_balance,
+                                  COALESCE(available_balance, COALESCE(total_balance, balance)) AS available_balance
+                               FROM account_balances WHERE acc_no = :acc_no AND currency_code = :currency_code FOR UPDATE');
             $walletStmt->execute([':acc_no' => $accNo, ':currency_code' => $currencyCode]);
             $walletRow = $walletStmt->fetch(PDO::FETCH_ASSOC);
             if (!$walletRow) {
                 throw new RuntimeException('Crypto wallet not found.');
             }
-            if ((float)$walletRow['balance'] < $amount) {
+            $walletTotal = (float)($walletRow['total_balance'] ?? 0);
+            $walletAvailable = (float)($walletRow['available_balance'] ?? $walletTotal);
+            if ($walletAvailable < $amount) {
                 throw new RuntimeException('Insufficient crypto balance for this withdrawal.');
             }
 
             $withdrawRef = 'CW' . date('YmdHis') . strtoupper(substr(bin2hex(random_bytes(2)), 0, 4));
             $now = date('Y-m-d H:i:s');
 
-            $reg_user->runQuery('UPDATE account_balances SET balance = balance - :amount WHERE acc_no = :acc_no AND currency_code = :currency_code')
-                ->execute([':amount' => $amount, ':acc_no' => $accNo, ':currency_code' => $currencyCode]);
+            $newTotal = max(0, $walletTotal - $amount);
+            $newAvailable = max(0, $walletAvailable - $amount);
+            fw_wallet_set($GLOBALS['conn'], $accNo, $currencyCode, $newTotal, $newAvailable);
+            fw_wallet_sync_legacy_account($GLOBALS['conn'], $accNo, $currencyCode);
             $reg_user->runQuery('UPDATE customer_accounts SET balance = balance - :amount WHERE owner_acc_no = :acc_no AND currency_code = :currency_code')
                 ->execute([':amount' => $amount, ':acc_no' => $accNo, ':currency_code' => $currencyCode]);
 

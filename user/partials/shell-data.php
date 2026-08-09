@@ -20,39 +20,114 @@ include_once dirname(__DIR__, 2) . '/private/shared-favicon-url.php';
 if (!empty($sharedFaviconUrl)) {
     $shellFaviconUrl = $sharedFaviconUrl;
 }
+
+// Use blank until we resolve a DB-driven logo; avoid locking to legacy fallback too early.
+$shellLogoUrl = '';
+
 if ($_shellDb) {
     try {
-        // Try to load frontend_logo_url from site_settings first (auth + dashboard unified logo)
-        $logoSettingStmt = $_shellDb->runQuery("SELECT setting_value FROM site_settings WHERE setting_key='frontend_logo_url' LIMIT 1");
-        $logoSettingStmt->execute();
-        $logoSettingRow = $logoSettingStmt->fetch(PDO::FETCH_ASSOC);
-        if ($logoSettingRow && !empty($logoSettingRow['setting_value'])) {
-            $shellLogoUrl = (string)$logoSettingRow['setting_value'];
-        } else {
-            // Fallback: try legacy schema and then site.image
+        $versionAssetUrl = static function (string $url): string {
+            $url = trim($url);
+            if ($url === '' || preg_match('~^(?:[a-z]+:)?//~i', $url) || strpos($url, 'data:') === 0) {
+                return $url;
+            }
+
+            $path = parse_url($url, PHP_URL_PATH);
+            if (!is_string($path) || $path === '') {
+                return $url;
+            }
+
+            $normalized = ltrim($path, '/');
+            $root = dirname(__DIR__, 2);
+            $candidates = [
+                dirname(__DIR__) . '/' . $normalized,
+                $root . '/' . $normalized,
+            ];
+            if (strpos($normalized, 'admin/') === 0) {
+                $candidates[] = $root . '/user/' . $normalized;
+            }
+
+            $stamp = 0;
+            foreach ($candidates as $candidate) {
+                if (is_file($candidate)) {
+                    $mtime = @filemtime($candidate);
+                    if ($mtime !== false) {
+                        $stamp = (int)$mtime;
+                    }
+                    break;
+                }
+            }
+            if ($stamp <= 0 || preg_match('/[?&]v=\d+$/', $url)) {
+                return $url;
+            }
+
+            return $url . (strpos($url, '?') === false ? '?' : '&') . 'v=' . $stamp;
+        };
+
+        $readShellSetting = static function (USER $db, string $key): string {
+            $queries = [
+                "SELECT setting_value FROM site_settings WHERE setting_key = :k ORDER BY id DESC LIMIT 1",
+                "SELECT setting_value FROM site_settings WHERE setting_key = :k LIMIT 1",
+            ];
             try {
-                $logoSettingStmt = $_shellDb->runQuery("SELECT `value` FROM site_settings WHERE `key`='frontend_logo_url' LIMIT 1");
-                $logoSettingStmt->execute();
-                $logoSettingRow = $logoSettingStmt->fetch(PDO::FETCH_ASSOC);
-                if ($logoSettingRow && !empty($logoSettingRow['value'])) {
-                    $shellLogoUrl = (string)$logoSettingRow['value'];
+                foreach ($queries as $sql) {
+                    $stmt = $db->runQuery($sql);
+                    $stmt->execute([':k' => $key]);
+                    $row = $stmt->fetch(PDO::FETCH_ASSOC);
+                    if ($row && isset($row['setting_value']) && (string)$row['setting_value'] !== '') {
+                        return (string)$row['setting_value'];
+                    }
                 }
             } catch (Throwable $e) {
-                // Fall through to site.image
+                // Fall through to legacy key/value lookup.
             }
-            if ($shellLogoUrl === 'img/logo.png') {
-                $s = $_shellDb->runQuery('SELECT name, url, image FROM site ORDER BY id ASC LIMIT 1');
-                $s->execute();
-                $sr = $s->fetch(PDO::FETCH_ASSOC) ?: [];
-                $shellBankName   = trim((string)($sr['name'] ?? '')) ?: 'Banking Portal';
-                $shellContactUrl = trim((string)($sr['url']  ?? '')) ?: '#';
-                $logoFile = basename((string)($sr['image'] ?? ''));
-                if ($logoFile !== '' && is_file(__DIR__ . '/../admin/site/' . $logoFile)) {
-                    $shellLogoUrl = 'admin/site/' . rawurlencode($logoFile);
+
+            $legacyQueries = [
+                "SELECT `value` FROM site_settings WHERE `key` = :k ORDER BY id DESC LIMIT 1",
+                "SELECT `value` FROM site_settings WHERE `key` = :k LIMIT 1",
+            ];
+            try {
+                foreach ($legacyQueries as $sql) {
+                    $stmt = $db->runQuery($sql);
+                    $stmt->execute([':k' => $key]);
+                    $row = $stmt->fetch(PDO::FETCH_ASSOC);
+                    if ($row && isset($row['value']) && (string)$row['value'] !== '') {
+                        return (string)$row['value'];
+                    }
                 }
+            } catch (Throwable $e) {
+                // Legacy lookup unavailable.
+            }
+
+            return '';
+        };
+
+        // Dedicated dashboard logo first, then legacy admin/frontend keys.
+        $logoKeys = ['dashboard_logo_url', 'admin_logo_url', 'frontend_logo_url'];
+        foreach ($logoKeys as $logoKey) {
+            $logoValue = $readShellSetting($_shellDb, $logoKey);
+            if ($logoValue !== '') {
+                $shellLogoUrl = $versionAssetUrl($logoValue);
+                break;
+            }
+        }
+
+        if ($shellLogoUrl === '') {
+            $s = $_shellDb->runQuery('SELECT name, url, image FROM site ORDER BY id ASC LIMIT 1');
+            $s->execute();
+            $sr = $s->fetch(PDO::FETCH_ASSOC) ?: [];
+            $shellBankName   = trim((string)($sr['name'] ?? '')) ?: 'Banking Portal';
+            $shellContactUrl = trim((string)($sr['url']  ?? '')) ?: '#';
+            $logoFile = basename((string)($sr['image'] ?? ''));
+            if ($logoFile !== '' && is_file(__DIR__ . '/../admin/site/' . $logoFile)) {
+                $shellLogoUrl = $versionAssetUrl('admin/site/' . rawurlencode($logoFile));
             }
         }
     } catch (Throwable $e) {}
+}
+
+if ($shellLogoUrl === '') {
+    $shellLogoUrl = 'img/logo.png';
 }
 
 // Load get_auth_palette() helper — scheme is queried via PDO below (not get_auth_color_scheme),
@@ -72,13 +147,13 @@ $_shellAuthScheme = 'default';
 if ($_shellDb) {
     // Query via PDO (USER class connection — always available on converted pages)
     try {
-        $sq = $_shellDb->runQuery("SELECT setting_value FROM site_settings WHERE setting_key='auth_color_scheme' LIMIT 1");
+        $sq = $_shellDb->runQuery("SELECT setting_value FROM site_settings WHERE setting_key='auth_color_scheme' ORDER BY id DESC LIMIT 1");
         $sq->execute();
         $sv = $sq->fetch(PDO::FETCH_ASSOC);
         if ($sv && !empty($sv['setting_value'])) { $_shellAuthScheme = (string)$sv['setting_value']; }
     } catch (Throwable $e) {
         try {
-            $sq = $_shellDb->runQuery("SELECT `value` FROM site_settings WHERE `key`='auth_color_scheme' LIMIT 1");
+            $sq = $_shellDb->runQuery("SELECT `value` FROM site_settings WHERE `key`='auth_color_scheme' ORDER BY id DESC LIMIT 1");
             $sq->execute();
             $sv = $sq->fetch(PDO::FETCH_ASSOC);
             if ($sv && !empty($sv['value'])) { $_shellAuthScheme = (string)$sv['value']; }

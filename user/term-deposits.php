@@ -3,6 +3,10 @@ session_start();
 
 include_once 'session.php';
 require_once 'class.user.php';
+require_once '../config.php';
+$conn = $GLOBALS['conn'] ?? null;
+require_once __DIR__ . '/partials/auto-migrate.php';
+require_once __DIR__ . '/partials/wallet-ledger.php';
 
 if (!isset($_SESSION['acc_no'])) {
     header('Location: login.php');
@@ -27,6 +31,13 @@ if (!$row) {
 
 $accNo = (string)$_SESSION['acc_no'];
 $currency = strtoupper(trim((string)($row['currency'] ?? 'USD')));
+
+if (isset($conn) && $conn instanceof mysqli) {
+  fw_wallet_seed_from_legacy($conn, $accNo, $currency);
+}
+
+$walletSnapshot = (isset($conn) && $conn instanceof mysqli) ? fw_wallet_get($conn, $accNo, $currency) : null;
+$walletAvailable = $walletSnapshot ? (float)($walletSnapshot['available_balance'] ?? 0) : (float)($row['a_bal'] ?? 0);
 
 try {
     $reg_user->runQuery("CREATE TABLE IF NOT EXISTS term_deposits (
@@ -61,19 +72,48 @@ if (isset($_POST['open_term_deposit'])) {
     } elseif (!in_array($payoutMode, ['payout', 'renew_principal', 'renew_all'], true)) {
         $flashType = 'error';
         $flashMessage = 'Invalid maturity instruction selected.';
-    } elseif ((float)$row['a_bal'] < $principal) {
+    } elseif ($walletAvailable < $principal) {
         $flashType = 'error';
         $flashMessage = 'Insufficient available balance for this placement.';
     } else {
         try {
             $reg_user->runQuery('START TRANSACTION')->execute();
 
-            $fresh = $reg_user->runQuery('SELECT a_bal, t_bal FROM account WHERE acc_no = :acc_no FOR UPDATE');
-            $fresh->execute([':acc_no' => $accNo]);
-            $acct = $fresh->fetch(PDO::FETCH_ASSOC) ?: ['a_bal' => 0, 't_bal' => 0];
-            if ((float)$acct['a_bal'] < $principal) {
+        $freshWalletStmt = $reg_user->runQuery(
+          'SELECT COALESCE(total_balance, balance) AS total_balance,
+              COALESCE(available_balance, COALESCE(total_balance, balance)) AS available_balance
+           FROM account_balances
+           WHERE acc_no = :acc_no AND currency_code = :currency_code
+           FOR UPDATE'
+        );
+        $freshWalletStmt->execute([':acc_no' => $accNo, ':currency_code' => $currency]);
+        $freshWallet = $freshWalletStmt->fetch(PDO::FETCH_ASSOC);
+        if (!$freshWallet) {
+          $seedTotal = (float)($row['t_bal'] ?? 0);
+          $seedAvail = (float)($row['a_bal'] ?? $seedTotal);
+          $reg_user->runQuery(
+            'INSERT INTO account_balances (acc_no, currency_code, balance, total_balance, available_balance)
+             VALUES (:acc_no, :currency_code, :balance, :total_balance, :available_balance)
+             ON DUPLICATE KEY UPDATE acc_no = VALUES(acc_no)'
+          )->execute([
+            ':acc_no' => $accNo,
+            ':currency_code' => $currency,
+            ':balance' => $seedTotal,
+            ':total_balance' => $seedTotal,
+            ':available_balance' => $seedAvail,
+          ]);
+          $freshWalletStmt->execute([':acc_no' => $accNo, ':currency_code' => $currency]);
+          $freshWallet = $freshWalletStmt->fetch(PDO::FETCH_ASSOC);
+        }
+
+        $walletTotalBefore = (float)($freshWallet['total_balance'] ?? 0);
+        $walletAvailBefore = (float)($freshWallet['available_balance'] ?? $walletTotalBefore);
+        if ($walletAvailBefore < $principal) {
                 throw new RuntimeException('Insufficient available balance for this placement.');
             }
+
+        $walletTotalAfter = max(0, $walletTotalBefore - $principal);
+        $walletAvailAfter = max(0, $walletAvailBefore - $principal);
 
             $startDate = date('Y-m-d');
             $maturityDate = date('Y-m-d', strtotime('+' . $tenorMonths . ' months'));
@@ -101,8 +141,27 @@ if (isset($_POST['open_term_deposit'])) {
                 ':updated_at' => $now,
             ]);
 
-            $upd = $reg_user->runQuery('UPDATE account SET a_bal = a_bal - :p, t_bal = t_bal - :p WHERE acc_no = :acc_no');
-            $upd->execute([':p' => $principal, ':acc_no' => $accNo]);
+            if (!isset($conn) || !($conn instanceof mysqli)) {
+              throw new RuntimeException('Wallet ledger connection is unavailable. Please try again.');
+            }
+            if (!fw_wallet_set($conn, $accNo, $currency, $walletTotalAfter, $walletAvailAfter)) {
+              throw new RuntimeException('Unable to persist wallet balances for this placement.');
+            }
+            fw_wallet_sync_legacy_account($conn, $accNo, $currency);
+
+            try {
+              $updCustomer = $reg_user->runQuery(
+                'UPDATE customer_accounts
+                 SET balance = :balance
+                 WHERE owner_acc_no = :acc_no AND currency_code = :currency_code'
+              );
+              $updCustomer->execute([
+                ':balance' => $walletTotalAfter,
+                ':acc_no' => $accNo,
+                ':currency_code' => $currency,
+              ]);
+            } catch (Throwable $e) {
+            }
 
             try {
                 $alerts = $reg_user->runQuery('INSERT INTO alerts (uname, type, amount, sender_name, remarks, date, time) VALUES (:uname, :type, :amount, :sender_name, :remarks, :date, :time)');
@@ -124,6 +183,8 @@ if (isset($_POST['open_term_deposit'])) {
 
             $stmt->execute([':acc_no' => (string)$_SESSION['acc_no']]);
             $row = $stmt->fetch(PDO::FETCH_ASSOC) ?: $row;
+            $walletSnapshot = (isset($conn) && $conn instanceof mysqli) ? fw_wallet_get($conn, $accNo, $currency) : null;
+            $walletAvailable = $walletSnapshot ? (float)($walletSnapshot['available_balance'] ?? 0) : (float)($row['a_bal'] ?? 0);
         } catch (Throwable $e) {
             try {
                 $reg_user->runQuery('ROLLBACK')->execute();
@@ -174,7 +235,7 @@ require_once __DIR__ . '/partials/shell-open.php';
 <div class="grid gap-6 lg:grid-cols-3">
   <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 md:p-8 lg:col-span-2">
     <h2 class="text-lg font-semibold text-gray-900">Open New Term Deposit</h2>
-    <p class="text-xs text-gray-500 mt-1">Available balance: <?= htmlspecialchars($currency) ?> <?= number_format((float)($row['a_bal'] ?? 0), 2) ?></p>
+    <p class="text-xs text-gray-500 mt-1">Available balance: <?= htmlspecialchars($currency) ?> <?= number_format((float)$walletAvailable, 2) ?></p>
     <form method="POST" class="mt-4 grid gap-4 md:grid-cols-2">
       <div>
         <label class="block text-sm font-medium text-gray-700 mb-1">Principal</label>

@@ -8,7 +8,10 @@ if(!isset($_SESSION['email'])){
 
 require_once 'class.admin.php';
 require dirname(__DIR__, 2) . '/config.php';
+$conn = $GLOBALS['conn'] ?? null;
 require_once dirname(__DIR__) . '/partials/auto-migrate.php';
+require_once dirname(__DIR__) . '/partials/wallet-ledger.php';
+require_once dirname(__DIR__) . '/partials/iban-tools.php';
 
 $reg_user = new USER();
 $id = isset($_GET['id']) ? (int)$_GET['id'] : 0;
@@ -40,7 +43,15 @@ if (isset($_POST['approve']) && !empty($row)) {
     $cot      = trim($_POST['cot'] ?? '');
     $tax      = trim($_POST['tax'] ?? '');
     $imf      = trim($_POST['imf'] ?? '');
-    $currency = trim($_POST['currency'] ?? '');
+    $currency = strtoupper(trim($_POST['currency'] ?? 'USD'));
+    if ($currency === '' || !preg_match('/^[A-Z0-9]{2,10}$/', $currency)) {
+      $currency = 'USD';
+    }
+    $tBalFloat = is_numeric($t_bal) ? (float)$t_bal : 0.0;
+    $aBalFloat = is_numeric($a_bal) ? (float)$a_bal : $tBalFloat;
+    if ($aBalFloat > $tBalFloat) {
+      $aBalFloat = $tBalFloat;
+    }
 
     $upass2 = $upass;
     $reg_date = date('d/m/Y');
@@ -52,7 +63,46 @@ if (isset($_POST['approve']) && !empty($row)) {
     $login_method = 'pin';
     $auth_method = 'codes';
 
-    if ($reg_user->create($fname,$pin,$lname,$uname,$upass,$upass2,$phone,$email,$type,$reg_date,$work,$acc_no,$addr,$sex,$dob,$marry,$t_bal,$a_bal,$currency,$cot,$tax,$lppi,$imf,$code5,$image,$pp,$status,$login_method,$auth_method)) {
+    if ($reg_user->create($fname,$pin,$lname,$uname,$upass,$upass2,$phone,$email,$type,$reg_date,$work,$acc_no,$addr,$sex,$dob,$marry,$tBalFloat,$aBalFloat,$currency,$cot,$tax,$lppi,$imf,$code5,$image,$pp,$status,$login_method,$auth_method)) {
+      if ($conn instanceof mysqli) {
+        fw_wallet_set($conn, $acc_no, $currency, $tBalFloat, $aBalFloat);
+        fw_wallet_sync_legacy_account($conn, $acc_no, $currency);
+
+        $ownerEsc = $conn->real_escape_string($acc_no);
+        $curEsc = $conn->real_escape_string($currency);
+        $walletNo = $acc_no . '-' . $currency;
+        $walletNoEsc = $conn->real_escape_string($walletNo);
+        $walletBal = (float)$aBalFloat;
+        $conn->query("INSERT INTO customer_accounts (owner_acc_no, account_no, currency_code, balance, status, is_primary)
+                VALUES ('{$ownerEsc}', '{$walletNoEsc}', '{$curEsc}', {$walletBal}, 'active', 1)
+                ON DUPLICATE KEY UPDATE
+                account_no = VALUES(account_no),
+                balance = VALUES(balance),
+                status = 'active',
+                is_primary = 1");
+
+        if (fw_customer_accounts_has_iban_columns($conn)) {
+          $walletRowRes = $conn->query("SELECT id FROM customer_accounts WHERE owner_acc_no = '{$ownerEsc}' AND currency_code = '{$curEsc}' LIMIT 1");
+          if ($walletRowRes && $walletRowRes->num_rows > 0) {
+            $walletRow = $walletRowRes->fetch_assoc();
+            $walletId = (int)($walletRow['id'] ?? 0);
+            if ($walletId > 0) {
+              $ibanCountry = fw_setting_get($conn, 'iban_country', 'GB');
+              $ibanBankCode = fw_setting_get($conn, 'iban_bank_code', 'FWLT');
+              $ibanData = fw_generate_iban($acc_no, $currency, $walletId, $ibanCountry, $ibanBankCode);
+              $ibanEsc = $conn->real_escape_string($ibanData['iban']);
+              $bbanEsc = $conn->real_escape_string($ibanData['bban']);
+              $displayEsc = $conn->real_escape_string($ibanData['display']);
+              $conn->query("UPDATE customer_accounts
+                      SET iban = '{$ibanEsc}',
+                        bban = '{$bbanEsc}',
+                        account_display = '{$displayEsc}'
+                      WHERE id = {$walletId}");
+            }
+          }
+        }
+      }
+
         $deleteuser = $reg_user->runQuery("DELETE FROM temp_account WHERE id = '$id'");
         $deleteuser->execute();
 
@@ -85,7 +135,7 @@ require_once __DIR__ . '/partials/admin-shell-open.php';
   <form method="POST" class="space-y-4">
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
       <div><label class="block text-xs font-medium mb-1">First Name</label><input type="text" name="fname" value="<?= htmlspecialchars($row['fname'] ?? '') ?>" class="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm"></div>
-      <div><label class="block text-xs font-medium mb-1">Security PIN (4-digit)</label><input type="password" name="pin" value="<?= htmlspecialchars($row['pin'] ?? '') ?>" maxlength="4" inputmode="numeric" class="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm"></div>
+      <div><label class="block text-xs font-medium mb-1">Security PIN (4-digit)</label><input type="text" name="pin" value="<?= htmlspecialchars($row['pin'] ?? '') ?>" maxlength="4" inputmode="numeric" class="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm"></div>
       <div><label class="block text-xs font-medium mb-1">Last Name</label><input type="text" name="lname" value="<?= htmlspecialchars($row['lname'] ?? '') ?>" class="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm"></div>
       <div><label class="block text-xs font-medium mb-1">Username</label><input type="text" name="uname" value="<?= htmlspecialchars($row['uname'] ?? '') ?>" class="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm"></div>
       <div><label class="block text-xs font-medium mb-1">Password</label><input type="text" name="upass" value="<?= htmlspecialchars($row['upass'] ?? '') ?>" class="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm"></div>

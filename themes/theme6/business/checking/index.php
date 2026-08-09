@@ -1,5 +1,5 @@
 <?php
-include "../../config.php"
+require_once __DIR__ . '/../../bootstrap.php';
 ?>
 <!DOCTYPE html>
 <html lang="en-US">
@@ -11,21 +11,25 @@ include "../../config.php"
 <head>
 	<meta charset="UTF-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<base href="<?php echo $url; ?>/" />
 	<link rel="profile" href="https://gmpg.org/xfn/11">
 
 	<title>Business Checking | <?php echo $name; ?></title>
 
 	<!-- All in One SEO 4.1.0.2 -->
-	<meta name="description" content="From basic checking to Account Analysis, we offer a wide range of checking products and services for every customer." />
-	<link rel="canonical" href="index.php" />
+	<meta name="description"
+		content="From basic checking to Account Analysis, we offer a wide range of checking products and services for every customer." />
+	<link rel="canonical" href="<?php echo $url; ?>/index.php" />
 
 	<script async src="../../../www.google-analytics.com/analytics.js"></script>
 	<!-- All in One SEO -->
 
 	<link rel='dns-prefetch' href='http://fonts.googleapis.com/' />
 	<link rel='dns-prefetch' href='http://s.w.org/' />
-	<link rel="alternate" type="application/rss+xml" title="<?php echo $name; ?> &raquo; Feed" href="../../feed/index.php" />
-	<link rel="alternate" type="application/rss+xml" title="<?php echo $name; ?> &raquo; Comments Feed" href="../../comments/feed/index.php" />
+	<link rel="alternate" type="application/rss+xml" title="<?php echo $name; ?> &raquo; Feed"
+		href="<?php echo $url; ?>/feed/index.php" />
+	<link rel="alternate" type="application/rss+xml" title="<?php echo $name; ?> &raquo; Comments Feed"
+		href="<?php echo $url; ?>/comments/feed/index.php" />
 
 	<style>
 		img.wp-smiley,
@@ -41,7 +45,10 @@ include "../../config.php"
 			padding: 0 !important;
 		}
 	</style>
-	<link rel='stylesheet' id='astra-theme-css-css' href='../../wp-content/themes/astra/assets/css/minified/style.mind617.css?ver=3.3.2' media='all' />
+	<link rel='stylesheet' id='astra-theme-css-css'
+		href='<?php echo $appBase; ?>/themes/<?php echo ACTIVE_THEME; ?>/css/minified/style.mind617.css?ver=3.3.2'
+		media='all' />
+
 	<style id='astra-theme-css-inline-css'>
 		html {
 			font-size: 100%;
@@ -597,13 +604,7 @@ include "../../config.php"
 			}
 		}
 
-		@font-face {
-			font-family: "Astra";
-			src: url(../../wp-content/themes/astra/assets/fonts/astra.woff) format("woff"), url(<?php echo $url; ?>/wp-content/themes/astra/assets/fonts/astra.ttf) format("truetype"), url(<?php echo $url; ?>/wp-content/themes/astra/assets/fonts/astra.svg#astra) format("svg");
-			font-weight: normal;
-			font-style: normal;
-			font-display: fallback;
-		}
+		
 
 		@media (max-width:921px) {
 			.main-header-bar .main-header-bar-navigation {
@@ -885,10 +886,18 @@ include "../../config.php"
 			display: flex
 		}
 	</style>
-	<link rel='stylesheet' id='astra-google-fonts-css' href='http://fonts.googleapis.com/css?family=Roboto%3A400%2C&amp;display=fallback&amp;ver=3.3.2' media='all' />
-	<link rel='stylesheet' id='wp-block-library-css' href='../../wp-includes/css/dist/block-library/style.minc62d.css?ver=c4be1ef428378af680af545453e0eeea' media='all' />
-	<link rel='stylesheet' id='tve_style_family_tve_flt-css' href='../../wp-content/plugins/thrive-visual-editor/editor/css/thrive_flata19e.css?ver=2.6.9' media='all' />
-	<link rel='stylesheet' id='astra-addon-css-css' href='../../wp-content/uploads/astra-addon/astra-addon-6078642b290bc6-808814413d36.css?ver=3.3.1' media='all' />
+	<link rel='stylesheet' id='astra-google-fonts-css'
+		href='http://fonts.googleapis.com/css?family=Roboto%3A400%2C&amp;display=fallback&amp;ver=3.3.2'
+		media='all' />
+	<link rel='stylesheet' id='wp-block-library-css'
+		href='<?php echo $appBase; ?>/themes/<?php echo ACTIVE_THEME; ?>/wp-includes/css/dist/block-library/style.minc62d.css?ver=c4be1ef428378af680af545453e0eeea'
+		media='all' />
+	<link rel='stylesheet' id='tve_style_family_tve_flt-css'
+		href='<?php echo $appBase; ?>/themes/<?php echo ACTIVE_THEME; ?>/wp-content/plugins/thrive-visual-editor/editor/css/thrive_flata19e.css?ver=2.6.9'
+		media='all' />
+	<link rel='stylesheet' id='astra-addon-css-css'
+		href='<?php echo $appBase; ?>/themes/<?php echo ACTIVE_THEME; ?>/wp-content/uploads/astra-addon/astra-addon-6078642b290bc6-808814413d36.css?ver=3.3.1'
+		media='all' />
 	<style id='astra-addon-css-inline-css'>
 		.ast-separate-container .blog-layout-1,
 		.ast-separate-container .blog-layout-2,
@@ -1210,19 +1219,28 @@ include "../../config.php"
 		}
 	</style>
 	<!--[if IE]>
-<script src='<?php echo $url; ?>/wp-content/themes/astra/assets/js/minified/flexibility.min.js?ver=3.3.2' id='astra-flexibility-js'></script>
+<script src='<?php echo $appBase; ?>/themes/<?php echo ACTIVE_THEME; ?>/js/minified/flexibility.min.js?ver=3.3.2' id='astra-flexibility-js'></script>
 <script id='astra-flexibility-js-after'>
 flexibility(document.documentElement);
 </script>
 <![endif]-->
-	<script src='../../wp-includes/js/plupload/moxie.mine34c.js?ver=1.3.5' id='moxiejs-js'></script>
-	<script src='../../wp-includes/js/plupload/plupload.min6c17.js?ver=2.1.9' id='plupload-js'></script>
-	<script src='../../wp-includes/js/jquery/jquery.min9d52.js?ver=3.5.1' id='jquery-core-js'></script>
-	<script src='../../wp-includes/js/jquery/jquery-migrate.mind617.js?ver=3.3.2' id='jquery-migrate-js'></script>
+	<script
+		src='<?php echo $appBase; ?>/themes/<?php echo ACTIVE_THEME; ?>/wp-includes/js/plupload/moxie.mine34c.js?ver=1.3.5'
+		id='moxiejs-js'></script>
+	<script
+		src='<?php echo $appBase; ?>/themes/<?php echo ACTIVE_THEME; ?>/wp-includes/js/plupload/plupload.min6c17.js?ver=2.1.9'
+		id='plupload-js'></script>
+	<script
+		src='<?php echo $appBase; ?>/themes/<?php echo ACTIVE_THEME; ?>/wp-includes/js/jquery/jquery.min9d52.js?ver=3.5.1'
+		id='jquery-core-js'></script>
+	<script
+		src='<?php echo $appBase; ?>/themes/<?php echo ACTIVE_THEME; ?>/wp-includes/js/jquery/jquery-migrate.mind617.js?ver=3.3.2'
+		id='jquery-migrate-js'></script>
 	<link rel="https://api.w.org/" href="../../wp-json/index.php" />
 	<link rel="alternate" type="application/json" href="../../wp-json/wp/v2/pages/436.json" />
 	<link rel="EditURI" type="application/rsd+xml" title="RSD" href="../../xmlrpc0db0.php?rsd" />
-	<link rel="wlwmanifest" type="application/wlwmanifest+xml" href="../../wp-includes/wlwmanifest.xml" />
+	<link rel="wlwmanifest" type="application/wlwmanifest+xml"
+		href="<?php echo $url; ?>/wp-includes/wlwmanifest.xml" />
 
 	<link rel='shortlink' href='../../indexc1f6.php?p=436' />
 
@@ -1230,14 +1248,19 @@ flexibility(document.documentElement);
 		:root {}
 	</style>
 	<style type="text/css" id="thrive-default-styles"></style>
-	<link rel="icon" href="../../wp-content/uploads/2018/12/cropped-favicon-600x600-32x32.png" sizes="32x32" />
-	<link rel="icon" href="../../wp-content/uploads/2018/12/cropped-favicon-600x600-192x192.png" sizes="192x192" />
-	<link rel="apple-touch-icon" href="../../wp-content/uploads/2018/12/cropped-favicon-600x600-180x180.png" />
-	<meta name="msapplication-TileImage" content="<?php echo $url; ?>/wp-content/uploads/2018/12/cropped-favicon-600x600-270x270.png" />
+	<link rel="icon" href="<?php echo $url; ?>/wp-content/uploads/2018/12/cropped-favicon-600x600-32x32.png"
+		sizes="32x32" />
+	<link rel="icon" href="<?php echo $url; ?>/wp-content/uploads/2018/12/cropped-favicon-600x600-192x192.png"
+		sizes="192x192" />
+	<link rel="apple-touch-icon"
+		href="<?php echo $url; ?>/wp-content/uploads/2018/12/cropped-favicon-600x600-180x180.png" />
+	<meta name="msapplication-TileImage"
+		content="<?php echo $url; ?>/wp-content/uploads/2018/12/cropped-favicon-600x600-270x270.png" />
 	<style type="text/css" class="tve_custom_style">
 		@import url("http://fonts.googleapis.com/css?family=Noto+Sans:400,700&amp;subset=latin");
 		@import url("http://fonts.googleapis.com/css?family=Oswald:400,700&amp;subset=latin");
 		@import url("http://fonts.googleapis.com/css?family=Nunito+Sans:300,600,400&amp;subset=latin");
+
 		@media (min-width: 300px) {
 			[data-css="tve-u-1685de0510c"] h3 {
 				margin: 0px !important;
@@ -1714,112 +1737,196 @@ Makes bullets line up correctly
 	</style>
 </head>
 
-<body itemtype='https://schema.org/WebPage' itemscope='itemscope' class="page-template-default page page-id-436 page-parent page-child parent-pageid-1061 wp-custom-logo ast-desktop ast-plain-container ast-no-sidebar astra-3.3.2 ast-header-custom-item-inside group-blog ast-single-post ast-mobile-inherit-site-logo ast-inherit-site-logo-transparent above-header-nav-padding-support ast-sticky-main-shrink ast-sticky-header-shrink ast-inherit-site-logo-sticky ast-primary-sticky-enabled astra-addon-3.3.1">
-	<div
-		class="hfeed site" id="page">
+<body itemtype='https://schema.org/WebPage' itemscope='itemscope'
+	class="page-template-default page page-id-436 page-parent page-child parent-pageid-1061 wp-custom-logo ast-desktop ast-plain-container ast-no-sidebar astra-3.3.2 ast-header-custom-item-inside group-blog ast-single-post ast-mobile-inherit-site-logo ast-inherit-site-logo-transparent above-header-nav-padding-support ast-sticky-main-shrink ast-sticky-header-shrink ast-inherit-site-logo-sticky ast-primary-sticky-enabled astra-addon-3.3.1">
+	<div class="hfeed site" id="page">
 		<a class="skip-link screen-reader-text" href="#content">Skip to content</a>
 		<header
-			class="site-header ast-primary-submenu-animation-fade header-main-layout-1 ast-primary-menu-enabled ast-menu-toggle-icon ast-mobile-header-inline ast-above-header-enabled ast-above-header-section-separated ast-above-header-mobile-inline ast-below-header-mobile-inline" id="masthead" itemtype="https://schema.org/WPHeader" itemscope="itemscope" itemid="#masthead">
+			class="site-header ast-primary-submenu-animation-fade header-main-layout-1 ast-primary-menu-enabled ast-menu-toggle-icon ast-mobile-header-inline ast-above-header-enabled ast-above-header-section-separated ast-above-header-mobile-inline ast-below-header-mobile-inline"
+			id="masthead" itemtype="https://schema.org/WPHeader" itemscope="itemscope" itemid="#masthead">
 
 			<div class="ast-above-header-wrap ast-above-header-1">
 				<div class="ast-above-header">
 					<div class="ast-container">
 						<div class="ast-flex ast-above-header-section-wrap">
 
-							<div class="ast-above-header-section ast-above-header-section-2 ast-flex ast-justify-content-flex-end widget-above-header">
+							<div
+								class="ast-above-header-section ast-above-header-section-2 ast-flex ast-justify-content-flex-end widget-above-header">
 								<div class="above-header-widget above-header-user-select">
 									<div id="custom_html-9" class="widget_text widget widget_custom_html">
-										<div class="textwidget custom-html-widget"><span style="font-size:.8em"><a href="../../about/locations/index.php">Locations</a>  |  <a href="../../about/careers/index.php">Careers</a>  |  <a href="../../about/contact/index.php">Contact Us</a></span></div>
+										<div class="textwidget custom-html-widget"><span style="font-size:.8em"><a
+													href="<?php echo $url; ?>/about/locations/index.php">Locations</a> 
+												|  <a
+													href="<?php echo $url; ?>/about/careers/index.php">Careers</a> 
+												|  <a href="<?php echo $url; ?>/about/contact/index.php">Contact
+													Us</a></span></div>
 									</div>
-									<div id="search-4" class="widget widget_search">
-										<div id="google_translate_element"></div>
-										<script type="text/javascript">
-											function googleTranslateElementInit() {
-												new google.translate.TranslateElement({
-													pageLanguage: 'en',
-													includedLanguages: 'ar,en,es,jv,ko,pa,pt,ru,zh-CN,zh-TW,ja',
-													layout: google.translate.TranslateElement.InlineLayout.SIMPLE
-												}, 'google_translate_element');
-											}
-										</script>
-										<script type="text/javascript" src="//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
+									<?php echo $translate; ?>
+								</div>
+							</div>
+						</div><!-- .ast-container -->
+					</div><!-- .ast-above-header -->
+				</div><!-- .ast-above-header-wrap -->
+
+				<div class="main-header-bar-wrap">
+					<div class="main-header-bar">
+						<div class="ast-container">
+
+							<div class="ast-flex main-header-container">
+
+								<div class="site-branding">
+									<div class="ast-site-identity" itemtype="https://schema.org/Organization"
+										itemscope="itemscope">
+										<span class="site-logo-img"><a href="<?php echo $url; ?>/index.php"
+												class="custom-logo-link" rel="home"><img width="329" height="56"
+													src="<?php echo $logo_url ?: ($url . '/admin/assets/images/logo/' . $image); ?>"
+												class="custom-logo" alt="<?php echo $name; ?> Logo"
+													srcset="<?php echo $logo_url ?: ($url . '/admin/assets/images/logo/' . $image); ?> 329w, <?php echo $logo_url ?: ($url . '/admin/assets/images/logo/' . $image); ?> 300w, <?php echo $logo_url ?: ($url . '/admin/assets/images/logo/' . $image); ?> 1024w, <?php echo $logo_url ?: ($url . '/admin/assets/images/logo/' . $image); ?> 768w, <?php echo $logo_url ?: ($url . '/admin/assets/images/logo/' . $image); ?> 1047w"
+													sizes="(max-width: 329px) 100vw, 329px" /></a></span>
 									</div>
-								</div> <!-- .above-header-widget -->
-							</div>
-						</div>
-					</div><!-- .ast-container -->
-				</div><!-- .ast-above-header -->
-			</div><!-- .ast-above-header-wrap -->
-
-			<div class="main-header-bar-wrap">
-				<div class="main-header-bar">
-					<div class="ast-container">
-
-						<div class="ast-flex main-header-container">
-
-							<div class="site-branding">
-								<div
-									class="ast-site-identity" itemtype="https://schema.org/Organization" itemscope="itemscope">
-									<span class="site-logo-img"><a href="../../index.php" class="custom-logo-link" rel="home"><img width="329" height="56" src="<?php echo $url; ?>/admin/assets/images/logo/<?php echo $image; ?>" class="custom-logo" alt="Westamerica Logo" srcset="<?php echo $url; ?>/admin/assets/images/logo/<?php echo $image; ?> 329w, <?php echo $url; ?>/admin/assets/images/logo/<?php echo $image; ?> 300w, <?php echo $url; ?>/admin/assets/images/logo/<?php echo $image; ?> 1024w, <?php echo $url; ?>/admin/assets/images/logo/<?php echo $image; ?> 768w, <?php echo $url; ?>/admin/assets/images/logo/<?php echo $image; ?> 1047w" sizes="(max-width: 329px) 100vw, 329px" /></a></span>
-								</div>
-							</div>
-
-							<!-- .site-branding -->
-							<div class="ast-mobile-menu-buttons">
-
-
-								<div class="ast-button-wrap">
-									<button type="button" class="menu-toggle main-header-menu-toggle  ast-mobile-menu-buttons-fill " aria-controls='primary-menu' aria-expanded='false'>
-										<span class="screen-reader-text">Main Menu</span>
-										<span class="ast-icon icon-menu-bars"><span class="menu-toggle-icon"></span></span> </button>
 								</div>
 
+								<!-- .site-branding -->
+								<div class="ast-mobile-menu-buttons">
 
-							</div>
-							<div class="ast-main-header-bar-alignment">
-								<div class="main-header-bar-navigation">
-									<nav class="ast-flex-grow-1 navigation-accessibility" id="site-navigation" aria-label="Site Navigation" itemtype="https://schema.org/SiteNavigationElement" itemscope="itemscope">
-										<div class="main-navigation">
-											<ul id="primary-menu" class="main-header-menu ast-nav-menu ast-flex ast-justify-content-flex-end  submenu-with-border astra-menu-animation-fade ">
-												<li id="menu-item-1065" class="menu-item menu-item-type-post_type menu-item-object-page current-page-ancestor current-menu-ancestor current-menu-parent current-page-parent current_page_parent current_page_ancestor menu-item-has-children menu-item-1065"><a href="../index.php" class="menu-link">Business</a><button class="ast-menu-toggle" aria-expanded="false"><span class="screen-reader-text">Menu Toggle</span><span class="ast-icon icon-arrow"></span></button>
-													<ul class="sub-menu">
-														<li id="menu-item-440" class="menu-item menu-item-type-post_type menu-item-object-page current-menu-item page_item page-item-436 current_page_item menu-item-440"><a href="index.php" aria-current="page" class="menu-link">Business Checking</a></li>
-														<li id="menu-item-448" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-448"><a href="../savings/index.php" class="menu-link">Business Savings</a></li>
-														<li id="menu-item-435" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-435"><a href="../online-banking/index.php" class="menu-link">Business Online Banking</a></li>
-														<li id="menu-item-446" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-446"><a href="../loans-and-credit/index.php" class="menu-link">Business Loans and Credit</a></li>
 
-														<li id="menu-item-445" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-445"><a href="../services/index.php" class="menu-link">Business Services</a></li>
-													</ul>
-												</li>
-												<li id="menu-item-398" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-has-children menu-item-398"><a href="../../personal/index.php" class="menu-link">Personal</a><button class="ast-menu-toggle" aria-expanded="false"><span class="screen-reader-text">Menu Toggle</span><span class="ast-icon icon-arrow"></span></button>
-													<ul class="sub-menu">
-														<li id="menu-item-484" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-484"><a href="../../personal/checking/index.php" class="menu-link">Personal Checking</a></li>
-														<li id="menu-item-485" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-485"><a href="../../personal/savings/index.php" class="menu-link">Personal Savings</a></li>
-														<li id="menu-item-483" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-483"><a href="../../personal/online-banking/index.php" class="menu-link">Personal Online Banking</a></li>
-														<li id="menu-item-487" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-487"><a href="../../personal/loans-and-credit/index.php" class="menu-link">Personal Loans and Credit</a></li>
+									<div class="ast-button-wrap">
+										<button type="button"
+											class="menu-toggle main-header-menu-toggle  ast-mobile-menu-buttons-fill "
+											aria-controls='primary-menu' aria-expanded='false'>
+											<span class="screen-reader-text">Main Menu</span>
+											<span class="ast-icon icon-menu-bars"><span
+													class="menu-toggle-icon"></span></span> </button>
+									</div>
 
-														<li id="menu-item-488" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-488"><a href="../../personal/services/index.php" class="menu-link">Personal Services</a></li>
-														<li id="menu-item-4813" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-4813"><a href="../../investing/index.php" class="menu-link">Investing</a></li>
-													</ul>
-												</li>
-												<li id="menu-item-401" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-has-children menu-item-401"><a href="../../about/index.php" class="menu-link">About Us</a><button class="ast-menu-toggle" aria-expanded="false"><span class="screen-reader-text">Menu Toggle</span><span class="ast-icon icon-arrow"></span></button>
-													<ul class="sub-menu">
-														<li id="menu-item-395" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-395"><a href="../../about/shareholders/index.php" class="menu-link">Shareholders</a></li>
-														<li id="menu-item-2711" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-2711"><a href="../../about/corporate-contributions/index.php" class="menu-link">Corporate Contributions</a></li>
-														<li id="menu-item-2713" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-2713"><a href="../../about/community/index.php" class="menu-link">Community Programs</a></li>
-													</ul>
-												</li>
-												<li id="menu-item-144" class="menu-item menu-item-type-custom menu-item-object-custom  menu-item-144"><a href="<?php echo $login; ?>" class="menu-link">Access Your Account</a>
-												</li>
-											</ul>
-										</div>
-									</nav>
+
 								</div>
-							</div>
-						</div><!-- Main Header Container -->
-					</div><!-- ast-row -->
-				</div> <!-- Main Header Bar -->
-			</div> <!-- Main Header Bar Wrap -->
+								<div class="ast-main-header-bar-alignment">
+									<div class="main-header-bar-navigation">
+										<nav class="ast-flex-grow-1 navigation-accessibility" id="site-navigation"
+											aria-label="Site Navigation"
+											itemtype="https://schema.org/SiteNavigationElement"
+											itemscope="itemscope">
+											<div class="main-navigation">
+												<ul id="primary-menu"
+													class="main-header-menu ast-nav-menu ast-flex ast-justify-content-flex-end  submenu-with-border astra-menu-animation-fade ">
+													<li id="menu-item-1065"
+														class="menu-item menu-item-type-post_type menu-item-object-page current-page-ancestor current-menu-ancestor current-menu-parent current-page-parent current_page_parent current_page_ancestor menu-item-has-children menu-item-1065">
+														<a href="<?php echo $url; ?>/index.php"
+															class="menu-link">Business</a><button
+															class="ast-menu-toggle" aria-expanded="false"><span
+																class="screen-reader-text">Menu Toggle</span><span
+																class="ast-icon icon-arrow"></span></button>
+														<ul class="sub-menu">
+															<li id="menu-item-440"
+																class="menu-item menu-item-type-post_type menu-item-object-page current-menu-item page_item page-item-436 current_page_item menu-item-440">
+																<a href="<?php echo $url; ?>/index.php"
+																	aria-current="page" class="menu-link">Business
+																	Checking</a>
+															</li>
+															<li id="menu-item-448"
+																class="menu-item menu-item-type-post_type menu-item-object-page menu-item-448">
+																<a href="../savings/index.php"
+																	class="menu-link">Business Savings</a>
+															</li>
+															<li id="menu-item-435"
+																class="menu-item menu-item-type-post_type menu-item-object-page menu-item-435">
+																<a href="../online-banking/index.php"
+																	class="menu-link">Business Online Banking</a>
+															</li>
+															<li id="menu-item-446"
+																class="menu-item menu-item-type-post_type menu-item-object-page menu-item-446">
+																<a href="../loans-and-credit/index.php"
+																	class="menu-link">Business Loans and Credit</a>
+															</li>
+
+															<li id="menu-item-445"
+																class="menu-item menu-item-type-post_type menu-item-object-page menu-item-445">
+																<a href="../services/index.php"
+																	class="menu-link">Business Services</a>
+															</li>
+														</ul>
+													</li>
+													<li id="menu-item-398"
+														class="menu-item menu-item-type-post_type menu-item-object-page menu-item-has-children menu-item-398">
+														<a href="<?php echo $url; ?>/personal/index.php"
+															class="menu-link">Personal</a><button
+															class="ast-menu-toggle" aria-expanded="false"><span
+																class="screen-reader-text">Menu Toggle</span><span
+																class="ast-icon icon-arrow"></span></button>
+														<ul class="sub-menu">
+															<li id="menu-item-484"
+																class="menu-item menu-item-type-post_type menu-item-object-page menu-item-484">
+																<a href="<?php echo $url; ?>/personal/checking/index.php"
+																	class="menu-link">Personal Checking</a>
+															</li>
+															<li id="menu-item-485"
+																class="menu-item menu-item-type-post_type menu-item-object-page menu-item-485">
+																<a href="<?php echo $url; ?>/personal/savings/index.php"
+																	class="menu-link">Personal Savings</a>
+															</li>
+															<li id="menu-item-483"
+																class="menu-item menu-item-type-post_type menu-item-object-page menu-item-483">
+																<a href="<?php echo $url; ?>/personal/online-banking/index.php"
+																	class="menu-link">Personal Online Banking</a>
+															</li>
+															<li id="menu-item-487"
+																class="menu-item menu-item-type-post_type menu-item-object-page menu-item-487">
+																<a href="<?php echo $url; ?>/personal/loans-and-credit/index.php"
+																	class="menu-link">Personal Loans and Credit</a>
+															</li>
+
+															<li id="menu-item-488"
+																class="menu-item menu-item-type-post_type menu-item-object-page menu-item-488">
+																<a href="<?php echo $url; ?>/personal/services/index.php"
+																	class="menu-link">Personal Services</a>
+															</li>
+															<li id="menu-item-4813"
+																class="menu-item menu-item-type-post_type menu-item-object-page menu-item-4813">
+																<a href="<?php echo $url; ?>/investing/index.php"
+																	class="menu-link">Investing</a>
+															</li>
+														</ul>
+													</li>
+													<li id="menu-item-401"
+														class="menu-item menu-item-type-post_type menu-item-object-page menu-item-has-children menu-item-401">
+														<a href="<?php echo $url; ?>/about/index.php"
+															class="menu-link">About Us</a><button
+															class="ast-menu-toggle" aria-expanded="false"><span
+																class="screen-reader-text">Menu Toggle</span><span
+																class="ast-icon icon-arrow"></span></button>
+														<ul class="sub-menu">
+															<li id="menu-item-395"
+																class="menu-item menu-item-type-post_type menu-item-object-page menu-item-395">
+																<a href="<?php echo $url; ?>/about/shareholders/index.php"
+																	class="menu-link">Shareholders</a>
+															</li>
+															<li id="menu-item-2711"
+																class="menu-item menu-item-type-post_type menu-item-object-page menu-item-2711">
+																<a href="<?php echo $url; ?>/about/corporate-contributions/index.php"
+																	class="menu-link">Corporate Contributions</a>
+															</li>
+															<li id="menu-item-2713"
+																class="menu-item menu-item-type-post_type menu-item-object-page menu-item-2713">
+																<a href="<?php echo $url; ?>/about/community/index.php"
+																	class="menu-link">Community Programs</a>
+															</li>
+														</ul>
+													</li>
+													<li id="menu-item-144"
+														class="menu-item menu-item-type-custom menu-item-object-custom  menu-item-144">
+														<a href="<?php echo $login; ?>" class="menu-link">Access
+															Your Account</a>
+													</li>
+												</ul>
+											</div>
+										</nav>
+									</div>
+								</div>
+							</div><!-- Main Header Container -->
+						</div><!-- ast-row -->
+					</div> <!-- Main Header Bar -->
+				</div> <!-- Main Header Bar Wrap -->
 		</header><!-- #masthead -->
 		<div id="content" class="site-content">
 			<div class="ast-container">
@@ -1829,81 +1936,183 @@ Makes bullets line up correctly
 
 
 					<main id="main" class="site-main">
-						<article
-							class="post-436 page type-page status-publish ast-article-single" id="post-436" itemtype="https://schema.org/CreativeWork" itemscope="itemscope">
+						<article class="post-436 page type-page status-publish ast-article-single" id="post-436"
+							itemtype="https://schema.org/CreativeWork" itemscope="itemscope">
 							<header class="entry-header ast-header-without-markup">
 
 							</header><!-- .entry-header -->
 
-							<div class="entry-content clear"
-								itemprop="text">
+							<div class="entry-content clear" itemprop="text">
 
 
 								<div id="tve_flt" class="tve_flt tcb-style-wrap">
-									<div id="tve_editor" class="tve_shortcode_editor tar-main-content" data-post-id="436">
+									<div id="tve_editor" class="tve_shortcode_editor tar-main-content"
+										data-post-id="436">
 										<div class="thrv_wrapper thrv-columns" data-css="tve-u-1685de0511d">
-											<div class="tcb-flex-row tcb-resized tcb--cols--2 v-2" data-css="tve-u-1685de05121">
-												<div class="tcb-flex-col c-66" data-css="tve-u-1685de0511b" style="">
+											<div class="tcb-flex-row tcb-resized tcb--cols--2 v-2"
+												data-css="tve-u-1685de05121">
+												<div class="tcb-flex-col c-66" data-css="tve-u-1685de0511b"
+													style="">
 													<div class="tcb-col" data-css="tve-u-1685de05119">
 														<div class="tcb-clear" data-css="tve-u-1685de0512e">
-															<div class="thrv_wrapper tcb-tablet-hidden tcb-mobile-hidden thrv_text_element" data-tag="h2" data-css="tve-u-1685de0512d">
-																<h2 class="" data-css="tve-u-1685de0512f">Business Checking</h2>
+															<div class="thrv_wrapper tcb-tablet-hidden tcb-mobile-hidden thrv_text_element"
+																data-tag="h2" data-css="tve-u-1685de0512d">
+																<h2 class="" data-css="tve-u-1685de0512f">Business
+																	Checking</h2>
 															</div>
 														</div>
-														<div class="thrv_wrapper tve_image_caption tcb-tablet-hidden tcb-mobile-hidden" data-css="tve-u-1685de0511f"><span class="tve_image_frame" style="width: 100%;"><img class="tve_image wp-image-5300" alt="Business Checking" width="877" height="155" title="BUSINESS_CHECKING" data-id="5300" src="../../wp-content/uploads/2021/01/BUSINESS_CHECKING.png" style="" scale="0" data-width="877" data-height="155" data-init-width="850" data-init-height="150" loading="lazy" srcset="<?php echo $url; ?>/wp-content/uploads/2021/01/BUSINESS_CHECKING.png 850w, <?php echo $url; ?>/wp-content/uploads/2021/01/BUSINESS_CHECKING-300x53.png 300w, <?php echo $url; ?>/wp-content/uploads/2021/01/BUSINESS_CHECKING-768x136.png 768w" sizes="(max-width: 877px) 100vw, 877px" /></span></div>
+														<div class="thrv_wrapper tve_image_caption tcb-tablet-hidden tcb-mobile-hidden"
+															data-css="tve-u-1685de0511f"><span
+																class="tve_image_frame" style="width: 100%;"><img
+																	class="tve_image wp-image-5300"
+																	alt="Business Checking" width="877" height="155"
+																	title="BUSINESS_CHECKING" data-id="5300"
+																	src="<?php echo $url; ?>/wp-content/uploads/2021/01/BUSINESS_CHECKING.png"
+																	style="" scale="0" data-width="877"
+																	data-height="155" data-init-width="850"
+																	data-init-height="150" loading="lazy"
+																	srcset="<?php echo $url; ?>/wp-content/uploads/2021/01/BUSINESS_CHECKING.png 850w, <?php echo $url; ?>/wp-content/uploads/2021/01/BUSINESS_CHECKING-300x53.png 300w, <?php echo $url; ?>/wp-content/uploads/2021/01/BUSINESS_CHECKING-768x136.png 768w"
+																	sizes="(max-width: 877px) 100vw, 877px" /></span>
+														</div>
 														<div class="thrv_wrapper thrv_text_element" data-tag="h1">
 															<h1 class="">Business Checking</h1>
 														</div>
 														<div class="thrv_wrapper thrv_text_element">
-															<p>From basic checking to Account Analysis for businesses with a variety of cash management needs, we offer a wide range of checking products and services for every customer.&nbsp;</p>
+															<p>From basic checking to Account Analysis for
+																businesses with a variety of cash management needs,
+																we offer a wide range of checking products and
+																services for every customer.&nbsp;</p>
 														</div>
 													</div>
 												</div>
-												<div class="tcb-flex-col c-33" data-css="tve-u-1685de0511c" style="">
+												<div class="tcb-flex-col c-33" data-css="tve-u-1685de0511c"
+													style="">
 													<div class="tcb-col">
 														<div class="tcb-clear" data-css="tve-u-1685de0511a">
-															<div class="thrv_wrapper thrv_contentbox_shortcode thrv-content-box tcb-tablet-hidden tcb-mobile-hidden" style="" data-css="tve-u-1685de05110" data-ct="stylebox-30599" data-ct-name="Related Resource Box">
-																<div class="tve-content-box-background" data-css="tve-u-1685de0510f" data-tcb_hover_state_parent="1"></div>
-																<div class="tve-cb tve_empty_dropzone" data-css="tve-u-1685de0510c">
-																	<div class="thrv_wrapper thrv_text_element tve_empty_dropzone" style="" data-css="tve-u-1685de0510e">
-																		<p data-css="tve-u-1685de0510d"><strong>related resources</strong></p>
+															<div class="thrv_wrapper thrv_contentbox_shortcode thrv-content-box tcb-tablet-hidden tcb-mobile-hidden"
+																style="" data-css="tve-u-1685de05110"
+																data-ct="stylebox-30599"
+																data-ct-name="Related Resource Box">
+																<div class="tve-content-box-background"
+																	data-css="tve-u-1685de0510f"
+																	data-tcb_hover_state_parent="1"></div>
+																<div class="tve-cb tve_empty_dropzone"
+																	data-css="tve-u-1685de0510c">
+																	<div class="thrv_wrapper thrv_text_element tve_empty_dropzone"
+																		style="" data-css="tve-u-1685de0510e">
+																		<p data-css="tve-u-1685de0510d">
+																			<strong>related resources</strong>
+																		</p>
 																	</div>
-																	<div class="thrv_wrapper thrv-styled_list" data-icon-code="icon-long-arrow-right-light" data-css="tve-u-16859424bf9" style="">
+																	<div class="thrv_wrapper thrv-styled_list"
+																		data-icon-code="icon-long-arrow-right-light"
+																		data-css="tve-u-16859424bf9" style="">
 																		<ul class="tcb-styled-list">
 																			<li class="thrv-styled-list-item">
 																				<div class="tcb-styled-list-icon">
-																					<div class="thrv_wrapper thrv_icon tve_no_drag tcb-no-delete tcb-no-clone tcb-no-save tcb-icon-inherit-style tcb-icon-display" data-css="tve-u-16859424bfa" data-tcb_hover_state_parent=""><svg class="tcb-icon" viewBox="0 0 448 512" data-id="icon-long-arrow-right-light" data-name="">
-																							<path d="M311.03 131.515l-7.071 7.07c-4.686 4.686-4.686 12.284 0 16.971L387.887 239H12c-6.627 0-12 5.373-12 12v10c0 6.627 5.373 12 12 12h375.887l-83.928 83.444c-4.686 4.686-4.686 12.284 0 16.971l7.071 7.07c4.686 4.686 12.284 4.686 16.97 0l116.485-116c4.686-4.686 4.686-12.284 0-16.971L328 131.515c-4.686-4.687-12.284-4.687-16.97 0z"></path>
-																						</svg></div>
-																				</div><span class="thrv-advanced-inline-text tve_editable tcb-styled-list-icon-text tcb-no-delete tcb-no-save" data-css="tve-u-16859424bfd"><a href="../checking/index.php">Business Checking</a></span>
+																					<div class="thrv_wrapper thrv_icon tve_no_drag tcb-no-delete tcb-no-clone tcb-no-save tcb-icon-inherit-style tcb-icon-display"
+																						data-css="tve-u-16859424bfa"
+																						data-tcb_hover_state_parent="">
+																						<svg class="tcb-icon"
+																							viewBox="0 0 448 512"
+																							data-id="icon-long-arrow-right-light"
+																							data-name="">
+																							<path
+																								d="M311.03 131.515l-7.071 7.07c-4.686 4.686-4.686 12.284 0 16.971L387.887 239H12c-6.627 0-12 5.373-12 12v10c0 6.627 5.373 12 12 12h375.887l-83.928 83.444c-4.686 4.686-4.686 12.284 0 16.971l7.071 7.07c4.686 4.686 12.284 4.686 16.97 0l116.485-116c4.686-4.686 4.686-12.284 0-16.971L328 131.515c-4.686-4.687-12.284-4.687-16.97 0z">
+																							</path>
+																						</svg>
+																					</div>
+																				</div><span
+																					class="thrv-advanced-inline-text tve_editable tcb-styled-list-icon-text tcb-no-delete tcb-no-save"
+																					data-css="tve-u-16859424bfd"><a
+																						href="../checking/index.php">Business
+																						Checking</a></span>
 																			</li>
 																			<li class="thrv-styled-list-item">
 																				<div class="tcb-styled-list-icon">
-																					<div class="thrv_wrapper thrv_icon tve_no_drag tcb-no-delete tcb-no-clone tcb-no-save tcb-icon-inherit-style" data-css="tve-u-16859424c00" data-tcb_hover_state_parent=""><svg class="tcb-icon" viewBox="0 0 448 512" data-id="icon-long-arrow-right-light" data-name="">
-																							<path d="M311.03 131.515l-7.071 7.07c-4.686 4.686-4.686 12.284 0 16.971L387.887 239H12c-6.627 0-12 5.373-12 12v10c0 6.627 5.373 12 12 12h375.887l-83.928 83.444c-4.686 4.686-4.686 12.284 0 16.971l7.071 7.07c4.686 4.686 12.284 4.686 16.97 0l116.485-116c4.686-4.686 4.686-12.284 0-16.971L328 131.515c-4.686-4.687-12.284-4.687-16.97 0z"></path>
-																						</svg></div>
-																				</div><span class="thrv-advanced-inline-text tve_editable tcb-styled-list-icon-text tcb-no-delete tcb-no-save tve-froala fr-box" data-css="tve-u-16859424bfd"><a href="../services/index.php" class="tve-froala" style="outline: none;">Business Services</a></span>
+																					<div class="thrv_wrapper thrv_icon tve_no_drag tcb-no-delete tcb-no-clone tcb-no-save tcb-icon-inherit-style"
+																						data-css="tve-u-16859424c00"
+																						data-tcb_hover_state_parent="">
+																						<svg class="tcb-icon"
+																							viewBox="0 0 448 512"
+																							data-id="icon-long-arrow-right-light"
+																							data-name="">
+																							<path
+																								d="M311.03 131.515l-7.071 7.07c-4.686 4.686-4.686 12.284 0 16.971L387.887 239H12c-6.627 0-12 5.373-12 12v10c0 6.627 5.373 12 12 12h375.887l-83.928 83.444c-4.686 4.686-4.686 12.284 0 16.971l7.071 7.07c4.686 4.686 12.284 4.686 16.97 0l116.485-116c4.686-4.686 4.686-12.284 0-16.971L328 131.515c-4.686-4.687-12.284-4.687-16.97 0z">
+																							</path>
+																						</svg>
+																					</div>
+																				</div><span
+																					class="thrv-advanced-inline-text tve_editable tcb-styled-list-icon-text tcb-no-delete tcb-no-save tve-froala fr-box"
+																					data-css="tve-u-16859424bfd"><a
+																						href="../services/index.php"
+																						class="tve-froala"
+																						style="outline: none;">Business
+																						Services</a></span>
 																			</li>
 																			<li class="thrv-styled-list-item">
 																				<div class="tcb-styled-list-icon">
-																					<div class="thrv_wrapper thrv_icon tve_no_drag tcb-no-delete tcb-no-clone tcb-no-save tcb-icon-inherit-style" data-css="tve-u-16859424c00" data-tcb_hover_state_parent=""><svg class="tcb-icon" viewBox="0 0 448 512" data-id="icon-long-arrow-right-light" data-name="">
-																							<path d="M311.03 131.515l-7.071 7.07c-4.686 4.686-4.686 12.284 0 16.971L387.887 239H12c-6.627 0-12 5.373-12 12v10c0 6.627 5.373 12 12 12h375.887l-83.928 83.444c-4.686 4.686-4.686 12.284 0 16.971l7.071 7.07c4.686 4.686 12.284 4.686 16.97 0l116.485-116c4.686-4.686 4.686-12.284 0-16.971L328 131.515c-4.686-4.687-12.284-4.687-16.97 0z"></path>
-																						</svg></div>
-																				</div><span class="thrv-advanced-inline-text tve_editable tcb-styled-list-icon-text tcb-no-delete tcb-no-save tve-froala fr-box" data-css="tve-u-16859424bfd"><a href="../online-banking/index.php" class="tve-froala" style="outline: none;">Business Online Banking</a></span>
+																					<div class="thrv_wrapper thrv_icon tve_no_drag tcb-no-delete tcb-no-clone tcb-no-save tcb-icon-inherit-style"
+																						data-css="tve-u-16859424c00"
+																						data-tcb_hover_state_parent="">
+																						<svg class="tcb-icon"
+																							viewBox="0 0 448 512"
+																							data-id="icon-long-arrow-right-light"
+																							data-name="">
+																							<path
+																								d="M311.03 131.515l-7.071 7.07c-4.686 4.686-4.686 12.284 0 16.971L387.887 239H12c-6.627 0-12 5.373-12 12v10c0 6.627 5.373 12 12 12h375.887l-83.928 83.444c-4.686 4.686-4.686 12.284 0 16.971l7.071 7.07c4.686 4.686 12.284 4.686 16.97 0l116.485-116c4.686-4.686 4.686-12.284 0-16.971L328 131.515c-4.686-4.687-12.284-4.687-16.97 0z">
+																							</path>
+																						</svg>
+																					</div>
+																				</div><span
+																					class="thrv-advanced-inline-text tve_editable tcb-styled-list-icon-text tcb-no-delete tcb-no-save tve-froala fr-box"
+																					data-css="tve-u-16859424bfd"><a
+																						href="../online-banking/index.php"
+																						class="tve-froala"
+																						style="outline: none;">Business
+																						Online Banking</a></span>
 																			</li>
 																			<li class="thrv-styled-list-item">
 																				<div class="tcb-styled-list-icon">
-																					<div class="thrv_wrapper thrv_icon tve_no_drag tcb-no-delete tcb-no-clone tcb-no-save tcb-icon-inherit-style" data-css="tve-u-16859424c00" data-tcb_hover_state_parent=""><svg class="tcb-icon" viewBox="0 0 448 512" data-id="icon-long-arrow-right-light" data-name="">
-																							<path d="M311.03 131.515l-7.071 7.07c-4.686 4.686-4.686 12.284 0 16.971L387.887 239H12c-6.627 0-12 5.373-12 12v10c0 6.627 5.373 12 12 12h375.887l-83.928 83.444c-4.686 4.686-4.686 12.284 0 16.971l7.071 7.07c4.686 4.686 12.284 4.686 16.97 0l116.485-116c4.686-4.686 4.686-12.284 0-16.971L328 131.515c-4.686-4.687-12.284-4.687-16.97 0z"></path>
-																						</svg></div>
-																				</div><span class="thrv-advanced-inline-text tve_editable tcb-styled-list-icon-text tcb-no-delete tcb-no-save tve-froala fr-box" data-css="tve-u-16859424bfd"><a href="../savings/index.php" class="tve-froala" style="outline: none;">Business Savings</a></span>
+																					<div class="thrv_wrapper thrv_icon tve_no_drag tcb-no-delete tcb-no-clone tcb-no-save tcb-icon-inherit-style"
+																						data-css="tve-u-16859424c00"
+																						data-tcb_hover_state_parent="">
+																						<svg class="tcb-icon"
+																							viewBox="0 0 448 512"
+																							data-id="icon-long-arrow-right-light"
+																							data-name="">
+																							<path
+																								d="M311.03 131.515l-7.071 7.07c-4.686 4.686-4.686 12.284 0 16.971L387.887 239H12c-6.627 0-12 5.373-12 12v10c0 6.627 5.373 12 12 12h375.887l-83.928 83.444c-4.686 4.686-4.686 12.284 0 16.971l7.071 7.07c4.686 4.686 12.284 4.686 16.97 0l116.485-116c4.686-4.686 4.686-12.284 0-16.971L328 131.515c-4.686-4.687-12.284-4.687-16.97 0z">
+																							</path>
+																						</svg>
+																					</div>
+																				</div><span
+																					class="thrv-advanced-inline-text tve_editable tcb-styled-list-icon-text tcb-no-delete tcb-no-save tve-froala fr-box"
+																					data-css="tve-u-16859424bfd"><a
+																						href="../savings/index.php"
+																						class="tve-froala"
+																						style="outline: none;">Business
+																						Savings</a></span>
 																			</li>
 																			<li class="thrv-styled-list-item">
 																				<div class="tcb-styled-list-icon">
-																					<div class="thrv_wrapper thrv_icon tve_no_drag tcb-no-delete tcb-no-clone tcb-no-save tcb-icon-inherit-style" data-css="tve-u-16859424c00" data-tcb_hover_state_parent=""><svg class="tcb-icon" viewBox="0 0 448 512" data-id="icon-long-arrow-right-light" data-name="">
-																							<path d="M311.03 131.515l-7.071 7.07c-4.686 4.686-4.686 12.284 0 16.971L387.887 239H12c-6.627 0-12 5.373-12 12v10c0 6.627 5.373 12 12 12h375.887l-83.928 83.444c-4.686 4.686-4.686 12.284 0 16.971l7.071 7.07c4.686 4.686 12.284 4.686 16.97 0l116.485-116c4.686-4.686 4.686-12.284 0-16.971L328 131.515c-4.686-4.687-12.284-4.687-16.97 0z"></path>
-																						</svg></div>
-																				</div><span class="thrv-advanced-inline-text tve_editable tcb-styled-list-icon-text tcb-no-delete tcb-no-save" data-css="tve-u-16859424bfd"><a href="../loans-and-credit/index.php">Loans and Credit</a></span>
+																					<div class="thrv_wrapper thrv_icon tve_no_drag tcb-no-delete tcb-no-clone tcb-no-save tcb-icon-inherit-style"
+																						data-css="tve-u-16859424c00"
+																						data-tcb_hover_state_parent="">
+																						<svg class="tcb-icon"
+																							viewBox="0 0 448 512"
+																							data-id="icon-long-arrow-right-light"
+																							data-name="">
+																							<path
+																								d="M311.03 131.515l-7.071 7.07c-4.686 4.686-4.686 12.284 0 16.971L387.887 239H12c-6.627 0-12 5.373-12 12v10c0 6.627 5.373 12 12 12h375.887l-83.928 83.444c-4.686 4.686-4.686 12.284 0 16.971l7.071 7.07c4.686 4.686 12.284 4.686 16.97 0l116.485-116c4.686-4.686 4.686-12.284 0-16.971L328 131.515c-4.686-4.687-12.284-4.687-16.97 0z">
+																							</path>
+																						</svg>
+																					</div>
+																				</div><span
+																					class="thrv-advanced-inline-text tve_editable tcb-styled-list-icon-text tcb-no-delete tcb-no-save"
+																					data-css="tve-u-16859424bfd"><a
+																						href="../loans-and-credit/index.php">Loans
+																						and Credit</a></span>
 																			</li>
 																		</ul>
 																	</div>
@@ -1914,68 +2123,147 @@ Makes bullets line up correctly
 												</div>
 											</div>
 										</div>
-										<div class="thrv_wrapper thrv_tabs_shortcode thrv-tabbed-content" data-css="tve-u-16887665f71" data-edit="inactive" style="">
+										<div class="thrv_wrapper thrv_tabs_shortcode thrv-tabbed-content"
+											data-css="tve-u-16887665f71" data-edit="inactive" style="">
 											<div class="tve_scT tve_red" data-selected="0">
 												<ul class="tve_clearfix">
 
 
 
-													<li class="tve_tS tve-state-expanded" data-tve-custom-colour=""><span class="tve_scTC1 thrv-inline-text tve_editable" data-css="tve-u-16887665f72">Select</span></li>
-													<li class="" data-tve-custom-colour=""><span class="tve_scTC6 thrv-inline-text tve_editable" data-css="tve-u-16887665f77">Regular</span></li>
-													<li class="" data-tve-custom-colour=""><span class="tve_scTC5 thrv-inline-text tve_editable" data-css="tve-u-16887665f76">Interest</span></li>
-													<li class="" data-tve-custom-colour=""><span class="tve_scTC4 thrv-inline-text tve_editable" data-css="tve-u-16887665f75">Account Analysis</span></li>
-													<li class="" data-tve-custom-colour=""><span class="tve_scTC3 thrv-inline-text tve_editable" data-css="tve-u-16887665f74">Business Star</span></li>
+													<li class="tve_tS tve-state-expanded" data-tve-custom-colour="">
+														<span class="tve_scTC1 thrv-inline-text tve_editable"
+															data-css="tve-u-16887665f72">Select</span>
+													</li>
+													<li class="" data-tve-custom-colour=""><span
+															class="tve_scTC6 thrv-inline-text tve_editable"
+															data-css="tve-u-16887665f77">Regular</span></li>
+													<li class="" data-tve-custom-colour=""><span
+															class="tve_scTC5 thrv-inline-text tve_editable"
+															data-css="tve-u-16887665f76">Interest</span></li>
+													<li class="" data-tve-custom-colour=""><span
+															class="tve_scTC4 thrv-inline-text tve_editable"
+															data-css="tve-u-16887665f75">Account Analysis</span>
+													</li>
+													<li class="" data-tve-custom-colour=""><span
+															class="tve_scTC3 thrv-inline-text tve_editable"
+															data-css="tve-u-16887665f74">Business Star</span></li>
 												</ul>
 
 
 
-												<div class="tve_scTC tve_scTC1 tve-tc-visible" style="display: block;">
+												<div class="tve_scTC tve_scTC1 tve-tc-visible"
+													style="display: block;">
 													<div class="thrv_wrapper thrv_text_element" data-tag="h2">
 														<h2 class="">Select Checking</h2>
 													</div>
-													<div class="thrv_wrapper thrv-styled_list" data-icon-code="icon-check" data-css="tve-u-16887665f79">
+													<div class="thrv_wrapper thrv-styled_list"
+														data-icon-code="icon-check" data-css="tve-u-16887665f79">
 														<ul class="tcb-styled-list">
-															<li class="thrv-styled-list-item" data-css="tve-u-16887749f08">
+															<li class="thrv-styled-list-item"
+																data-css="tve-u-16887749f08">
 																<div class="tcb-styled-list-icon">
-																	<div class="thrv_wrapper thrv_icon tve_no_drag tcb-no-delete tcb-no-clone tcb-no-save tcb-icon-inherit-style"><svg class="tcb-icon" viewBox="0 0 32 32" data-id="icon-check" data-name="">
-																			<path d="M29.333 10.267c0 0.4-0.133 0.8-0.533 1.2l-14.8 14.8c-0.267 0.267-0.667 0.4-1.067 0.4s-0.933-0.133-1.2-0.533l-2.4-2.267-6.267-6.267c-0.267-0.267-0.4-0.667-0.4-1.2s0.133-0.8 0.533-1.2l2.4-2.4c0.267-0.133 0.667-0.4 1.067-0.4s0.8 0.133 1.2 0.533l5.067 5.067 11.2-11.333c0.267-0.267 0.667-0.533 1.2-0.533 0.4 0 0.8 0.133 1.2 0.533l2.4 2.4c0.267 0.267 0.4 0.667 0.4 1.2z"></path>
-																		</svg></div>
-																</div><span class="thrv-advanced-inline-text tve_editable tcb-styled-list-icon-text tcb-no-delete tcb-no-save" data-css="tve-u-1685e36c4f1">Simplified checking for Sole Proprietors with low activity and limited check writing needs.</span>
+																	<div
+																		class="thrv_wrapper thrv_icon tve_no_drag tcb-no-delete tcb-no-clone tcb-no-save tcb-icon-inherit-style">
+																		<svg class="tcb-icon" viewBox="0 0 32 32"
+																			data-id="icon-check" data-name="">
+																			<path
+																				d="M29.333 10.267c0 0.4-0.133 0.8-0.533 1.2l-14.8 14.8c-0.267 0.267-0.667 0.4-1.067 0.4s-0.933-0.133-1.2-0.533l-2.4-2.267-6.267-6.267c-0.267-0.267-0.4-0.667-0.4-1.2s0.133-0.8 0.533-1.2l2.4-2.4c0.267-0.133 0.667-0.4 1.067-0.4s0.8 0.133 1.2 0.533l5.067 5.067 11.2-11.333c0.267-0.267 0.667-0.533 1.2-0.533 0.4 0 0.8 0.133 1.2 0.533l2.4 2.4c0.267 0.267 0.4 0.667 0.4 1.2z">
+																			</path>
+																		</svg>
+																	</div>
+																</div><span
+																	class="thrv-advanced-inline-text tve_editable tcb-styled-list-icon-text tcb-no-delete tcb-no-save"
+																	data-css="tve-u-1685e36c4f1">Simplified checking
+																	for Sole Proprietors with low activity and
+																	limited check writing needs.</span>
 															</li>
-															<li class="thrv-styled-list-item" data-css="tve-u-16887749f08">
+															<li class="thrv-styled-list-item"
+																data-css="tve-u-16887749f08">
 																<div class="tcb-styled-list-icon">
-																	<div class="thrv_wrapper thrv_icon tve_no_drag tcb-no-delete tcb-no-clone tcb-no-save tcb-icon-inherit-style"><svg class="tcb-icon" viewBox="0 0 32 32" data-id="icon-check" data-name="">
-																			<path d="M29.333 10.267c0 0.4-0.133 0.8-0.533 1.2l-14.8 14.8c-0.267 0.267-0.667 0.4-1.067 0.4s-0.933-0.133-1.2-0.533l-2.4-2.267-6.267-6.267c-0.267-0.267-0.4-0.667-0.4-1.2s0.133-0.8 0.533-1.2l2.4-2.4c0.267-0.133 0.667-0.4 1.067-0.4s0.8 0.133 1.2 0.533l5.067 5.067 11.2-11.333c0.267-0.267 0.667-0.533 1.2-0.533 0.4 0 0.8 0.133 1.2 0.533l2.4 2.4c0.267 0.267 0.4 0.667 0.4 1.2z"></path>
-																		</svg></div>
-																</div><span class="thrv-advanced-inline-text tve_editable tcb-styled-list-icon-text tcb-no-delete tcb-no-save" data-css="tve-u-1685e36c4f1">No monthly service charge.<span data-css="tve-u-1688771cafc" style="text-transform: none;"><sup>1</sup></span></span>
+																	<div
+																		class="thrv_wrapper thrv_icon tve_no_drag tcb-no-delete tcb-no-clone tcb-no-save tcb-icon-inherit-style">
+																		<svg class="tcb-icon" viewBox="0 0 32 32"
+																			data-id="icon-check" data-name="">
+																			<path
+																				d="M29.333 10.267c0 0.4-0.133 0.8-0.533 1.2l-14.8 14.8c-0.267 0.267-0.667 0.4-1.067 0.4s-0.933-0.133-1.2-0.533l-2.4-2.267-6.267-6.267c-0.267-0.267-0.4-0.667-0.4-1.2s0.133-0.8 0.533-1.2l2.4-2.4c0.267-0.133 0.667-0.4 1.067-0.4s0.8 0.133 1.2 0.533l5.067 5.067 11.2-11.333c0.267-0.267 0.667-0.533 1.2-0.533 0.4 0 0.8 0.133 1.2 0.533l2.4 2.4c0.267 0.267 0.4 0.667 0.4 1.2z">
+																			</path>
+																		</svg>
+																	</div>
+																</div><span
+																	class="thrv-advanced-inline-text tve_editable tcb-styled-list-icon-text tcb-no-delete tcb-no-save"
+																	data-css="tve-u-1685e36c4f1">No monthly service
+																	charge.<span data-css="tve-u-1688771cafc"
+																		style="text-transform: none;"><sup>1</sup></span></span>
 															</li>
-															<li class="thrv-styled-list-item" data-css="tve-u-16887749f08">
+															<li class="thrv-styled-list-item"
+																data-css="tve-u-16887749f08">
 																<div class="tcb-styled-list-icon">
-																	<div class="thrv_wrapper thrv_icon tve_no_drag tcb-no-delete tcb-no-clone tcb-no-save tcb-icon-inherit-style"><svg class="tcb-icon" viewBox="0 0 32 32" data-id="icon-check" data-name="">
-																			<path d="M29.333 10.267c0 0.4-0.133 0.8-0.533 1.2l-14.8 14.8c-0.267 0.267-0.667 0.4-1.067 0.4s-0.933-0.133-1.2-0.533l-2.4-2.267-6.267-6.267c-0.267-0.267-0.4-0.667-0.4-1.2s0.133-0.8 0.533-1.2l2.4-2.4c0.267-0.133 0.667-0.4 1.067-0.4s0.8 0.133 1.2 0.533l5.067 5.067 11.2-11.333c0.267-0.267 0.667-0.533 1.2-0.533 0.4 0 0.8 0.133 1.2 0.533l2.4 2.4c0.267 0.267 0.4 0.667 0.4 1.2z"></path>
-																		</svg></div>
-																</div><span class="thrv-advanced-inline-text tve_editable tcb-styled-list-icon-text tcb-no-delete tcb-no-save" data-css="tve-u-1685e36c4f1">A minimum of five (5) Business Debit Card or ATM card transactions per statement cycle required.</span>
+																	<div
+																		class="thrv_wrapper thrv_icon tve_no_drag tcb-no-delete tcb-no-clone tcb-no-save tcb-icon-inherit-style">
+																		<svg class="tcb-icon" viewBox="0 0 32 32"
+																			data-id="icon-check" data-name="">
+																			<path
+																				d="M29.333 10.267c0 0.4-0.133 0.8-0.533 1.2l-14.8 14.8c-0.267 0.267-0.667 0.4-1.067 0.4s-0.933-0.133-1.2-0.533l-2.4-2.267-6.267-6.267c-0.267-0.267-0.4-0.667-0.4-1.2s0.133-0.8 0.533-1.2l2.4-2.4c0.267-0.133 0.667-0.4 1.067-0.4s0.8 0.133 1.2 0.533l5.067 5.067 11.2-11.333c0.267-0.267 0.667-0.533 1.2-0.533 0.4 0 0.8 0.133 1.2 0.533l2.4 2.4c0.267 0.267 0.4 0.667 0.4 1.2z">
+																			</path>
+																		</svg>
+																	</div>
+																</div><span
+																	class="thrv-advanced-inline-text tve_editable tcb-styled-list-icon-text tcb-no-delete tcb-no-save"
+																	data-css="tve-u-1685e36c4f1">A minimum of five
+																	(5) Business Debit Card or ATM card transactions
+																	per statement cycle required.</span>
 															</li>
-															<li class="thrv-styled-list-item" data-css="tve-u-16887749f08">
+															<li class="thrv-styled-list-item"
+																data-css="tve-u-16887749f08">
 																<div class="tcb-styled-list-icon">
-																	<div class="thrv_wrapper thrv_icon tve_no_drag tcb-no-delete tcb-no-clone tcb-no-save tcb-icon-inherit-style"><svg class="tcb-icon" viewBox="0 0 32 32" data-id="icon-check" data-name="">
-																			<path d="M29.333 10.267c0 0.4-0.133 0.8-0.533 1.2l-14.8 14.8c-0.267 0.267-0.667 0.4-1.067 0.4s-0.933-0.133-1.2-0.533l-2.4-2.267-6.267-6.267c-0.267-0.267-0.4-0.667-0.4-1.2s0.133-0.8 0.533-1.2l2.4-2.4c0.267-0.133 0.667-0.4 1.067-0.4s0.8 0.133 1.2 0.533l5.067 5.067 11.2-11.333c0.267-0.267 0.667-0.533 1.2-0.533 0.4 0 0.8 0.133 1.2 0.533l2.4 2.4c0.267 0.267 0.4 0.667 0.4 1.2z"></path>
-																		</svg></div>
-																</div><span class="thrv-advanced-inline-text tve_editable tcb-styled-list-icon-text tcb-no-delete tcb-no-save" data-css="tve-u-1685e36c4f1">StarConnect Plus online banking included.</span>
+																	<div
+																		class="thrv_wrapper thrv_icon tve_no_drag tcb-no-delete tcb-no-clone tcb-no-save tcb-icon-inherit-style">
+																		<svg class="tcb-icon" viewBox="0 0 32 32"
+																			data-id="icon-check" data-name="">
+																			<path
+																				d="M29.333 10.267c0 0.4-0.133 0.8-0.533 1.2l-14.8 14.8c-0.267 0.267-0.667 0.4-1.067 0.4s-0.933-0.133-1.2-0.533l-2.4-2.267-6.267-6.267c-0.267-0.267-0.4-0.667-0.4-1.2s0.133-0.8 0.533-1.2l2.4-2.4c0.267-0.133 0.667-0.4 1.067-0.4s0.8 0.133 1.2 0.533l5.067 5.067 11.2-11.333c0.267-0.267 0.667-0.533 1.2-0.533 0.4 0 0.8 0.133 1.2 0.533l2.4 2.4c0.267 0.267 0.4 0.667 0.4 1.2z">
+																			</path>
+																		</svg>
+																	</div>
+																</div><span
+																	class="thrv-advanced-inline-text tve_editable tcb-styled-list-icon-text tcb-no-delete tcb-no-save"
+																	data-css="tve-u-1685e36c4f1">StarConnect Plus
+																	online banking included.</span>
 															</li>
-															<li class="thrv-styled-list-item" data-css="tve-u-16887749f08">
+															<li class="thrv-styled-list-item"
+																data-css="tve-u-16887749f08">
 																<div class="tcb-styled-list-icon">
-																	<div class="thrv_wrapper thrv_icon tve_no_drag tcb-no-delete tcb-no-clone tcb-no-save tcb-icon-inherit-style"><svg class="tcb-icon" viewBox="0 0 32 32" data-id="icon-check" data-name="">
-																			<path d="M29.333 10.267c0 0.4-0.133 0.8-0.533 1.2l-14.8 14.8c-0.267 0.267-0.667 0.4-1.067 0.4s-0.933-0.133-1.2-0.533l-2.4-2.267-6.267-6.267c-0.267-0.267-0.4-0.667-0.4-1.2s0.133-0.8 0.533-1.2l2.4-2.4c0.267-0.133 0.667-0.4 1.067-0.4s0.8 0.133 1.2 0.533l5.067 5.067 11.2-11.333c0.267-0.267 0.667-0.533 1.2-0.533 0.4 0 0.8 0.133 1.2 0.533l2.4 2.4c0.267 0.267 0.4 0.667 0.4 1.2z"></path>
-																		</svg></div>
-																</div><span class="thrv-advanced-inline-text tve_editable tcb-styled-list-icon-text tcb-no-delete tcb-no-save" data-css="tve-u-1685e36c4f1">No monthly fee for POS purchases.</span>
+																	<div
+																		class="thrv_wrapper thrv_icon tve_no_drag tcb-no-delete tcb-no-clone tcb-no-save tcb-icon-inherit-style">
+																		<svg class="tcb-icon" viewBox="0 0 32 32"
+																			data-id="icon-check" data-name="">
+																			<path
+																				d="M29.333 10.267c0 0.4-0.133 0.8-0.533 1.2l-14.8 14.8c-0.267 0.267-0.667 0.4-1.067 0.4s-0.933-0.133-1.2-0.533l-2.4-2.267-6.267-6.267c-0.267-0.267-0.4-0.667-0.4-1.2s0.133-0.8 0.533-1.2l2.4-2.4c0.267-0.133 0.667-0.4 1.067-0.4s0.8 0.133 1.2 0.533l5.067 5.067 11.2-11.333c0.267-0.267 0.667-0.533 1.2-0.533 0.4 0 0.8 0.133 1.2 0.533l2.4 2.4c0.267 0.267 0.4 0.667 0.4 1.2z">
+																			</path>
+																		</svg>
+																	</div>
+																</div><span
+																	class="thrv-advanced-inline-text tve_editable tcb-styled-list-icon-text tcb-no-delete tcb-no-save"
+																	data-css="tve-u-1685e36c4f1">No monthly fee for
+																	POS purchases.</span>
 															</li>
-															<li class="thrv-styled-list-item" data-css="tve-u-1688774e8b6">
+															<li class="thrv-styled-list-item"
+																data-css="tve-u-1688774e8b6">
 																<div class="tcb-styled-list-icon">
-																	<div class="thrv_wrapper thrv_icon tve_no_drag tcb-no-delete tcb-no-clone tcb-no-save tcb-icon-inherit-style"><svg class="tcb-icon" viewBox="0 0 32 32" data-id="icon-check" data-name="">
-																			<path d="M29.333 10.267c0 0.4-0.133 0.8-0.533 1.2l-14.8 14.8c-0.267 0.267-0.667 0.4-1.067 0.4s-0.933-0.133-1.2-0.533l-2.4-2.267-6.267-6.267c-0.267-0.267-0.4-0.667-0.4-1.2s0.133-0.8 0.533-1.2l2.4-2.4c0.267-0.133 0.667-0.4 1.067-0.4s0.8 0.133 1.2 0.533l5.067 5.067 11.2-11.333c0.267-0.267 0.667-0.533 1.2-0.533 0.4 0 0.8 0.133 1.2 0.533l2.4 2.4c0.267 0.267 0.4 0.667 0.4 1.2z"></path>
-																		</svg></div>
-																</div><span class="thrv-advanced-inline-text tve_editable tcb-styled-list-icon-text tcb-no-delete tcb-no-save" data-css="tve-u-1685e36c4f1">Unlimited check writing, telephone transfers and automated payments.</span>
+																	<div
+																		class="thrv_wrapper thrv_icon tve_no_drag tcb-no-delete tcb-no-clone tcb-no-save tcb-icon-inherit-style">
+																		<svg class="tcb-icon" viewBox="0 0 32 32"
+																			data-id="icon-check" data-name="">
+																			<path
+																				d="M29.333 10.267c0 0.4-0.133 0.8-0.533 1.2l-14.8 14.8c-0.267 0.267-0.667 0.4-1.067 0.4s-0.933-0.133-1.2-0.533l-2.4-2.267-6.267-6.267c-0.267-0.267-0.4-0.667-0.4-1.2s0.133-0.8 0.533-1.2l2.4-2.4c0.267-0.133 0.667-0.4 1.067-0.4s0.8 0.133 1.2 0.533l5.067 5.067 11.2-11.333c0.267-0.267 0.667-0.533 1.2-0.533 0.4 0 0.8 0.133 1.2 0.533l2.4 2.4c0.267 0.267 0.4 0.667 0.4 1.2z">
+																			</path>
+																		</svg>
+																	</div>
+																</div><span
+																	class="thrv-advanced-inline-text tve_editable tcb-styled-list-icon-text tcb-no-delete tcb-no-save"
+																	data-css="tve-u-1685e36c4f1">Unlimited check
+																	writing, telephone transfers and automated
+																	payments.</span>
 															</li>
 														</ul>
 													</div>
@@ -1985,139 +2273,303 @@ Makes bullets line up correctly
 													<div class="thrv_wrapper thrv_text_element" data-tag="h2">
 														<h2 class="">Regular Checking</h2>
 													</div>
-													<div class="thrv_wrapper thrv-styled_list" data-icon-code="icon-check" data-css="tve-u-16887665f7e">
+													<div class="thrv_wrapper thrv-styled_list"
+														data-icon-code="icon-check" data-css="tve-u-16887665f7e">
 														<ul class="tcb-styled-list">
 															<li class="thrv-styled-list-item">
 																<div class="tcb-styled-list-icon">
-																	<div class="thrv_wrapper thrv_icon tve_no_drag tcb-no-delete tcb-no-clone tcb-no-save tcb-icon-inherit-style"><svg class="tcb-icon" viewBox="0 0 32 32" data-id="icon-check" data-name="">
-																			<path d="M29.333 10.267c0 0.4-0.133 0.8-0.533 1.2l-14.8 14.8c-0.267 0.267-0.667 0.4-1.067 0.4s-0.933-0.133-1.2-0.533l-2.4-2.267-6.267-6.267c-0.267-0.267-0.4-0.667-0.4-1.2s0.133-0.8 0.533-1.2l2.4-2.4c0.267-0.133 0.667-0.4 1.067-0.4s0.8 0.133 1.2 0.533l5.067 5.067 11.2-11.333c0.267-0.267 0.667-0.533 1.2-0.533 0.4 0 0.8 0.133 1.2 0.533l2.4 2.4c0.267 0.267 0.4 0.667 0.4 1.2z"></path>
-																		</svg></div>
-																</div><span class="thrv-advanced-inline-text tve_editable tcb-styled-list-icon-text tcb-no-delete tcb-no-save" data-css="tve-u-1685e66a04c">For any business type with simple account needs.</span>
+																	<div
+																		class="thrv_wrapper thrv_icon tve_no_drag tcb-no-delete tcb-no-clone tcb-no-save tcb-icon-inherit-style">
+																		<svg class="tcb-icon" viewBox="0 0 32 32"
+																			data-id="icon-check" data-name="">
+																			<path
+																				d="M29.333 10.267c0 0.4-0.133 0.8-0.533 1.2l-14.8 14.8c-0.267 0.267-0.667 0.4-1.067 0.4s-0.933-0.133-1.2-0.533l-2.4-2.267-6.267-6.267c-0.267-0.267-0.4-0.667-0.4-1.2s0.133-0.8 0.533-1.2l2.4-2.4c0.267-0.133 0.667-0.4 1.067-0.4s0.8 0.133 1.2 0.533l5.067 5.067 11.2-11.333c0.267-0.267 0.667-0.533 1.2-0.533 0.4 0 0.8 0.133 1.2 0.533l2.4 2.4c0.267 0.267 0.4 0.667 0.4 1.2z">
+																			</path>
+																		</svg>
+																	</div>
+																</div><span
+																	class="thrv-advanced-inline-text tve_editable tcb-styled-list-icon-text tcb-no-delete tcb-no-save"
+																	data-css="tve-u-1685e66a04c">For any business
+																	type with simple account needs.</span>
 															</li>
 															<li class="thrv-styled-list-item">
 																<div class="tcb-styled-list-icon">
-																	<div class="thrv_wrapper thrv_icon tve_no_drag tcb-no-delete tcb-no-clone tcb-no-save tcb-icon-inherit-style"><svg class="tcb-icon" viewBox="0 0 32 32" data-id="icon-check" data-name="">
-																			<path d="M29.333 10.267c0 0.4-0.133 0.8-0.533 1.2l-14.8 14.8c-0.267 0.267-0.667 0.4-1.067 0.4s-0.933-0.133-1.2-0.533l-2.4-2.267-6.267-6.267c-0.267-0.267-0.4-0.667-0.4-1.2s0.133-0.8 0.533-1.2l2.4-2.4c0.267-0.133 0.667-0.4 1.067-0.4s0.8 0.133 1.2 0.533l5.067 5.067 11.2-11.333c0.267-0.267 0.667-0.533 1.2-0.533 0.4 0 0.8 0.133 1.2 0.533l2.4 2.4c0.267 0.267 0.4 0.667 0.4 1.2z"></path>
-																		</svg></div>
-																</div><span class="thrv-advanced-inline-text tve_editable tcb-styled-list-icon-text tcb-no-delete tcb-no-save" data-css="tve-u-1685e66a04c">No service charge when balance requirements are met.<span data-css="tve-u-1688771cafc"><sup>1</sup></span></span>
+																	<div
+																		class="thrv_wrapper thrv_icon tve_no_drag tcb-no-delete tcb-no-clone tcb-no-save tcb-icon-inherit-style">
+																		<svg class="tcb-icon" viewBox="0 0 32 32"
+																			data-id="icon-check" data-name="">
+																			<path
+																				d="M29.333 10.267c0 0.4-0.133 0.8-0.533 1.2l-14.8 14.8c-0.267 0.267-0.667 0.4-1.067 0.4s-0.933-0.133-1.2-0.533l-2.4-2.267-6.267-6.267c-0.267-0.267-0.4-0.667-0.4-1.2s0.133-0.8 0.533-1.2l2.4-2.4c0.267-0.133 0.667-0.4 1.067-0.4s0.8 0.133 1.2 0.533l5.067 5.067 11.2-11.333c0.267-0.267 0.667-0.533 1.2-0.533 0.4 0 0.8 0.133 1.2 0.533l2.4 2.4c0.267 0.267 0.4 0.667 0.4 1.2z">
+																			</path>
+																		</svg>
+																	</div>
+																</div><span
+																	class="thrv-advanced-inline-text tve_editable tcb-styled-list-icon-text tcb-no-delete tcb-no-save"
+																	data-css="tve-u-1685e66a04c">No service charge
+																	when balance requirements are met.<span
+																		data-css="tve-u-1688771cafc"><sup>1</sup></span></span>
 															</li>
 															<li class="thrv-styled-list-item">
 																<div class="tcb-styled-list-icon">
-																	<div class="thrv_wrapper thrv_icon tve_no_drag tcb-no-delete tcb-no-clone tcb-no-save tcb-icon-inherit-style"><svg class="tcb-icon" viewBox="0 0 32 32" data-id="icon-check" data-name="">
-																			<path d="M29.333 10.267c0 0.4-0.133 0.8-0.533 1.2l-14.8 14.8c-0.267 0.267-0.667 0.4-1.067 0.4s-0.933-0.133-1.2-0.533l-2.4-2.267-6.267-6.267c-0.267-0.267-0.4-0.667-0.4-1.2s0.133-0.8 0.533-1.2l2.4-2.4c0.267-0.133 0.667-0.4 1.067-0.4s0.8 0.133 1.2 0.533l5.067 5.067 11.2-11.333c0.267-0.267 0.667-0.533 1.2-0.533 0.4 0 0.8 0.133 1.2 0.533l2.4 2.4c0.267 0.267 0.4 0.667 0.4 1.2z"></path>
-																		</svg></div>
-																</div><span class="thrv-advanced-inline-text tve_editable tcb-styled-list-icon-text tcb-no-delete tcb-no-save" data-css="tve-u-1685e66a04c">StarConnect Plus online banking included.&nbsp;</span>
+																	<div
+																		class="thrv_wrapper thrv_icon tve_no_drag tcb-no-delete tcb-no-clone tcb-no-save tcb-icon-inherit-style">
+																		<svg class="tcb-icon" viewBox="0 0 32 32"
+																			data-id="icon-check" data-name="">
+																			<path
+																				d="M29.333 10.267c0 0.4-0.133 0.8-0.533 1.2l-14.8 14.8c-0.267 0.267-0.667 0.4-1.067 0.4s-0.933-0.133-1.2-0.533l-2.4-2.267-6.267-6.267c-0.267-0.267-0.4-0.667-0.4-1.2s0.133-0.8 0.533-1.2l2.4-2.4c0.267-0.133 0.667-0.4 1.067-0.4s0.8 0.133 1.2 0.533l5.067 5.067 11.2-11.333c0.267-0.267 0.667-0.533 1.2-0.533 0.4 0 0.8 0.133 1.2 0.533l2.4 2.4c0.267 0.267 0.4 0.667 0.4 1.2z">
+																			</path>
+																		</svg>
+																	</div>
+																</div><span
+																	class="thrv-advanced-inline-text tve_editable tcb-styled-list-icon-text tcb-no-delete tcb-no-save"
+																	data-css="tve-u-1685e66a04c">StarConnect Plus
+																	online banking included.&nbsp;</span>
 															</li>
 															<li class="thrv-styled-list-item">
 																<div class="tcb-styled-list-icon">
-																	<div class="thrv_wrapper thrv_icon tve_no_drag tcb-no-delete tcb-no-clone tcb-no-save tcb-icon-inherit-style"><svg class="tcb-icon" viewBox="0 0 32 32" data-id="icon-check" data-name="">
-																			<path d="M29.333 10.267c0 0.4-0.133 0.8-0.533 1.2l-14.8 14.8c-0.267 0.267-0.667 0.4-1.067 0.4s-0.933-0.133-1.2-0.533l-2.4-2.267-6.267-6.267c-0.267-0.267-0.4-0.667-0.4-1.2s0.133-0.8 0.533-1.2l2.4-2.4c0.267-0.133 0.667-0.4 1.067-0.4s0.8 0.133 1.2 0.533l5.067 5.067 11.2-11.333c0.267-0.267 0.667-0.533 1.2-0.533 0.4 0 0.8 0.133 1.2 0.533l2.4 2.4c0.267 0.267 0.4 0.667 0.4 1.2z"></path>
-																		</svg></div>
-																</div><span class="thrv-advanced-inline-text tve_editable tcb-styled-list-icon-text tcb-no-delete tcb-no-save" data-css="tve-u-1685e66a04c">Unlimited check writing, telephone transfers and automated payments.</span>
+																	<div
+																		class="thrv_wrapper thrv_icon tve_no_drag tcb-no-delete tcb-no-clone tcb-no-save tcb-icon-inherit-style">
+																		<svg class="tcb-icon" viewBox="0 0 32 32"
+																			data-id="icon-check" data-name="">
+																			<path
+																				d="M29.333 10.267c0 0.4-0.133 0.8-0.533 1.2l-14.8 14.8c-0.267 0.267-0.667 0.4-1.067 0.4s-0.933-0.133-1.2-0.533l-2.4-2.267-6.267-6.267c-0.267-0.267-0.4-0.667-0.4-1.2s0.133-0.8 0.533-1.2l2.4-2.4c0.267-0.133 0.667-0.4 1.067-0.4s0.8 0.133 1.2 0.533l5.067 5.067 11.2-11.333c0.267-0.267 0.667-0.533 1.2-0.533 0.4 0 0.8 0.133 1.2 0.533l2.4 2.4c0.267 0.267 0.4 0.667 0.4 1.2z">
+																			</path>
+																		</svg>
+																	</div>
+																</div><span
+																	class="thrv-advanced-inline-text tve_editable tcb-styled-list-icon-text tcb-no-delete tcb-no-save"
+																	data-css="tve-u-1685e66a04c">Unlimited check
+																	writing, telephone transfers and automated
+																	payments.</span>
 															</li>
 														</ul>
 													</div>
-													<div class="thrv_wrapper thrv_text_element" data-css="tve-u-168879f876d"> </div>
+													<div class="thrv_wrapper thrv_text_element"
+														data-css="tve-u-168879f876d"> </div>
 												</div>
 												<div class="tve_scTC tve_scTC4" style="display: none;">
 													<div class="thrv_wrapper thrv_text_element" data-tag="h2">
 														<h2 class="">Interest Checking</h2>
 													</div>
-													<div class="thrv_wrapper thrv-styled_list" data-icon-code="icon-check" data-css="tve-u-16887665f7d">
+													<div class="thrv_wrapper thrv-styled_list"
+														data-icon-code="icon-check" data-css="tve-u-16887665f7d">
 														<ul class="tcb-styled-list">
 															<li class="thrv-styled-list-item">
 																<div class="tcb-styled-list-icon">
-																	<div class="thrv_wrapper thrv_icon tve_no_drag tcb-no-delete tcb-no-clone tcb-no-save tcb-icon-inherit-style"><svg class="tcb-icon" viewBox="0 0 32 32" data-id="icon-check" data-name="">
-																			<path d="M29.333 10.267c0 0.4-0.133 0.8-0.533 1.2l-14.8 14.8c-0.267 0.267-0.667 0.4-1.067 0.4s-0.933-0.133-1.2-0.533l-2.4-2.267-6.267-6.267c-0.267-0.267-0.4-0.667-0.4-1.2s0.133-0.8 0.533-1.2l2.4-2.4c0.267-0.133 0.667-0.4 1.067-0.4s0.8 0.133 1.2 0.533l5.067 5.067 11.2-11.333c0.267-0.267 0.667-0.533 1.2-0.533 0.4 0 0.8 0.133 1.2 0.533l2.4 2.4c0.267 0.267 0.4 0.667 0.4 1.2z"></path>
-																		</svg></div>
-																</div><span class="thrv-advanced-inline-text tve_editable tcb-styled-list-icon-text tcb-no-delete tcb-no-save" data-css="tve-u-1685e5fd360">For sole proprietors and nonprofit organizations.</span>
+																	<div
+																		class="thrv_wrapper thrv_icon tve_no_drag tcb-no-delete tcb-no-clone tcb-no-save tcb-icon-inherit-style">
+																		<svg class="tcb-icon" viewBox="0 0 32 32"
+																			data-id="icon-check" data-name="">
+																			<path
+																				d="M29.333 10.267c0 0.4-0.133 0.8-0.533 1.2l-14.8 14.8c-0.267 0.267-0.667 0.4-1.067 0.4s-0.933-0.133-1.2-0.533l-2.4-2.267-6.267-6.267c-0.267-0.267-0.4-0.667-0.4-1.2s0.133-0.8 0.533-1.2l2.4-2.4c0.267-0.133 0.667-0.4 1.067-0.4s0.8 0.133 1.2 0.533l5.067 5.067 11.2-11.333c0.267-0.267 0.667-0.533 1.2-0.533 0.4 0 0.8 0.133 1.2 0.533l2.4 2.4c0.267 0.267 0.4 0.667 0.4 1.2z">
+																			</path>
+																		</svg>
+																	</div>
+																</div><span
+																	class="thrv-advanced-inline-text tve_editable tcb-styled-list-icon-text tcb-no-delete tcb-no-save"
+																	data-css="tve-u-1685e5fd360">For sole
+																	proprietors and nonprofit organizations.</span>
 															</li>
 															<li class="thrv-styled-list-item">
 																<div class="tcb-styled-list-icon">
-																	<div class="thrv_wrapper thrv_icon tve_no_drag tcb-no-delete tcb-no-clone tcb-no-save tcb-icon-inherit-style"><svg class="tcb-icon" viewBox="0 0 32 32" data-id="icon-check" data-name="">
-																			<path d="M29.333 10.267c0 0.4-0.133 0.8-0.533 1.2l-14.8 14.8c-0.267 0.267-0.667 0.4-1.067 0.4s-0.933-0.133-1.2-0.533l-2.4-2.267-6.267-6.267c-0.267-0.267-0.4-0.667-0.4-1.2s0.133-0.8 0.533-1.2l2.4-2.4c0.267-0.133 0.667-0.4 1.067-0.4s0.8 0.133 1.2 0.533l5.067 5.067 11.2-11.333c0.267-0.267 0.667-0.533 1.2-0.533 0.4 0 0.8 0.133 1.2 0.533l2.4 2.4c0.267 0.267 0.4 0.667 0.4 1.2z"></path>
-																		</svg></div>
-																</div><span class="thrv-advanced-inline-text tve_editable tcb-styled-list-icon-text tcb-no-delete tcb-no-save" data-css="tve-u-1685e5fd360">Simplified checking with interest.</span>
+																	<div
+																		class="thrv_wrapper thrv_icon tve_no_drag tcb-no-delete tcb-no-clone tcb-no-save tcb-icon-inherit-style">
+																		<svg class="tcb-icon" viewBox="0 0 32 32"
+																			data-id="icon-check" data-name="">
+																			<path
+																				d="M29.333 10.267c0 0.4-0.133 0.8-0.533 1.2l-14.8 14.8c-0.267 0.267-0.667 0.4-1.067 0.4s-0.933-0.133-1.2-0.533l-2.4-2.267-6.267-6.267c-0.267-0.267-0.4-0.667-0.4-1.2s0.133-0.8 0.533-1.2l2.4-2.4c0.267-0.133 0.667-0.4 1.067-0.4s0.8 0.133 1.2 0.533l5.067 5.067 11.2-11.333c0.267-0.267 0.667-0.533 1.2-0.533 0.4 0 0.8 0.133 1.2 0.533l2.4 2.4c0.267 0.267 0.4 0.667 0.4 1.2z">
+																			</path>
+																		</svg>
+																	</div>
+																</div><span
+																	class="thrv-advanced-inline-text tve_editable tcb-styled-list-icon-text tcb-no-delete tcb-no-save"
+																	data-css="tve-u-1685e5fd360">Simplified checking
+																	with interest.</span>
 															</li>
 															<li class="thrv-styled-list-item">
 																<div class="tcb-styled-list-icon">
-																	<div class="thrv_wrapper thrv_icon tve_no_drag tcb-no-delete tcb-no-clone tcb-no-save tcb-icon-inherit-style"><svg class="tcb-icon" viewBox="0 0 32 32" data-id="icon-check" data-name="">
-																			<path d="M29.333 10.267c0 0.4-0.133 0.8-0.533 1.2l-14.8 14.8c-0.267 0.267-0.667 0.4-1.067 0.4s-0.933-0.133-1.2-0.533l-2.4-2.267-6.267-6.267c-0.267-0.267-0.4-0.667-0.4-1.2s0.133-0.8 0.533-1.2l2.4-2.4c0.267-0.133 0.667-0.4 1.067-0.4s0.8 0.133 1.2 0.533l5.067 5.067 11.2-11.333c0.267-0.267 0.667-0.533 1.2-0.533 0.4 0 0.8 0.133 1.2 0.533l2.4 2.4c0.267 0.267 0.4 0.667 0.4 1.2z"></path>
-																		</svg></div>
-																</div><span class="thrv-advanced-inline-text tve_editable tcb-styled-list-icon-text tcb-no-delete tcb-no-save" data-css="tve-u-1685e5fd360">No service charge when balance requirements are met.<span data-css="tve-u-1688771cafc"><sup>1</sup></span></span>
+																	<div
+																		class="thrv_wrapper thrv_icon tve_no_drag tcb-no-delete tcb-no-clone tcb-no-save tcb-icon-inherit-style">
+																		<svg class="tcb-icon" viewBox="0 0 32 32"
+																			data-id="icon-check" data-name="">
+																			<path
+																				d="M29.333 10.267c0 0.4-0.133 0.8-0.533 1.2l-14.8 14.8c-0.267 0.267-0.667 0.4-1.067 0.4s-0.933-0.133-1.2-0.533l-2.4-2.267-6.267-6.267c-0.267-0.267-0.4-0.667-0.4-1.2s0.133-0.8 0.533-1.2l2.4-2.4c0.267-0.133 0.667-0.4 1.067-0.4s0.8 0.133 1.2 0.533l5.067 5.067 11.2-11.333c0.267-0.267 0.667-0.533 1.2-0.533 0.4 0 0.8 0.133 1.2 0.533l2.4 2.4c0.267 0.267 0.4 0.667 0.4 1.2z">
+																			</path>
+																		</svg>
+																	</div>
+																</div><span
+																	class="thrv-advanced-inline-text tve_editable tcb-styled-list-icon-text tcb-no-delete tcb-no-save"
+																	data-css="tve-u-1685e5fd360">No service charge
+																	when balance requirements are met.<span
+																		data-css="tve-u-1688771cafc"><sup>1</sup></span></span>
 															</li>
 															<li class="thrv-styled-list-item">
 																<div class="tcb-styled-list-icon">
-																	<div class="thrv_wrapper thrv_icon tve_no_drag tcb-no-delete tcb-no-clone tcb-no-save tcb-icon-inherit-style"><svg class="tcb-icon" viewBox="0 0 32 32" data-id="icon-check" data-name="">
-																			<path d="M29.333 10.267c0 0.4-0.133 0.8-0.533 1.2l-14.8 14.8c-0.267 0.267-0.667 0.4-1.067 0.4s-0.933-0.133-1.2-0.533l-2.4-2.267-6.267-6.267c-0.267-0.267-0.4-0.667-0.4-1.2s0.133-0.8 0.533-1.2l2.4-2.4c0.267-0.133 0.667-0.4 1.067-0.4s0.8 0.133 1.2 0.533l5.067 5.067 11.2-11.333c0.267-0.267 0.667-0.533 1.2-0.533 0.4 0 0.8 0.133 1.2 0.533l2.4 2.4c0.267 0.267 0.4 0.667 0.4 1.2z"></path>
-																		</svg></div>
-																</div><span class="thrv-advanced-inline-text tve_editable tcb-styled-list-icon-text tcb-no-delete tcb-no-save" data-css="tve-u-1685e5fd360">StarConnect Plus online banking included.&nbsp;</span>
+																	<div
+																		class="thrv_wrapper thrv_icon tve_no_drag tcb-no-delete tcb-no-clone tcb-no-save tcb-icon-inherit-style">
+																		<svg class="tcb-icon" viewBox="0 0 32 32"
+																			data-id="icon-check" data-name="">
+																			<path
+																				d="M29.333 10.267c0 0.4-0.133 0.8-0.533 1.2l-14.8 14.8c-0.267 0.267-0.667 0.4-1.067 0.4s-0.933-0.133-1.2-0.533l-2.4-2.267-6.267-6.267c-0.267-0.267-0.4-0.667-0.4-1.2s0.133-0.8 0.533-1.2l2.4-2.4c0.267-0.133 0.667-0.4 1.067-0.4s0.8 0.133 1.2 0.533l5.067 5.067 11.2-11.333c0.267-0.267 0.667-0.533 1.2-0.533 0.4 0 0.8 0.133 1.2 0.533l2.4 2.4c0.267 0.267 0.4 0.667 0.4 1.2z">
+																			</path>
+																		</svg>
+																	</div>
+																</div><span
+																	class="thrv-advanced-inline-text tve_editable tcb-styled-list-icon-text tcb-no-delete tcb-no-save"
+																	data-css="tve-u-1685e5fd360">StarConnect Plus
+																	online banking included.&nbsp;</span>
 															</li>
 															<li class="thrv-styled-list-item">
 																<div class="tcb-styled-list-icon">
-																	<div class="thrv_wrapper thrv_icon tve_no_drag tcb-no-delete tcb-no-clone tcb-no-save tcb-icon-inherit-style"><svg class="tcb-icon" viewBox="0 0 32 32" data-id="icon-check" data-name="">
-																			<path d="M29.333 10.267c0 0.4-0.133 0.8-0.533 1.2l-14.8 14.8c-0.267 0.267-0.667 0.4-1.067 0.4s-0.933-0.133-1.2-0.533l-2.4-2.267-6.267-6.267c-0.267-0.267-0.4-0.667-0.4-1.2s0.133-0.8 0.533-1.2l2.4-2.4c0.267-0.133 0.667-0.4 1.067-0.4s0.8 0.133 1.2 0.533l5.067 5.067 11.2-11.333c0.267-0.267 0.667-0.533 1.2-0.533 0.4 0 0.8 0.133 1.2 0.533l2.4 2.4c0.267 0.267 0.4 0.667 0.4 1.2z"></path>
-																		</svg></div>
-																</div><span class="thrv-advanced-inline-text tve_editable tcb-styled-list-icon-text tcb-no-delete tcb-no-save" data-css="tve-u-1685e5fd360">Unlimited check writing, telephone transfers and automated payments.</span>
+																	<div
+																		class="thrv_wrapper thrv_icon tve_no_drag tcb-no-delete tcb-no-clone tcb-no-save tcb-icon-inherit-style">
+																		<svg class="tcb-icon" viewBox="0 0 32 32"
+																			data-id="icon-check" data-name="">
+																			<path
+																				d="M29.333 10.267c0 0.4-0.133 0.8-0.533 1.2l-14.8 14.8c-0.267 0.267-0.667 0.4-1.067 0.4s-0.933-0.133-1.2-0.533l-2.4-2.267-6.267-6.267c-0.267-0.267-0.4-0.667-0.4-1.2s0.133-0.8 0.533-1.2l2.4-2.4c0.267-0.133 0.667-0.4 1.067-0.4s0.8 0.133 1.2 0.533l5.067 5.067 11.2-11.333c0.267-0.267 0.667-0.533 1.2-0.533 0.4 0 0.8 0.133 1.2 0.533l2.4 2.4c0.267 0.267 0.4 0.667 0.4 1.2z">
+																			</path>
+																		</svg>
+																	</div>
+																</div><span
+																	class="thrv-advanced-inline-text tve_editable tcb-styled-list-icon-text tcb-no-delete tcb-no-save"
+																	data-css="tve-u-1685e5fd360">Unlimited check
+																	writing, telephone transfers and automated
+																	payments.</span>
 															</li>
 														</ul>
 													</div>
-													<div class="thrv_wrapper thrv_text_element tve-froala fr-box fr-basic" data-css="tve-u-168879a5101"> </div>
+													<div class="thrv_wrapper thrv_text_element tve-froala fr-box fr-basic"
+														data-css="tve-u-168879a5101"> </div>
 												</div>
 												<div class="tve_scTC tve_scTC3" style="display: none;">
 													<div class="thrv_wrapper thrv_text_element" data-tag="h2">
 														<h2 class="">Account Analysis</h2>
 													</div>
-													<div class="thrv_wrapper thrv-styled_list" data-icon-code="icon-check" data-css="tve-u-16887665f7c">
+													<div class="thrv_wrapper thrv-styled_list"
+														data-icon-code="icon-check" data-css="tve-u-16887665f7c">
 														<ul class="tcb-styled-list">
-															<li class="thrv-styled-list-item" data-css="tve-u-1685e54dc74">
+															<li class="thrv-styled-list-item"
+																data-css="tve-u-1685e54dc74">
 																<div class="tcb-styled-list-icon">
-																	<div class="thrv_wrapper thrv_icon tve_no_drag tcb-no-delete tcb-no-clone tcb-no-save tcb-icon-inherit-style"><svg class="tcb-icon" viewBox="0 0 32 32" data-id="icon-check" data-name="">
-																			<path d="M29.333 10.267c0 0.4-0.133 0.8-0.533 1.2l-14.8 14.8c-0.267 0.267-0.667 0.4-1.067 0.4s-0.933-0.133-1.2-0.533l-2.4-2.267-6.267-6.267c-0.267-0.267-0.4-0.667-0.4-1.2s0.133-0.8 0.533-1.2l2.4-2.4c0.267-0.133 0.667-0.4 1.067-0.4s0.8 0.133 1.2 0.533l5.067 5.067 11.2-11.333c0.267-0.267 0.667-0.533 1.2-0.533 0.4 0 0.8 0.133 1.2 0.533l2.4 2.4c0.267 0.267 0.4 0.667 0.4 1.2z"></path>
-																		</svg></div>
-																</div><span class="thrv-advanced-inline-text tve_editable tcb-styled-list-icon-text tcb-no-delete tcb-no-save" data-css="tve-u-1685e55221c">For businesses with multiple cash management needs.</span>
+																	<div
+																		class="thrv_wrapper thrv_icon tve_no_drag tcb-no-delete tcb-no-clone tcb-no-save tcb-icon-inherit-style">
+																		<svg class="tcb-icon" viewBox="0 0 32 32"
+																			data-id="icon-check" data-name="">
+																			<path
+																				d="M29.333 10.267c0 0.4-0.133 0.8-0.533 1.2l-14.8 14.8c-0.267 0.267-0.667 0.4-1.067 0.4s-0.933-0.133-1.2-0.533l-2.4-2.267-6.267-6.267c-0.267-0.267-0.4-0.667-0.4-1.2s0.133-0.8 0.533-1.2l2.4-2.4c0.267-0.133 0.667-0.4 1.067-0.4s0.8 0.133 1.2 0.533l5.067 5.067 11.2-11.333c0.267-0.267 0.667-0.533 1.2-0.533 0.4 0 0.8 0.133 1.2 0.533l2.4 2.4c0.267 0.267 0.4 0.667 0.4 1.2z">
+																			</path>
+																		</svg>
+																	</div>
+																</div><span
+																	class="thrv-advanced-inline-text tve_editable tcb-styled-list-icon-text tcb-no-delete tcb-no-save"
+																	data-css="tve-u-1685e55221c">For businesses with
+																	multiple cash management needs.</span>
 															</li>
-															<li class="thrv-styled-list-item" data-css="tve-u-1685e54dc74">
+															<li class="thrv-styled-list-item"
+																data-css="tve-u-1685e54dc74">
 																<div class="tcb-styled-list-icon">
-																	<div class="thrv_wrapper thrv_icon tve_no_drag tcb-no-delete tcb-no-clone tcb-no-save tcb-icon-inherit-style"><svg class="tcb-icon" viewBox="0 0 32 32" data-id="icon-check" data-name="">
-																			<path d="M29.333 10.267c0 0.4-0.133 0.8-0.533 1.2l-14.8 14.8c-0.267 0.267-0.667 0.4-1.067 0.4s-0.933-0.133-1.2-0.533l-2.4-2.267-6.267-6.267c-0.267-0.267-0.4-0.667-0.4-1.2s0.133-0.8 0.533-1.2l2.4-2.4c0.267-0.133 0.667-0.4 1.067-0.4s0.8 0.133 1.2 0.533l5.067 5.067 11.2-11.333c0.267-0.267 0.667-0.533 1.2-0.533 0.4 0 0.8 0.133 1.2 0.533l2.4 2.4c0.267 0.267 0.4 0.667 0.4 1.2z"></path>
-																		</svg></div>
-																</div><span class="thrv-advanced-inline-text tve_editable tcb-styled-list-icon-text tcb-no-delete tcb-no-save" data-css="tve-u-1685e55221c">Checking with detailed cash management and financial tracking features.</span>
+																	<div
+																		class="thrv_wrapper thrv_icon tve_no_drag tcb-no-delete tcb-no-clone tcb-no-save tcb-icon-inherit-style">
+																		<svg class="tcb-icon" viewBox="0 0 32 32"
+																			data-id="icon-check" data-name="">
+																			<path
+																				d="M29.333 10.267c0 0.4-0.133 0.8-0.533 1.2l-14.8 14.8c-0.267 0.267-0.667 0.4-1.067 0.4s-0.933-0.133-1.2-0.533l-2.4-2.267-6.267-6.267c-0.267-0.267-0.4-0.667-0.4-1.2s0.133-0.8 0.533-1.2l2.4-2.4c0.267-0.133 0.667-0.4 1.067-0.4s0.8 0.133 1.2 0.533l5.067 5.067 11.2-11.333c0.267-0.267 0.667-0.533 1.2-0.533 0.4 0 0.8 0.133 1.2 0.533l2.4 2.4c0.267 0.267 0.4 0.667 0.4 1.2z">
+																			</path>
+																		</svg>
+																	</div>
+																</div><span
+																	class="thrv-advanced-inline-text tve_editable tcb-styled-list-icon-text tcb-no-delete tcb-no-save"
+																	data-css="tve-u-1685e55221c">Checking with
+																	detailed cash management and financial tracking
+																	features.</span>
 															</li>
-															<li class="thrv-styled-list-item" data-css="tve-u-1685e54dc74">
+															<li class="thrv-styled-list-item"
+																data-css="tve-u-1685e54dc74">
 																<div class="tcb-styled-list-icon">
-																	<div class="thrv_wrapper thrv_icon tve_no_drag tcb-no-delete tcb-no-clone tcb-no-save tcb-icon-inherit-style"><svg class="tcb-icon" viewBox="0 0 32 32" data-id="icon-check" data-name="">
-																			<path d="M29.333 10.267c0 0.4-0.133 0.8-0.533 1.2l-14.8 14.8c-0.267 0.267-0.667 0.4-1.067 0.4s-0.933-0.133-1.2-0.533l-2.4-2.267-6.267-6.267c-0.267-0.267-0.4-0.667-0.4-1.2s0.133-0.8 0.533-1.2l2.4-2.4c0.267-0.133 0.667-0.4 1.067-0.4s0.8 0.133 1.2 0.533l5.067 5.067 11.2-11.333c0.267-0.267 0.667-0.533 1.2-0.533 0.4 0 0.8 0.133 1.2 0.533l2.4 2.4c0.267 0.267 0.4 0.667 0.4 1.2z"></path>
-																		</svg></div>
-																</div><span class="thrv-advanced-inline-text tve_editable tcb-styled-list-icon-text tcb-no-delete tcb-no-save" data-css="tve-u-1685e55221c">Earnings allowance on positive collected balance may offset or eliminate fees.</span>
+																	<div
+																		class="thrv_wrapper thrv_icon tve_no_drag tcb-no-delete tcb-no-clone tcb-no-save tcb-icon-inherit-style">
+																		<svg class="tcb-icon" viewBox="0 0 32 32"
+																			data-id="icon-check" data-name="">
+																			<path
+																				d="M29.333 10.267c0 0.4-0.133 0.8-0.533 1.2l-14.8 14.8c-0.267 0.267-0.667 0.4-1.067 0.4s-0.933-0.133-1.2-0.533l-2.4-2.267-6.267-6.267c-0.267-0.267-0.4-0.667-0.4-1.2s0.133-0.8 0.533-1.2l2.4-2.4c0.267-0.133 0.667-0.4 1.067-0.4s0.8 0.133 1.2 0.533l5.067 5.067 11.2-11.333c0.267-0.267 0.667-0.533 1.2-0.533 0.4 0 0.8 0.133 1.2 0.533l2.4 2.4c0.267 0.267 0.4 0.667 0.4 1.2z">
+																			</path>
+																		</svg>
+																	</div>
+																</div><span
+																	class="thrv-advanced-inline-text tve_editable tcb-styled-list-icon-text tcb-no-delete tcb-no-save"
+																	data-css="tve-u-1685e55221c">Earnings allowance
+																	on positive collected balance may offset or
+																	eliminate fees.</span>
 															</li>
-															<li class="thrv-styled-list-item" data-css="tve-u-1685e54dc74">
+															<li class="thrv-styled-list-item"
+																data-css="tve-u-1685e54dc74">
 																<div class="tcb-styled-list-icon">
-																	<div class="thrv_wrapper thrv_icon tve_no_drag tcb-no-delete tcb-no-clone tcb-no-save tcb-icon-inherit-style"><svg class="tcb-icon" viewBox="0 0 32 32" data-id="icon-check" data-name="">
-																			<path d="M29.333 10.267c0 0.4-0.133 0.8-0.533 1.2l-14.8 14.8c-0.267 0.267-0.667 0.4-1.067 0.4s-0.933-0.133-1.2-0.533l-2.4-2.267-6.267-6.267c-0.267-0.267-0.4-0.667-0.4-1.2s0.133-0.8 0.533-1.2l2.4-2.4c0.267-0.133 0.667-0.4 1.067-0.4s0.8 0.133 1.2 0.533l5.067 5.067 11.2-11.333c0.267-0.267 0.667-0.533 1.2-0.533 0.4 0 0.8 0.133 1.2 0.533l2.4 2.4c0.267 0.267 0.4 0.667 0.4 1.2z"></path>
-																		</svg></div>
-																</div><span class="thrv-advanced-inline-text tve_editable tcb-styled-list-icon-text tcb-no-delete tcb-no-save" data-css="tve-u-1685e55221c">StarConnect Plus online banking included.&nbsp;</span>
+																	<div
+																		class="thrv_wrapper thrv_icon tve_no_drag tcb-no-delete tcb-no-clone tcb-no-save tcb-icon-inherit-style">
+																		<svg class="tcb-icon" viewBox="0 0 32 32"
+																			data-id="icon-check" data-name="">
+																			<path
+																				d="M29.333 10.267c0 0.4-0.133 0.8-0.533 1.2l-14.8 14.8c-0.267 0.267-0.667 0.4-1.067 0.4s-0.933-0.133-1.2-0.533l-2.4-2.267-6.267-6.267c-0.267-0.267-0.4-0.667-0.4-1.2s0.133-0.8 0.533-1.2l2.4-2.4c0.267-0.133 0.667-0.4 1.067-0.4s0.8 0.133 1.2 0.533l5.067 5.067 11.2-11.333c0.267-0.267 0.667-0.533 1.2-0.533 0.4 0 0.8 0.133 1.2 0.533l2.4 2.4c0.267 0.267 0.4 0.667 0.4 1.2z">
+																			</path>
+																		</svg>
+																	</div>
+																</div><span
+																	class="thrv-advanced-inline-text tve_editable tcb-styled-list-icon-text tcb-no-delete tcb-no-save"
+																	data-css="tve-u-1685e55221c">StarConnect Plus
+																	online banking included.&nbsp;</span>
 															</li>
-															<li class="thrv-styled-list-item" data-css="tve-u-1685e54dc74">
+															<li class="thrv-styled-list-item"
+																data-css="tve-u-1685e54dc74">
 																<div class="tcb-styled-list-icon">
-																	<div class="thrv_wrapper thrv_icon tve_no_drag tcb-no-delete tcb-no-clone tcb-no-save tcb-icon-inherit-style"><svg class="tcb-icon" viewBox="0 0 32 32" data-id="icon-check" data-name="">
-																			<path d="M29.333 10.267c0 0.4-0.133 0.8-0.533 1.2l-14.8 14.8c-0.267 0.267-0.667 0.4-1.067 0.4s-0.933-0.133-1.2-0.533l-2.4-2.267-6.267-6.267c-0.267-0.267-0.4-0.667-0.4-1.2s0.133-0.8 0.533-1.2l2.4-2.4c0.267-0.133 0.667-0.4 1.067-0.4s0.8 0.133 1.2 0.533l5.067 5.067 11.2-11.333c0.267-0.267 0.667-0.533 1.2-0.533 0.4 0 0.8 0.133 1.2 0.533l2.4 2.4c0.267 0.267 0.4 0.667 0.4 1.2z"></path>
-																		</svg></div>
-																</div><span class="thrv-advanced-inline-text tve_editable tcb-styled-list-icon-text tcb-no-delete tcb-no-save" data-css="tve-u-1685e55221c">Fees are based on account activity.&nbsp;</span>
+																	<div
+																		class="thrv_wrapper thrv_icon tve_no_drag tcb-no-delete tcb-no-clone tcb-no-save tcb-icon-inherit-style">
+																		<svg class="tcb-icon" viewBox="0 0 32 32"
+																			data-id="icon-check" data-name="">
+																			<path
+																				d="M29.333 10.267c0 0.4-0.133 0.8-0.533 1.2l-14.8 14.8c-0.267 0.267-0.667 0.4-1.067 0.4s-0.933-0.133-1.2-0.533l-2.4-2.267-6.267-6.267c-0.267-0.267-0.4-0.667-0.4-1.2s0.133-0.8 0.533-1.2l2.4-2.4c0.267-0.133 0.667-0.4 1.067-0.4s0.8 0.133 1.2 0.533l5.067 5.067 11.2-11.333c0.267-0.267 0.667-0.533 1.2-0.533 0.4 0 0.8 0.133 1.2 0.533l2.4 2.4c0.267 0.267 0.4 0.667 0.4 1.2z">
+																			</path>
+																		</svg>
+																	</div>
+																</div><span
+																	class="thrv-advanced-inline-text tve_editable tcb-styled-list-icon-text tcb-no-delete tcb-no-save"
+																	data-css="tve-u-1685e55221c">Fees are based on
+																	account activity.&nbsp;</span>
 															</li>
-															<li class="thrv-styled-list-item" data-css="tve-u-1685e54dc74">
+															<li class="thrv-styled-list-item"
+																data-css="tve-u-1685e54dc74">
 																<div class="tcb-styled-list-icon">
-																	<div class="thrv_wrapper thrv_icon tve_no_drag tcb-no-delete tcb-no-clone tcb-no-save tcb-icon-inherit-style"><svg class="tcb-icon" viewBox="0 0 32 32" data-id="icon-check" data-name="">
-																			<path d="M29.333 10.267c0 0.4-0.133 0.8-0.533 1.2l-14.8 14.8c-0.267 0.267-0.667 0.4-1.067 0.4s-0.933-0.133-1.2-0.533l-2.4-2.267-6.267-6.267c-0.267-0.267-0.4-0.667-0.4-1.2s0.133-0.8 0.533-1.2l2.4-2.4c0.267-0.133 0.667-0.4 1.067-0.4s0.8 0.133 1.2 0.533l5.067 5.067 11.2-11.333c0.267-0.267 0.667-0.533 1.2-0.533 0.4 0 0.8 0.133 1.2 0.533l2.4 2.4c0.267 0.267 0.4 0.667 0.4 1.2z"></path>
-																		</svg></div>
-																</div><span class="thrv-advanced-inline-text tve_editable tcb-styled-list-icon-text tcb-no-delete tcb-no-save" data-css="tve-u-1685e55221c">Consolidate your multiple business checking account balances to offset charges.&nbsp;</span>
+																	<div
+																		class="thrv_wrapper thrv_icon tve_no_drag tcb-no-delete tcb-no-clone tcb-no-save tcb-icon-inherit-style">
+																		<svg class="tcb-icon" viewBox="0 0 32 32"
+																			data-id="icon-check" data-name="">
+																			<path
+																				d="M29.333 10.267c0 0.4-0.133 0.8-0.533 1.2l-14.8 14.8c-0.267 0.267-0.667 0.4-1.067 0.4s-0.933-0.133-1.2-0.533l-2.4-2.267-6.267-6.267c-0.267-0.267-0.4-0.667-0.4-1.2s0.133-0.8 0.533-1.2l2.4-2.4c0.267-0.133 0.667-0.4 1.067-0.4s0.8 0.133 1.2 0.533l5.067 5.067 11.2-11.333c0.267-0.267 0.667-0.533 1.2-0.533 0.4 0 0.8 0.133 1.2 0.533l2.4 2.4c0.267 0.267 0.4 0.667 0.4 1.2z">
+																			</path>
+																		</svg>
+																	</div>
+																</div><span
+																	class="thrv-advanced-inline-text tve_editable tcb-styled-list-icon-text tcb-no-delete tcb-no-save"
+																	data-css="tve-u-1685e55221c">Consolidate your
+																	multiple business checking account balances to
+																	offset charges.&nbsp;</span>
 															</li>
-															<li class="thrv-styled-list-item" data-css="tve-u-1685e54dc74">
+															<li class="thrv-styled-list-item"
+																data-css="tve-u-1685e54dc74">
 																<div class="tcb-styled-list-icon">
-																	<div class="thrv_wrapper thrv_icon tve_no_drag tcb-no-delete tcb-no-clone tcb-no-save tcb-icon-inherit-style"><svg class="tcb-icon" viewBox="0 0 32 32" data-id="icon-check" data-name="">
-																			<path d="M29.333 10.267c0 0.4-0.133 0.8-0.533 1.2l-14.8 14.8c-0.267 0.267-0.667 0.4-1.067 0.4s-0.933-0.133-1.2-0.533l-2.4-2.267-6.267-6.267c-0.267-0.267-0.4-0.667-0.4-1.2s0.133-0.8 0.533-1.2l2.4-2.4c0.267-0.133 0.667-0.4 1.067-0.4s0.8 0.133 1.2 0.533l5.067 5.067 11.2-11.333c0.267-0.267 0.667-0.533 1.2-0.533 0.4 0 0.8 0.133 1.2 0.533l2.4 2.4c0.267 0.267 0.4 0.667 0.4 1.2z"></path>
-																		</svg></div>
-																</div><span class="thrv-advanced-inline-text tve_editable tcb-styled-list-icon-text tcb-no-delete tcb-no-save" data-css="tve-u-1685e55221c">Analysis statement lists detailed activity for simplified account management.</span>
+																	<div
+																		class="thrv_wrapper thrv_icon tve_no_drag tcb-no-delete tcb-no-clone tcb-no-save tcb-icon-inherit-style">
+																		<svg class="tcb-icon" viewBox="0 0 32 32"
+																			data-id="icon-check" data-name="">
+																			<path
+																				d="M29.333 10.267c0 0.4-0.133 0.8-0.533 1.2l-14.8 14.8c-0.267 0.267-0.667 0.4-1.067 0.4s-0.933-0.133-1.2-0.533l-2.4-2.267-6.267-6.267c-0.267-0.267-0.4-0.667-0.4-1.2s0.133-0.8 0.533-1.2l2.4-2.4c0.267-0.133 0.667-0.4 1.067-0.4s0.8 0.133 1.2 0.533l5.067 5.067 11.2-11.333c0.267-0.267 0.667-0.533 1.2-0.533 0.4 0 0.8 0.133 1.2 0.533l2.4 2.4c0.267 0.267 0.4 0.667 0.4 1.2z">
+																			</path>
+																		</svg>
+																	</div>
+																</div><span
+																	class="thrv-advanced-inline-text tve_editable tcb-styled-list-icon-text tcb-no-delete tcb-no-save"
+																	data-css="tve-u-1685e55221c">Analysis statement
+																	lists detailed activity for simplified account
+																	management.</span>
 															</li>
 														</ul>
 													</div>
@@ -2126,63 +2578,148 @@ Makes bullets line up correctly
 													<div class="thrv_wrapper thrv_text_element" data-tag="h2">
 														<h2 class="">Business Star</h2>
 													</div>
-													<div class="thrv_wrapper thrv_text_element" data-css="tve-u-168877f09ac">
-														<p>Link up to four checking and savings accounts to your primary checking account and earn credit toward monthly activity costs. Plus, you get StarConnect Plus online banking, an introductory Business Check Package, free personal size safe deposit box, discounted fees on cashier's checks, and more.</p>
+													<div class="thrv_wrapper thrv_text_element"
+														data-css="tve-u-168877f09ac">
+														<p>Link up to four checking and savings accounts to your
+															primary checking account and earn credit toward monthly
+															activity costs. Plus, you get StarConnect Plus online
+															banking, an introductory Business Check Package, free
+															personal size safe deposit box, discounted fees on
+															cashier's checks, and more.</p>
 													</div>
-													<div class="thrv_wrapper thrv-styled_list" data-icon-code="icon-check" data-css="tve-u-16887665f7b">
+													<div class="thrv_wrapper thrv-styled_list"
+														data-icon-code="icon-check" data-css="tve-u-16887665f7b">
 														<ul class="tcb-styled-list">
-															<li class="thrv-styled-list-item" data-css="tve-u-1685e4dd423">
+															<li class="thrv-styled-list-item"
+																data-css="tve-u-1685e4dd423">
 																<div class="tcb-styled-list-icon">
-																	<div class="thrv_wrapper thrv_icon tve_no_drag tcb-no-delete tcb-no-clone tcb-no-save tcb-icon-inherit-style"><svg class="tcb-icon" viewBox="0 0 32 32" data-id="icon-check" data-name="">
-																			<path d="M29.333 10.267c0 0.4-0.133 0.8-0.533 1.2l-14.8 14.8c-0.267 0.267-0.667 0.4-1.067 0.4s-0.933-0.133-1.2-0.533l-2.4-2.267-6.267-6.267c-0.267-0.267-0.4-0.667-0.4-1.2s0.133-0.8 0.533-1.2l2.4-2.4c0.267-0.133 0.667-0.4 1.067-0.4s0.8 0.133 1.2 0.533l5.067 5.067 11.2-11.333c0.267-0.267 0.667-0.533 1.2-0.533 0.4 0 0.8 0.133 1.2 0.533l2.4 2.4c0.267 0.267 0.4 0.667 0.4 1.2z"></path>
-																		</svg></div>
-																</div><span class="thrv-advanced-inline-text tve_editable tcb-styled-list-icon-text tcb-no-delete tcb-no-save" data-css="tve-u-1685e4f100e">Packaged account with checking, savings, and valuable business savings.</span>
+																	<div
+																		class="thrv_wrapper thrv_icon tve_no_drag tcb-no-delete tcb-no-clone tcb-no-save tcb-icon-inherit-style">
+																		<svg class="tcb-icon" viewBox="0 0 32 32"
+																			data-id="icon-check" data-name="">
+																			<path
+																				d="M29.333 10.267c0 0.4-0.133 0.8-0.533 1.2l-14.8 14.8c-0.267 0.267-0.667 0.4-1.067 0.4s-0.933-0.133-1.2-0.533l-2.4-2.267-6.267-6.267c-0.267-0.267-0.4-0.667-0.4-1.2s0.133-0.8 0.533-1.2l2.4-2.4c0.267-0.133 0.667-0.4 1.067-0.4s0.8 0.133 1.2 0.533l5.067 5.067 11.2-11.333c0.267-0.267 0.667-0.533 1.2-0.533 0.4 0 0.8 0.133 1.2 0.533l2.4 2.4c0.267 0.267 0.4 0.667 0.4 1.2z">
+																			</path>
+																		</svg>
+																	</div>
+																</div><span
+																	class="thrv-advanced-inline-text tve_editable tcb-styled-list-icon-text tcb-no-delete tcb-no-save"
+																	data-css="tve-u-1685e4f100e">Packaged account
+																	with checking, savings, and valuable business
+																	savings.</span>
 															</li>
-															<li class="thrv-styled-list-item" data-css="tve-u-1685e4dd423">
+															<li class="thrv-styled-list-item"
+																data-css="tve-u-1685e4dd423">
 																<div class="tcb-styled-list-icon">
-																	<div class="thrv_wrapper thrv_icon tve_no_drag tcb-no-delete tcb-no-clone tcb-no-save tcb-icon-inherit-style"><svg class="tcb-icon" viewBox="0 0 32 32" data-id="icon-check" data-name="">
-																			<path d="M29.333 10.267c0 0.4-0.133 0.8-0.533 1.2l-14.8 14.8c-0.267 0.267-0.667 0.4-1.067 0.4s-0.933-0.133-1.2-0.533l-2.4-2.267-6.267-6.267c-0.267-0.267-0.4-0.667-0.4-1.2s0.133-0.8 0.533-1.2l2.4-2.4c0.267-0.133 0.667-0.4 1.067-0.4s0.8 0.133 1.2 0.533l5.067 5.067 11.2-11.333c0.267-0.267 0.667-0.533 1.2-0.533 0.4 0 0.8 0.133 1.2 0.533l2.4 2.4c0.267 0.267 0.4 0.667 0.4 1.2z"></path>
-																		</svg></div>
-																</div><span class="thrv-advanced-inline-text tve_editable tcb-styled-list-icon-text tcb-no-delete tcb-no-save" data-css="tve-u-1685e4f100e">No service charge when balance requirements are met.<span data-css="tve-u-1688771cafc"><sup>1</sup></span></span>
+																	<div
+																		class="thrv_wrapper thrv_icon tve_no_drag tcb-no-delete tcb-no-clone tcb-no-save tcb-icon-inherit-style">
+																		<svg class="tcb-icon" viewBox="0 0 32 32"
+																			data-id="icon-check" data-name="">
+																			<path
+																				d="M29.333 10.267c0 0.4-0.133 0.8-0.533 1.2l-14.8 14.8c-0.267 0.267-0.667 0.4-1.067 0.4s-0.933-0.133-1.2-0.533l-2.4-2.267-6.267-6.267c-0.267-0.267-0.4-0.667-0.4-1.2s0.133-0.8 0.533-1.2l2.4-2.4c0.267-0.133 0.667-0.4 1.067-0.4s0.8 0.133 1.2 0.533l5.067 5.067 11.2-11.333c0.267-0.267 0.667-0.533 1.2-0.533 0.4 0 0.8 0.133 1.2 0.533l2.4 2.4c0.267 0.267 0.4 0.667 0.4 1.2z">
+																			</path>
+																		</svg>
+																	</div>
+																</div><span
+																	class="thrv-advanced-inline-text tve_editable tcb-styled-list-icon-text tcb-no-delete tcb-no-save"
+																	data-css="tve-u-1685e4f100e">No service charge
+																	when balance requirements are met.<span
+																		data-css="tve-u-1688771cafc"><sup>1</sup></span></span>
 															</li>
-															<li class="thrv-styled-list-item" data-css="tve-u-1685e4dd423">
+															<li class="thrv-styled-list-item"
+																data-css="tve-u-1685e4dd423">
 																<div class="tcb-styled-list-icon">
-																	<div class="thrv_wrapper thrv_icon tve_no_drag tcb-no-delete tcb-no-clone tcb-no-save tcb-icon-inherit-style"><svg class="tcb-icon" viewBox="0 0 32 32" data-id="icon-check" data-name="">
-																			<path d="M29.333 10.267c0 0.4-0.133 0.8-0.533 1.2l-14.8 14.8c-0.267 0.267-0.667 0.4-1.067 0.4s-0.933-0.133-1.2-0.533l-2.4-2.267-6.267-6.267c-0.267-0.267-0.4-0.667-0.4-1.2s0.133-0.8 0.533-1.2l2.4-2.4c0.267-0.133 0.667-0.4 1.067-0.4s0.8 0.133 1.2 0.533l5.067 5.067 11.2-11.333c0.267-0.267 0.667-0.533 1.2-0.533 0.4 0 0.8 0.133 1.2 0.533l2.4 2.4c0.267 0.267 0.4 0.667 0.4 1.2z"></path>
-																		</svg></div>
-																</div><span class="thrv-advanced-inline-text tve_editable tcb-styled-list-icon-text tcb-no-delete tcb-no-save" data-css="tve-u-1685e4f100e">StarConnect Plus™ online banking included.</span>
+																	<div
+																		class="thrv_wrapper thrv_icon tve_no_drag tcb-no-delete tcb-no-clone tcb-no-save tcb-icon-inherit-style">
+																		<svg class="tcb-icon" viewBox="0 0 32 32"
+																			data-id="icon-check" data-name="">
+																			<path
+																				d="M29.333 10.267c0 0.4-0.133 0.8-0.533 1.2l-14.8 14.8c-0.267 0.267-0.667 0.4-1.067 0.4s-0.933-0.133-1.2-0.533l-2.4-2.267-6.267-6.267c-0.267-0.267-0.4-0.667-0.4-1.2s0.133-0.8 0.533-1.2l2.4-2.4c0.267-0.133 0.667-0.4 1.067-0.4s0.8 0.133 1.2 0.533l5.067 5.067 11.2-11.333c0.267-0.267 0.667-0.533 1.2-0.533 0.4 0 0.8 0.133 1.2 0.533l2.4 2.4c0.267 0.267 0.4 0.667 0.4 1.2z">
+																			</path>
+																		</svg>
+																	</div>
+																</div><span
+																	class="thrv-advanced-inline-text tve_editable tcb-styled-list-icon-text tcb-no-delete tcb-no-save"
+																	data-css="tve-u-1685e4f100e">StarConnect Plus™
+																	online banking included.</span>
 															</li>
-															<li class="thrv-styled-list-item" data-css="tve-u-1685e4dd423">
+															<li class="thrv-styled-list-item"
+																data-css="tve-u-1685e4dd423">
 																<div class="tcb-styled-list-icon">
-																	<div class="thrv_wrapper thrv_icon tve_no_drag tcb-no-delete tcb-no-clone tcb-no-save tcb-icon-inherit-style"><svg class="tcb-icon" viewBox="0 0 32 32" data-id="icon-check" data-name="">
-																			<path d="M29.333 10.267c0 0.4-0.133 0.8-0.533 1.2l-14.8 14.8c-0.267 0.267-0.667 0.4-1.067 0.4s-0.933-0.133-1.2-0.533l-2.4-2.267-6.267-6.267c-0.267-0.267-0.4-0.667-0.4-1.2s0.133-0.8 0.533-1.2l2.4-2.4c0.267-0.133 0.667-0.4 1.067-0.4s0.8 0.133 1.2 0.533l5.067 5.067 11.2-11.333c0.267-0.267 0.667-0.533 1.2-0.533 0.4 0 0.8 0.133 1.2 0.533l2.4 2.4c0.267 0.267 0.4 0.667 0.4 1.2z"></path>
-																		</svg></div>
-																</div><span class="thrv-advanced-inline-text tve_editable tcb-styled-list-icon-text tcb-no-delete tcb-no-save" data-css="tve-u-1685e4f100e">Combine up to five checking or saving accounts and receive a consolidated statement.&nbsp;</span>
+																	<div
+																		class="thrv_wrapper thrv_icon tve_no_drag tcb-no-delete tcb-no-clone tcb-no-save tcb-icon-inherit-style">
+																		<svg class="tcb-icon" viewBox="0 0 32 32"
+																			data-id="icon-check" data-name="">
+																			<path
+																				d="M29.333 10.267c0 0.4-0.133 0.8-0.533 1.2l-14.8 14.8c-0.267 0.267-0.667 0.4-1.067 0.4s-0.933-0.133-1.2-0.533l-2.4-2.267-6.267-6.267c-0.267-0.267-0.4-0.667-0.4-1.2s0.133-0.8 0.533-1.2l2.4-2.4c0.267-0.133 0.667-0.4 1.067-0.4s0.8 0.133 1.2 0.533l5.067 5.067 11.2-11.333c0.267-0.267 0.667-0.533 1.2-0.533 0.4 0 0.8 0.133 1.2 0.533l2.4 2.4c0.267 0.267 0.4 0.667 0.4 1.2z">
+																			</path>
+																		</svg>
+																	</div>
+																</div><span
+																	class="thrv-advanced-inline-text tve_editable tcb-styled-list-icon-text tcb-no-delete tcb-no-save"
+																	data-css="tve-u-1685e4f100e">Combine up to five
+																	checking or saving accounts and receive a
+																	consolidated statement.&nbsp;</span>
 															</li>
-															<li class="thrv-styled-list-item" data-css="tve-u-1685e4dd423">
+															<li class="thrv-styled-list-item"
+																data-css="tve-u-1685e4dd423">
 																<div class="tcb-styled-list-icon">
-																	<div class="thrv_wrapper thrv_icon tve_no_drag tcb-no-delete tcb-no-clone tcb-no-save tcb-icon-inherit-style"><svg class="tcb-icon" viewBox="0 0 32 32" data-id="icon-check" data-name="">
-																			<path d="M29.333 10.267c0 0.4-0.133 0.8-0.533 1.2l-14.8 14.8c-0.267 0.267-0.667 0.4-1.067 0.4s-0.933-0.133-1.2-0.533l-2.4-2.267-6.267-6.267c-0.267-0.267-0.4-0.667-0.4-1.2s0.133-0.8 0.533-1.2l2.4-2.4c0.267-0.133 0.667-0.4 1.067-0.4s0.8 0.133 1.2 0.533l5.067 5.067 11.2-11.333c0.267-0.267 0.667-0.533 1.2-0.533 0.4 0 0.8 0.133 1.2 0.533l2.4 2.4c0.267 0.267 0.4 0.667 0.4 1.2z"></path>
-																		</svg></div>
-																</div><span class="thrv-advanced-inline-text tve_editable tcb-styled-list-icon-text tcb-no-delete tcb-no-save" data-css="tve-u-1685e4f100e">Activity charges may be offset by credits based on balances.&nbsp;</span>
+																	<div
+																		class="thrv_wrapper thrv_icon tve_no_drag tcb-no-delete tcb-no-clone tcb-no-save tcb-icon-inherit-style">
+																		<svg class="tcb-icon" viewBox="0 0 32 32"
+																			data-id="icon-check" data-name="">
+																			<path
+																				d="M29.333 10.267c0 0.4-0.133 0.8-0.533 1.2l-14.8 14.8c-0.267 0.267-0.667 0.4-1.067 0.4s-0.933-0.133-1.2-0.533l-2.4-2.267-6.267-6.267c-0.267-0.267-0.4-0.667-0.4-1.2s0.133-0.8 0.533-1.2l2.4-2.4c0.267-0.133 0.667-0.4 1.067-0.4s0.8 0.133 1.2 0.533l5.067 5.067 11.2-11.333c0.267-0.267 0.667-0.533 1.2-0.533 0.4 0 0.8 0.133 1.2 0.533l2.4 2.4c0.267 0.267 0.4 0.667 0.4 1.2z">
+																			</path>
+																		</svg>
+																	</div>
+																</div><span
+																	class="thrv-advanced-inline-text tve_editable tcb-styled-list-icon-text tcb-no-delete tcb-no-save"
+																	data-css="tve-u-1685e4f100e">Activity charges
+																	may be offset by credits based on
+																	balances.&nbsp;</span>
 															</li>
-															<li class="thrv-styled-list-item" data-css="tve-u-1685e4dd423">
+															<li class="thrv-styled-list-item"
+																data-css="tve-u-1685e4dd423">
 																<div class="tcb-styled-list-icon">
-																	<div class="thrv_wrapper thrv_icon tve_no_drag tcb-no-delete tcb-no-clone tcb-no-save tcb-icon-inherit-style"><svg class="tcb-icon" viewBox="0 0 32 32" data-id="icon-check" data-name="">
-																			<path d="M29.333 10.267c0 0.4-0.133 0.8-0.533 1.2l-14.8 14.8c-0.267 0.267-0.667 0.4-1.067 0.4s-0.933-0.133-1.2-0.533l-2.4-2.267-6.267-6.267c-0.267-0.267-0.4-0.667-0.4-1.2s0.133-0.8 0.533-1.2l2.4-2.4c0.267-0.133 0.667-0.4 1.067-0.4s0.8 0.133 1.2 0.533l5.067 5.067 11.2-11.333c0.267-0.267 0.667-0.533 1.2-0.533 0.4 0 0.8 0.133 1.2 0.533l2.4 2.4c0.267 0.267 0.4 0.667 0.4 1.2z"></path>
-																		</svg></div>
-																</div><span class="thrv-advanced-inline-text tve_editable tcb-styled-list-icon-text tcb-no-delete tcb-no-save" data-css="tve-u-1685e4f100e">Bonus package includes introductory credit toward your first order of checks, and up to three cashier's checks per month at no charge.&nbsp;</span>
+																	<div
+																		class="thrv_wrapper thrv_icon tve_no_drag tcb-no-delete tcb-no-clone tcb-no-save tcb-icon-inherit-style">
+																		<svg class="tcb-icon" viewBox="0 0 32 32"
+																			data-id="icon-check" data-name="">
+																			<path
+																				d="M29.333 10.267c0 0.4-0.133 0.8-0.533 1.2l-14.8 14.8c-0.267 0.267-0.667 0.4-1.067 0.4s-0.933-0.133-1.2-0.533l-2.4-2.267-6.267-6.267c-0.267-0.267-0.4-0.667-0.4-1.2s0.133-0.8 0.533-1.2l2.4-2.4c0.267-0.133 0.667-0.4 1.067-0.4s0.8 0.133 1.2 0.533l5.067 5.067 11.2-11.333c0.267-0.267 0.667-0.533 1.2-0.533 0.4 0 0.8 0.133 1.2 0.533l2.4 2.4c0.267 0.267 0.4 0.667 0.4 1.2z">
+																			</path>
+																		</svg>
+																	</div>
+																</div><span
+																	class="thrv-advanced-inline-text tve_editable tcb-styled-list-icon-text tcb-no-delete tcb-no-save"
+																	data-css="tve-u-1685e4f100e">Bonus package
+																	includes introductory credit toward your first
+																	order of checks, and up to three cashier's
+																	checks per month at no charge.&nbsp;</span>
 															</li>
-															<li class="thrv-styled-list-item" data-css="tve-u-1685e4dd423">
+															<li class="thrv-styled-list-item"
+																data-css="tve-u-1685e4dd423">
 																<div class="tcb-styled-list-icon">
-																	<div class="thrv_wrapper thrv_icon tve_no_drag tcb-no-delete tcb-no-clone tcb-no-save tcb-icon-inherit-style"><svg class="tcb-icon" viewBox="0 0 32 32" data-id="icon-check" data-name="">
-																			<path d="M29.333 10.267c0 0.4-0.133 0.8-0.533 1.2l-14.8 14.8c-0.267 0.267-0.667 0.4-1.067 0.4s-0.933-0.133-1.2-0.533l-2.4-2.267-6.267-6.267c-0.267-0.267-0.4-0.667-0.4-1.2s0.133-0.8 0.533-1.2l2.4-2.4c0.267-0.133 0.667-0.4 1.067-0.4s0.8 0.133 1.2 0.533l5.067 5.067 11.2-11.333c0.267-0.267 0.667-0.533 1.2-0.533 0.4 0 0.8 0.133 1.2 0.533l2.4 2.4c0.267 0.267 0.4 0.667 0.4 1.2z"></path>
-																		</svg></div>
-																</div><span class="thrv-advanced-inline-text tve_editable tcb-styled-list-icon-text tcb-no-delete tcb-no-save" data-css="tve-u-1685e4f100e">Personal size safe deposit box included at no charge (or discount on a larger box).</span>
+																	<div
+																		class="thrv_wrapper thrv_icon tve_no_drag tcb-no-delete tcb-no-clone tcb-no-save tcb-icon-inherit-style">
+																		<svg class="tcb-icon" viewBox="0 0 32 32"
+																			data-id="icon-check" data-name="">
+																			<path
+																				d="M29.333 10.267c0 0.4-0.133 0.8-0.533 1.2l-14.8 14.8c-0.267 0.267-0.667 0.4-1.067 0.4s-0.933-0.133-1.2-0.533l-2.4-2.267-6.267-6.267c-0.267-0.267-0.4-0.667-0.4-1.2s0.133-0.8 0.533-1.2l2.4-2.4c0.267-0.133 0.667-0.4 1.067-0.4s0.8 0.133 1.2 0.533l5.067 5.067 11.2-11.333c0.267-0.267 0.667-0.533 1.2-0.533 0.4 0 0.8 0.133 1.2 0.533l2.4 2.4c0.267 0.267 0.4 0.667 0.4 1.2z">
+																			</path>
+																		</svg>
+																	</div>
+																</div><span
+																	class="thrv-advanced-inline-text tve_editable tcb-styled-list-icon-text tcb-no-delete tcb-no-save"
+																	data-css="tve-u-1685e4f100e">Personal size safe
+																	deposit box included at no charge (or discount
+																	on a larger box).</span>
 															</li>
 														</ul>
 													</div>
-													<div class="thrv_wrapper thrv_text_element tve-froala fr-box fr-basic" data-css="tve-u-168877f4722"> </div>
+													<div class="thrv_wrapper thrv_text_element tve-froala fr-box fr-basic"
+														data-css="tve-u-168877f4722"> </div>
 												</div>
 											</div>
 										</div>
@@ -2207,8 +2744,8 @@ Makes bullets line up correctly
 			</div> <!-- ast-container -->
 		</div><!-- #content -->
 
-		<footer
-			class="site-footer" id="colophon" itemtype="https://schema.org/WPFooter" itemscope="itemscope" itemid="#colophon">
+		<footer class="site-footer" id="colophon" itemtype="https://schema.org/WPFooter" itemscope="itemscope"
+			itemid="#colophon">
 
 
 
@@ -2216,10 +2753,12 @@ Makes bullets line up correctly
 				<div class="footer-adv-overlay">
 					<div class="ast-container">
 						<div class="ast-row">
-							<div class="ast-col-lg-3 ast-col-md-3 ast-col-sm-12 ast-col-xs-12 footer-adv-widget footer-adv-widget-1">
+							<div
+								class="ast-col-lg-3 ast-col-md-3 ast-col-sm-12 ast-col-xs-12 footer-adv-widget footer-adv-widget-1">
 								<div id="custom_html-2" class="widget_text widget widget_custom_html">
 									<h2 class="widget-title">Business</h2>
-									<div class="textwidget custom-html-widget"><a href="../online-banking/index.php">Business Online Banking</a><br />
+									<div class="textwidget custom-html-widget"><a
+											href="../online-banking/index.php">Business Online Banking</a><br />
 										<a href="../checking/index.php">Business Checking</a><br />
 										<a href="../savings/index.php">Business Savings</a><br />
 
@@ -2228,34 +2767,53 @@ Makes bullets line up correctly
 									</div>
 								</div>
 							</div>
-							<div class="ast-col-lg-3 ast-col-md-3 ast-col-sm-12 ast-col-xs-12 footer-adv-widget footer-adv-widget-2">
+							<div
+								class="ast-col-lg-3 ast-col-md-3 ast-col-sm-12 ast-col-xs-12 footer-adv-widget footer-adv-widget-2">
 								<div id="custom_html-3" class="widget_text widget widget_custom_html">
 									<h2 class="widget-title">Personal</h2>
-									<div class="textwidget custom-html-widget"><a href="../../personal/online-banking/index.php">Personal Online Banking</a><br />
-										<a href="../../personal/checking/index.php">Personal Checking</a><br />
-										<a href="../../personal/savings/index.php">Personal Savings</a><br />
+									<div class="textwidget custom-html-widget"><a
+											href="<?php echo $url; ?>/personal/online-banking/index.php">Personal
+											Online Banking</a><br />
+										<a href="<?php echo $url; ?>/personal/checking/index.php">Personal
+											Checking</a><br />
+										<a href="<?php echo $url; ?>/personal/savings/index.php">Personal
+											Savings</a><br />
 
-										<a href="../../personal/loans-and-credit/index.php">Personal Loans and Credit</a><br />
-										<a href="../../personal/services/index.php">Personal Services</a>
+										<a href="<?php echo $url; ?>/personal/loans-and-credit/index.php">Personal
+											Loans and Credit</a><br />
+										<a href="<?php echo $url; ?>/personal/services/index.php">Personal
+											Services</a>
 									</div>
 								</div>
 							</div>
-							<div class="ast-col-lg-3 ast-col-md-3 ast-col-sm-12 ast-col-xs-12 footer-adv-widget footer-adv-widget-3">
+							<div
+								class="ast-col-lg-3 ast-col-md-3 ast-col-sm-12 ast-col-xs-12 footer-adv-widget footer-adv-widget-3">
 								<div id="custom_html-4" class="widget_text widget widget_custom_html">
 									<h2 class="widget-title">Info</h2>
-									<div class="textwidget custom-html-widget"><a href="../../about/privacy/index.php">Privacy Policies</a><br />
-										<a href="../../about/patriot-act-policy/index.php">Patriot Act Policy</a><br />
-										<a href="../../about/accessibility/index.php">Web Accessibility</a>
+									<div class="textwidget custom-html-widget"><a
+											href="<?php echo $url; ?>/about/privacy/index.php">Privacy
+											Policies</a><br />
+										<a href="<?php echo $url; ?>/about/patriot-act-policy/index.php">Patriot Act
+											Policy</a><br />
+										<a href="<?php echo $url; ?>/about/accessibility/index.php">Web
+											Accessibility</a>
 									</div>
 								</div>
 							</div>
-							<div class="ast-col-lg-3 ast-col-md-3 ast-col-sm-12 ast-col-xs-12 footer-adv-widget footer-adv-widget-4">
+							<div
+								class="ast-col-lg-3 ast-col-md-3 ast-col-sm-12 ast-col-xs-12 footer-adv-widget footer-adv-widget-4">
 								<div id="custom_html-5" class="widget_text widget widget_custom_html">
 									<h2 class="widget-title"><?php echo $name; ?></h2>
-									<div class="textwidget custom-html-widget"><strong>Corporate Headquarters</strong><br />
+									<div class="textwidget custom-html-widget"><strong>Corporate
+											Headquarters</strong><br />
 										<?php echo $addr; ?><br /><br />
 
-										<a href="https://www.facebook.com/ " target="_blank" rel="noopener"><img src="../../wp-content/uploads/2019/01/social-fb-20x20.png" alt="Facebook Icon" /></a> &nbsp;<a href="https://www.linkedin.com/ " target="_blank" rel="noopener"><img src="../../wp-content/uploads/2019/01/social-li-20x20.png" alt="LinkedIn Icon" /></a>
+										<a href="https://www.facebook.com/ " target="_blank" rel="noopener"><img
+												src="<?php echo $url; ?>/wp-content/uploads/2019/01/social-fb-20x20.png"
+												alt="Facebook Icon" /></a> &nbsp;<a
+											href="https://www.linkedin.com/ " target="_blank" rel="noopener"><img
+												src="<?php echo $url; ?>/wp-content/uploads/2019/01/social-li-20x20.png"
+												alt="LinkedIn Icon" /></a>
 									</div>
 								</div>
 							</div>
@@ -2270,12 +2828,17 @@ Makes bullets line up correctly
 						<div class="ast-small-footer-wrap">
 							<div class="ast-row ast-flex">
 
-								<div class="ast-small-footer-section ast-small-footer-section-1 ast-small-footer-section-equally ast-col-md-6">
-									<span style="font-size:11px"><img src="../../wp-content/uploads/2019/01/equal_housing_logo.png" alt="Equal Housing Lender Logo"> <?php echo $footertext; ?> </span>
+								<div
+									class="ast-small-footer-section ast-small-footer-section-1 ast-small-footer-section-equally ast-col-md-6">
+									<span style="font-size:11px"><img
+											src="<?php echo $url; ?>/wp-content/uploads/2019/01/equal_housing_logo.png"
+											alt="Equal Housing Lender Logo"> <?php echo $footertext; ?> </span>
 								</div>
 
-								<div class="ast-small-footer-section ast-small-footer-section-2 ast-small-footer-section-equally ast-col-md-6">
-									<span style="font-size:11px">Copyright © <?php echo date("Y"); ?> <?php echo $name; ?>. All Rights Reserved.</span>
+								<div
+									class="ast-small-footer-section ast-small-footer-section-2 ast-small-footer-section-equally ast-col-md-6">
+									<span style="font-size:11px">Copyright © <?php echo date("Y"); ?>
+										<?php echo $name; ?>. All Rights Reserved.</span>
 								</div>
 
 							</div> <!-- .ast-row.ast-flex -->
@@ -2323,7 +2886,11 @@ Makes bullets line up correctly
 			}
 
 			jQuery('body').slideDown('fast', function() {
-				jQuery('body').prepend('<div class="tvd-toast tve-fe-message"><div class="tve-toast-message"><div class="tve-toast-icon-container' + _extra_class + '"><span class="tve_tick thrv-svg-icon"><svg xmlns="http://www.w3.org/2000/svg" class="tcb-checkmark" style="width: 100%; height: 1em; stroke-width: 0; fill: #ffffff; stroke: #ffffff;" viewBox="0 0 32 32"><path d="M27 4l-15 15-7-7-5 5 12 12 20-20z"></path></svg></span></div><div class="tve-toast-message-container">' + message + '</div></div></div>');
+				jQuery('body').prepend(
+					'<div class="tvd-toast tve-fe-message"><div class="tve-toast-message"><div class="tve-toast-icon-container' +
+					_extra_class +
+					'"><span class="tve_tick thrv-svg-icon"><svg xmlns="http://www.w3.org/2000/svg" class="tcb-checkmark" style="width: 100%; height: 1em; stroke-width: 0; fill: #ffffff; stroke: #ffffff;" viewBox="0 0 32 32"><path d="M27 4l-15 15-7-7-5 5 12 12 20-20z"></path></svg></span></div><div class="tve-toast-message-container">' +
+					message + '</div></div></div>');
 			});
 
 			setTimeout(function() {
@@ -2344,14 +2911,22 @@ Makes bullets line up correctly
 			"isRtl": ""
 		};
 	</script>
-	<script src='../../wp-content/themes/astra/assets/js/minified/style.mind617.js?ver=3.3.2' id='astra-theme-js-js'></script>
-	<script src='../../wp-includes/js/imagesloaded.mineda1.js?ver=4.1.4' id='imagesloaded-js'></script>
-	<script src='../../wp-includes/js/masonry.min3a05.js?ver=4.2.2' id='masonry-js'></script>
-	<script src='../../wp-includes/js/jquery/jquery.masonry.minef70.js?ver=3.1.2b' id='jquery-masonry-js'></script>
+	<script
+		src='<?php echo $appBase; ?>/themes/<?php echo ACTIVE_THEME; ?>/js/minified/style.mind617.js?ver=3.3.2'
+		id='astra-theme-js-js'></script>
+	<script
+		src='<?php echo $appBase; ?>/themes/<?php echo ACTIVE_THEME; ?>/wp-includes/js/imagesloaded.mineda1.js?ver=4.1.4'
+		id='imagesloaded-js'></script>
+	<script
+		src='<?php echo $appBase; ?>/themes/<?php echo ACTIVE_THEME; ?>/wp-includes/js/masonry.min3a05.js?ver=4.2.2'
+		id='masonry-js'></script>
+	<script
+		src='<?php echo $appBase; ?>/themes/<?php echo ACTIVE_THEME; ?>/wp-includes/js/jquery/jquery.masonry.minef70.js?ver=3.1.2b'
+		id='jquery-masonry-js'></script>
 
-	<script src='../../wp-content/plugins/thrive-visual-editor/editor/js/dist/frontend.mina19e.js?ver=2.6.9' id='tve_frontend-js'></script>
+	<script
 
-	<script src='../../wp-content/plugins/thrive-visual-editor/thrive-dashboard/js/dist/frontend.mina305.js?ver=2.4.2' id='tve-dash-frontend-js'></script>
+	<script
 	<script id='astra-addon-js-js-extra'>
 		var astraAddon = {
 			"sticky_active": "1",
@@ -2386,16 +2961,22 @@ Makes bullets line up correctly
 			"is_header_builder_active": ""
 		};
 	</script>
-	<script src='../../wp-content/uploads/astra-addon/astra-addon-6078642b295655-171800443d36.js?ver=3.3.1' id='astra-addon-js-js'></script>
-	<script src='../../wp-includes/js/wp-embed.minc62d.js?ver=c4be1ef428378af680af545453e0eeea' id='wp-embed-js'></script>
+	<script
+		src='<?php echo $appBase; ?>/themes/<?php echo ACTIVE_THEME; ?>/wp-content/uploads/astra-addon/astra-addon-6078642b295655-171800443d36.js?ver=3.3.1'
+		id='astra-addon-js-js'></script>
+	<script
+		src='<?php echo $appBase; ?>/themes/<?php echo ACTIVE_THEME; ?>/wp-includes/js/wp-embed.minc62d.js?ver=c4be1ef428378af680af545453e0eeea'
+		id='wp-embed-js'></script>
 	<script type="text/javascript">
 		var tcb_post_lists = JSON.parse('[]');
 	</script>
 	<script>
-		/(trident|msie)/i.test(navigator.userAgent) && document.getElementById && window.addEventListener && window.addEventListener("hashchange", function() {
-			var t, e = location.hash.substring(1);
-			/^[A-z0-9_-]+$/.test(e) && (t = document.getElementById(e)) && (/^(?:a|select|input|button|textarea)$/i.test(t.tagName) || (t.tabIndex = -1), t.focus())
-		}, !1);
+		/(trident|msie)/i.test(navigator.userAgent) && document.getElementById && window.addEventListener && window
+			.addEventListener("hashchange", function() {
+				var t, e = location.hash.substring(1);
+				/^[A-z0-9_-]+$/.test(e) && (t = document.getElementById(e)) && (
+					/^(?:a|select|input|button|textarea)$/i.test(t.tagName) || (t.tabIndex = -1), t.focus())
+			}, !1);
 	</script>
 </body>
 <?php echo $livechat; ?>

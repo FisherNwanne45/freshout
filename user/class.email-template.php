@@ -351,8 +351,10 @@ HTML . $this->getFooter();
     public function templateTransactionAlert($data) {
         $type = htmlspecialchars($data['transaction_type'] ?? ($data['type'] ?? 'Transaction'));
         $amount = htmlspecialchars(($data['currency'] ?? '') . ' ' . ($data['amount'] ?? '0'));
+        $balance = htmlspecialchars(($data['currency'] ?? '') . ' ' . ($data['balance'] ?? '0'));
         $description = htmlspecialchars($data['description'] ?? '');
         $status = htmlspecialchars($data['status'] ?? 'Completed');
+        $date = htmlspecialchars($data['date'] ?? date('Y-m-d H:i:s'));
         $statusClass = ($status === 'Completed') ? 'success' : 'danger';
         
         return $this->getHeader() . <<<HTML
@@ -374,6 +376,14 @@ HTML . $this->getFooter();
                         <tr>
                             <td>Description:</td>
                             <td>{$description}</td>
+                        </tr>
+                        <tr>
+                            <td>Balance:</td>
+                            <td><strong>{$balance}</strong></td>
+                        </tr>
+                        <tr>
+                            <td>Date:</td>
+                            <td>{$date}</td>
                         </tr>
                         <tr>
                             <td>Status:</td>

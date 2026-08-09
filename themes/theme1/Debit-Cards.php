@@ -1,13 +1,13 @@
 <?php
 include('session.php');
 ?>
-<?php session_start(); ?>
 
   
 <!DOCTYPE html>
 <html lang="en">
  <?php
         include('config.php');
+    /** @var mysqli|null $conn */
         $result = $conn->query("SELECT * FROM site");
         if(!$result->num_rows > 0){ echo '<h2 style="text-align:center;">No Data Found</h2>'; }
         while($row = $result->fetch_assoc())

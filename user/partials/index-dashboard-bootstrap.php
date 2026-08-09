@@ -6,6 +6,9 @@ $conn = $GLOBALS['conn'] ?? ($conn ?? null);
 if (!function_exists('fw_wallet_set') && is_file(__DIR__ . '/wallet-ledger.php')) {
     require_once __DIR__ . '/wallet-ledger.php';
 }
+if (!function_exists('provision_wallet_iban') && is_file(__DIR__ . '/provision-wallet-iban.php')) {
+    require_once __DIR__ . '/provision-wallet-iban.php';
+}
 $row = (isset($row) && is_array($row)) ? $row : [];
 if (!isset($activeAccountBalance)) {
     $activeAccountBalance = 0.0;
@@ -61,6 +64,33 @@ if (!preg_match('/^[A-Z0-9]{2,10}$/', $baseCurrency)) {
     $baseCurrency = 'USD';
 }
 
+$resolveWalletRate = static function (string $fromCode, string $toCode) use ($reg_user): ?float {
+    $fromCode = strtoupper(trim($fromCode));
+    $toCode = strtoupper(trim($toCode));
+    if (!preg_match('/^[A-Z0-9]{2,10}$/', $fromCode) || !preg_match('/^[A-Z0-9]{2,10}$/', $toCode)) {
+        return null;
+    }
+    if ($fromCode === $toCode) {
+        return 1.0;
+    }
+
+    $rateStmt = $reg_user->runQuery('SELECT rate FROM exchange_rates WHERE from_code = :from_code AND to_code = :to_code LIMIT 1');
+    $rateStmt->execute([':from_code' => $fromCode, ':to_code' => $toCode]);
+    $rateRow = $rateStmt->fetch(PDO::FETCH_ASSOC);
+    if ($rateRow && (float)($rateRow['rate'] ?? 0) > 0) {
+        return (float)$rateRow['rate'];
+    }
+
+    $inverseStmt = $reg_user->runQuery('SELECT rate FROM exchange_rates WHERE from_code = :from_code AND to_code = :to_code LIMIT 1');
+    $inverseStmt->execute([':from_code' => $toCode, ':to_code' => $fromCode]);
+    $inverseRow = $inverseStmt->fetch(PDO::FETCH_ASSOC);
+    if ($inverseRow && (float)($inverseRow['rate'] ?? 0) > 0) {
+        return 1 / (float)$inverseRow['rate'];
+    }
+
+    return null;
+};
+
 try {
     if ($conn instanceof mysqli && function_exists('fw_wallet_seed_from_legacy')) {
         fw_wallet_seed_from_legacy($conn, $accNo, $baseCurrency);
@@ -103,11 +133,195 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['add_wallet'])) {
                      ON DUPLICATE KEY UPDATE acc_no = VALUES(acc_no)'
                 );
                 $addW->execute([':an' => $accNo, ':c' => $newCode]);
-                provision_wallet_iban($conn, $accNo, $newCode);
                 $flashSuccess = $newCode . ' account opened successfully.';
+
+                if ($conn instanceof mysqli && function_exists('provision_wallet_iban')) {
+                    try {
+                        provision_wallet_iban($conn, $accNo, $newCode);
+                    } catch (Throwable $e) {
+                        error_log('Wallet IBAN provisioning failed after wallet open: ' . $e->getMessage());
+                    }
+                }
             } catch (Throwable $e) {
                 $flashError = 'Could not open account. Please try again.';
             }
+        }
+    }
+}
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['close_wallet'])) {
+    $closeCode = strtoupper(trim((string)($_POST['close_currency'] ?? '')));
+    $targetCode = strtoupper(trim((string)($_POST['close_destination_currency'] ?? '')));
+    $closeTolerance = 0.00000001;
+
+    if (!preg_match('/^[A-Z0-9]{2,10}$/', $closeCode)) {
+        $flashError = 'Choose the currency account you want to close.';
+    } elseif ($targetCode !== '' && !preg_match('/^[A-Z0-9]{2,10}$/', $targetCode)) {
+        $flashError = 'Choose a valid destination currency.';
+    } elseif ($targetCode !== '' && $targetCode === $closeCode) {
+        $flashError = 'Choose a different destination currency.';
+    } else {
+        try {
+            $reg_user->runQuery('START TRANSACTION')->execute();
+
+            $countStmt = $reg_user->runQuery('SELECT COUNT(*) AS total FROM account_balances WHERE acc_no = :acc_no');
+            $countStmt->execute([':acc_no' => $accNo]);
+            $walletCountRow = $countStmt->fetch(PDO::FETCH_ASSOC) ?: [];
+            $openWalletCount = (int)($walletCountRow['total'] ?? 0);
+            if ($openWalletCount <= 1) {
+                throw new RuntimeException('You must keep at least one currency account open.');
+            }
+
+            $closeWalletStmt = $reg_user->runQuery('SELECT COALESCE(total_balance, balance) AS total_balance,
+                                                           COALESCE(available_balance, COALESCE(total_balance, balance)) AS available_balance
+                                                    FROM account_balances
+                                                    WHERE acc_no = :acc_no AND currency_code = :currency_code FOR UPDATE');
+            $closeWalletStmt->execute([':acc_no' => $accNo, ':currency_code' => $closeCode]);
+            $closeWallet = $closeWalletStmt->fetch(PDO::FETCH_ASSOC);
+            if (!$closeWallet) {
+                throw new RuntimeException('The selected currency account could not be found.');
+            }
+
+            $closeTotal = (float)($closeWallet['total_balance'] ?? 0);
+            $closeAvailable = (float)($closeWallet['available_balance'] ?? $closeTotal);
+            if ($closeTotal < 0 || $closeAvailable < 0) {
+                throw new RuntimeException('Accounts with negative balances cannot be closed online.');
+            }
+            if ($closeAvailable + $closeTolerance < $closeTotal) {
+                throw new RuntimeException('This account has reserved funds. Move or release them before closing the account.');
+            }
+
+            $legacyCurrency = strtoupper(trim((string)($row['currency'] ?? '')));
+            $requiresTarget = ($closeTotal > $closeTolerance) || ($legacyCurrency === $closeCode);
+            if ($requiresTarget && $targetCode === '') {
+                if ($closeTotal > $closeTolerance) {
+                    throw new RuntimeException('Choose a destination currency so the remaining balance can be moved before closure.');
+                }
+                throw new RuntimeException('Choose the currency account that should remain primary after closing this account.');
+            }
+
+            $newTargetTotal = null;
+            $newTargetAvailable = null;
+            $creditedAmount = 0.0;
+            if ($targetCode !== '') {
+                $targetWalletStmt = $reg_user->runQuery('SELECT COALESCE(total_balance, balance) AS total_balance,
+                                                                COALESCE(available_balance, COALESCE(total_balance, balance)) AS available_balance
+                                                         FROM account_balances
+                                                         WHERE acc_no = :acc_no AND currency_code = :currency_code FOR UPDATE');
+                $targetWalletStmt->execute([':acc_no' => $accNo, ':currency_code' => $targetCode]);
+                $targetWallet = $targetWalletStmt->fetch(PDO::FETCH_ASSOC);
+                if (!$targetWallet) {
+                    $createTargetWallet = $reg_user->runQuery('INSERT INTO account_balances (acc_no, currency_code, balance, total_balance, available_balance) VALUES (:acc_no, :currency_code, 0, 0, 0)');
+                    $createTargetWallet->execute([':acc_no' => $accNo, ':currency_code' => $targetCode]);
+                    if ($conn instanceof mysqli && function_exists('provision_wallet_iban')) {
+                        try {
+                            provision_wallet_iban($conn, $accNo, $targetCode);
+                        } catch (Throwable $e) {
+                            error_log('Wallet IBAN provisioning failed after close-wallet target creation: ' . $e->getMessage());
+                        }
+                    }
+                    $targetWalletStmt->execute([':acc_no' => $accNo, ':currency_code' => $targetCode]);
+                    $targetWallet = $targetWalletStmt->fetch(PDO::FETCH_ASSOC) ?: ['total_balance' => 0, 'available_balance' => 0];
+                }
+
+                $targetTotal = (float)($targetWallet['total_balance'] ?? 0);
+                $targetAvailable = (float)($targetWallet['available_balance'] ?? $targetTotal);
+                $newTargetTotal = $targetTotal;
+                $newTargetAvailable = $targetAvailable;
+
+                if ($closeTotal > $closeTolerance) {
+                    $rate = $resolveWalletRate($closeCode, $targetCode);
+                    if ($rate === null || $rate <= 0) {
+                        throw new RuntimeException("No exchange rate configured for {$closeCode} to {$targetCode}.");
+                    }
+                    $creditedAmount = $closeAvailable * $rate;
+                    $newTargetTotal += $creditedAmount;
+                    $newTargetAvailable += $creditedAmount;
+
+                    $creditTarget = $reg_user->runQuery('UPDATE account_balances
+                                                         SET balance = :balance,
+                                                             total_balance = :total_balance,
+                                                             available_balance = :available_balance
+                                                         WHERE acc_no = :acc_no AND currency_code = :currency_code');
+                    $creditTarget->execute([
+                        ':balance' => $newTargetTotal,
+                        ':total_balance' => $newTargetTotal,
+                        ':available_balance' => $newTargetAvailable,
+                        ':acc_no' => $accNo,
+                        ':currency_code' => $targetCode,
+                    ]);
+                }
+            }
+
+            $deleteCustomerWallet = $reg_user->runQuery('DELETE FROM customer_accounts WHERE owner_acc_no = :acc_no AND currency_code = :currency_code LIMIT 1');
+            $deleteCustomerWallet->execute([':acc_no' => $accNo, ':currency_code' => $closeCode]);
+
+            $deleteWallet = $reg_user->runQuery('DELETE FROM account_balances WHERE acc_no = :acc_no AND currency_code = :currency_code LIMIT 1');
+            $deleteWallet->execute([':acc_no' => $accNo, ':currency_code' => $closeCode]);
+
+            if ($legacyCurrency === $closeCode) {
+                if ($targetCode === '' || $newTargetTotal === null || $newTargetAvailable === null) {
+                    throw new RuntimeException('Choose a replacement primary currency before closing this account.');
+                }
+                $legacyUpdate = $reg_user->runQuery('UPDATE account SET currency = :currency_code, t_bal = :t_bal, a_bal = :a_bal WHERE acc_no = :acc_no');
+                $legacyUpdate->execute([
+                    ':currency_code' => $targetCode,
+                    ':t_bal' => $newTargetTotal,
+                    ':a_bal' => $newTargetAvailable,
+                    ':acc_no' => $accNo,
+                ]);
+            } elseif ($targetCode !== '' && $legacyCurrency === $targetCode && $newTargetTotal !== null && $newTargetAvailable !== null) {
+                $legacyUpdate = $reg_user->runQuery('UPDATE account SET t_bal = :t_bal, a_bal = :a_bal WHERE acc_no = :acc_no');
+                $legacyUpdate->execute([
+                    ':t_bal' => $newTargetTotal,
+                    ':a_bal' => $newTargetAvailable,
+                    ':acc_no' => $accNo,
+                ]);
+            }
+
+            try {
+                $closeAlerts = $reg_user->runQuery('INSERT INTO alerts (uname, type, amount, sender_name, remarks, date, time) VALUES (:uname, :type, :amount, :sender_name, :remarks, :date, :time)');
+                $closeAlerts->execute([
+                    ':uname' => $accNo,
+                    ':type' => 'Wallet Closed',
+                    ':amount' => $closeAvailable,
+                    ':sender_name' => $closeCode . ($targetCode !== '' ? ' -> ' . $targetCode : ''),
+                    ':remarks' => $closeTotal > $closeTolerance
+                        ? 'Wallet closed and balance moved to ' . $targetCode
+                        : 'Wallet closed with zero balance',
+                    ':date' => date('Y-m-d'),
+                    ':time' => date('H:i:s'),
+                ]);
+            } catch (Throwable $e) {
+            }
+
+            $reg_user->runQuery('COMMIT')->execute();
+
+            if ($legacyCurrency === $closeCode || ($targetCode !== '' && $legacyCurrency === $targetCode)) {
+                $refreshRow = $reg_user->runQuery('SELECT * FROM account WHERE acc_no = :acc_no LIMIT 1');
+                $refreshRow->execute([':acc_no' => $accNo]);
+                $refreshedAccount = $refreshRow->fetch(PDO::FETCH_ASSOC);
+                if ($refreshedAccount) {
+                    $row = $refreshedAccount;
+                    $baseCurrency = strtoupper(trim((string)($row['currency'] ?? $baseCurrency)));
+                    if (!preg_match('/^[A-Z0-9]{2,10}$/', $baseCurrency)) {
+                        $baseCurrency = 'USD';
+                    }
+                    $baseBalance = (float)($row['a_bal'] ?? $row['t_bal'] ?? $baseBalance);
+                }
+            }
+
+            if ($closeTotal > $closeTolerance && $targetCode !== '') {
+                $flashSuccess = $closeCode . ' account closed. Remaining balance moved to ' . $targetCode . '.';
+            } else {
+                $flashSuccess = $closeCode . ' account closed successfully.';
+            }
+        } catch (Throwable $e) {
+            try {
+                $reg_user->runQuery('ROLLBACK')->execute();
+            } catch (Throwable $rollbackError) {
+            }
+            $flashError = $e->getMessage();
         }
     }
 }
@@ -146,7 +360,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['wallet_exchange'])) {
             if (!$toWallet) {
                 $createWallet = $reg_user->runQuery('INSERT INTO account_balances (acc_no, currency_code, balance, total_balance, available_balance) VALUES (:acc_no, :currency_code, 0, 0, 0)');
                 $createWallet->execute([':acc_no' => $accNo, ':currency_code' => $toCode]);
-                provision_wallet_iban($conn, $accNo, $toCode);
+                if ($conn instanceof mysqli && function_exists('provision_wallet_iban')) {
+                    try {
+                        provision_wallet_iban($conn, $accNo, $toCode);
+                    } catch (Throwable $e) {
+                        error_log('Wallet IBAN provisioning failed after exchange wallet creation: ' . $e->getMessage());
+                    }
+                }
                 $toWalletStmt->execute([':acc_no' => $accNo, ':currency_code' => $toCode]);
                 $toWallet = $toWalletStmt->fetch(PDO::FETCH_ASSOC) ?: ['total_balance' => 0, 'available_balance' => 0];
             }

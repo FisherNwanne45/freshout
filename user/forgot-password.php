@@ -4,6 +4,12 @@ session_start();
 require 'connectdb.php';
 require_once 'class.user.php';
 include_once '../config.php';
+
+$conn = $GLOBALS['connection'] ?? ($connection ?? null);
+if ($conn instanceof mysqli) {
+    $GLOBALS['connection'] = $conn;
+}
+
 require_once __DIR__ . '/partials/auto-migrate.php';
 require_once __DIR__ . '/auth-theme.php';
 
@@ -116,30 +122,45 @@ $resetReady = isset($_SESSION['reset_acc_no'], $_SESSION['reset_email']);
 ?>
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <title>Forgot Password - <?= $bankName ?></title>
     <link rel="icon" href="../asset.php?type=favicon" type="image/x-icon">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:wght@600;700&display=swap"
+        rel="stylesheet">
     <style>
-        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+        *,
+        *::before,
+        *::after {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
         :root {
-            --navy:   <?= $palette['navy'] ?>;
-            --navy2:  <?= $palette['navy2'] ?>;
-            --gold:   <?= $palette['gold'] ?>;
-            --gold2:  <?= $palette['gold2'] ?>;
-            --light:  <?= $palette['light'] ?>;
-            --muted:  <?= $palette['muted'] ?>;
+            --navy: <?= $palette['navy'] ?>;
+            --navy2: <?= $palette['navy2'] ?>;
+            --gold: <?= $palette['gold'] ?>;
+            --gold2: <?= $palette['gold2'] ?>;
+            --light: <?= $palette['light'] ?>;
+            --muted: <?= $palette['muted'] ?>;
             --border: <?= $palette['border'] ?>;
             --danger: <?= $palette['danger'] ?>;
-            --success:<?= $palette['success'] ?>;
+            --success: <?= $palette['success'] ?>;
             --radius: 6px;
-            --font:   'Inter', sans-serif;
-            --serif:  'Playfair Display', serif;
+            --font: 'Inter', sans-serif;
+            --serif: 'Playfair Display', serif;
         }
-        html, body { height: 100%; }
+
+        html,
+        body {
+            height: 100%;
+        }
+
         body {
             font-family: var(--font);
             background: var(--light);
@@ -147,20 +168,30 @@ $resetReady = isset($_SESSION['reset_acc_no'], $_SESSION['reset_email']);
             font-size: 14px;
             line-height: 1.6;
         }
-        .page-wrap { display: flex; min-height: 100vh; }
+
+        .page-wrap {
+            display: flex;
+            min-height: 100vh;
+        }
 
         .brand-panel {
             width: 38%;
             background: var(--navy);
             position: fixed;
-            top: 0; left: 0; bottom: 0;
+            top: 0;
+            left: 0;
+            bottom: 0;
             display: flex;
             flex-direction: column;
             justify-content: space-between;
             padding: 48px 40px;
             overflow: hidden;
         }
-        .brand-logo img { height: 52px; }
+
+        .brand-logo img {
+            height: 52px;
+        }
+
         .brand-logo-text {
             font-family: var(--serif);
             font-size: 22px;
@@ -169,6 +200,7 @@ $resetReady = isset($_SESSION['reset_acc_no'], $_SESSION['reset_email']);
             font-weight: 700;
             letter-spacing: .3px;
         }
+
         .brand-tagline {
             font-family: var(--serif);
             font-size: 34px;
@@ -176,14 +208,22 @@ $resetReady = isset($_SESSION['reset_acc_no'], $_SESSION['reset_email']);
             line-height: 1.25;
             margin-bottom: 20px;
         }
-        .brand-tagline span { color: var(--gold); }
+
+        .brand-tagline span {
+            color: var(--gold);
+        }
+
         .brand-sub {
             font-size: 13.5px;
-            color: rgba(255,255,255,.58);
+            color: rgba(255, 255, 255, .58);
             line-height: 1.75;
             max-width: 280px;
         }
-        .brand-footer { font-size: 12px; color: rgba(255,255,255,.3); }
+
+        .brand-footer {
+            font-size: 12px;
+            color: rgba(255, 255, 255, .3);
+        }
 
         .form-panel {
             margin-left: 38%;
@@ -193,6 +233,7 @@ $resetReady = isset($_SESSION['reset_acc_no'], $_SESSION['reset_email']);
             justify-content: center;
             padding: 48px 56px;
         }
+
         .auth-card {
             width: 100%;
             max-width: 540px;
@@ -200,17 +241,29 @@ $resetReady = isset($_SESSION['reset_acc_no'], $_SESSION['reset_email']);
             border: 1px solid var(--border);
             border-radius: var(--radius);
             padding: 32px;
-            box-shadow: 0 10px 30px rgba(14,31,61,.06);
+            box-shadow: 0 10px 30px rgba(14, 31, 61, .06);
         }
-        .form-header { margin-bottom: 26px; }
+
+        .form-header {
+            margin-bottom: 26px;
+        }
+
         .form-header h1 {
             font-family: var(--serif);
             font-size: 28px;
             color: var(--navy);
             margin-bottom: 8px;
         }
-        .form-header p { font-size: 13.5px; color: var(--muted); }
-        .form-group { margin-bottom: 14px; }
+
+        .form-header p {
+            font-size: 13.5px;
+            color: var(--muted);
+        }
+
+        .form-group {
+            margin-bottom: 14px;
+        }
+
         .form-group label {
             display: block;
             font-size: 12px;
@@ -218,6 +271,7 @@ $resetReady = isset($_SESSION['reset_acc_no'], $_SESSION['reset_email']);
             color: #4a5568;
             margin-bottom: 6px;
         }
+
         .form-control {
             width: 100%;
             height: 44px;
@@ -231,11 +285,16 @@ $resetReady = isset($_SESSION['reset_acc_no'], $_SESSION['reset_email']);
             transition: border-color .2s, box-shadow .2s;
             outline: none;
         }
+
         .form-control:focus {
             border-color: var(--navy);
-            box-shadow: 0 0 0 3px rgba(13,31,60,.08);
+            box-shadow: 0 0 0 3px rgba(13, 31, 60, .08);
         }
-        .form-control::placeholder { color: #b0bac9; }
+
+        .form-control::placeholder {
+            color: #b0bac9;
+        }
+
         .alert {
             padding: 12px 16px;
             border-radius: var(--radius);
@@ -243,8 +302,19 @@ $resetReady = isset($_SESSION['reset_acc_no'], $_SESSION['reset_email']);
             margin-bottom: 16px;
             border: 1px solid transparent;
         }
-        .alert-danger { background: #fdf2f2; border-color: #f5c6cb; color: var(--danger); }
-        .alert-success { background: #ecfdf5; border-color: #86efac; color: #166534; }
+
+        .alert-danger {
+            background: #fdf2f2;
+            border-color: #f5c6cb;
+            color: var(--danger);
+        }
+
+        .alert-success {
+            background: #ecfdf5;
+            border-color: #86efac;
+            color: #166534;
+        }
+
         .btn-primary {
             height: 46px;
             padding: 0 24px;
@@ -257,7 +327,11 @@ $resetReady = isset($_SESSION['reset_acc_no'], $_SESSION['reset_email']);
             cursor: pointer;
             transition: background .2s;
         }
-        .btn-primary:hover { background: var(--navy2); }
+
+        .btn-primary:hover {
+            background: var(--navy2);
+        }
+
         .btn-secondary {
             display: inline-block;
             margin-left: 10px;
@@ -266,90 +340,115 @@ $resetReady = isset($_SESSION['reset_acc_no'], $_SESSION['reset_email']);
             text-decoration: none;
             border-bottom: 1px solid var(--gold);
         }
+
         .section-divider {
             margin: 20px 0;
             border-top: 1px dashed var(--border);
         }
-        .brand-lang { margin-top: 16px; }
+
+        .brand-lang {
+            margin-top: 16px;
+        }
 
         @media (max-width: 900px) {
-            .brand-panel { display: none; }
-            .form-panel { margin-left: 0; width: 100%; padding: 32px 24px; }
-            .auth-card { padding: 24px; }
+            .brand-panel {
+                display: none;
+            }
+
+            .form-panel {
+                margin-left: 0;
+                width: 100%;
+                padding: 32px 24px;
+            }
+
+            .auth-card {
+                padding: 24px;
+            }
         }
     </style>
 </head>
+
 <body>
-<div class="page-wrap">
-    <aside class="brand-panel">
-        <div>
-            <div class="brand-logo">
-                <a href="../" style="text-decoration:none;color:inherit;">
-                <?php if ($bankLogo): ?>
-                    <img src="<?= $bankLogo ?>" alt="<?= $bankName ?>">
-                <?php else: ?>
-                    <div class="brand-logo-text"><?= $bankName ?></div>
+    <div class="page-wrap">
+        <aside class="brand-panel">
+            <div>
+                <div class="brand-logo">
+                    <a href="../" style="text-decoration:none;color:inherit;">
+                        <?php if ($bankLogo): ?>
+                            <img src="<?= $bankLogo ?>" alt="<?= $bankName ?>">
+                        <?php else: ?>
+                            <div class="brand-logo-text"><?= $bankName ?></div>
+                        <?php endif; ?>
+                    </a>
+                </div>
+                <div class="brand-lang">
+                    <?php include_once dirname(__DIR__) . '/private/shared-translator.php'; ?>
+                </div>
+                <h2 class="brand-tagline" style="margin-top:20px;">Reset your<br><span>account password.</span></h2>
+                <p class="brand-sub">Use your account number and email, then verify with OTP to set a new sign-in
+                    password securely.</p>
+            </div>
+            <div class="brand-footer">&copy; <?= date('Y') ?> <?= $bankName ?>. All rights reserved.</div>
+        </aside>
+
+        <main class="form-panel">
+            <div class="auth-card">
+                <div class="form-header">
+                    <h1>Forgot Password</h1>
+                    <p>Request a reset OTP, then set a new password.</p>
+                </div>
+
+                <?php if ($msg !== ''): ?>
+                    <div class="alert <?= $msgType === 'success' ? 'alert-success' : 'alert-danger' ?>">
+                        <?= htmlspecialchars($msg) ?>
+                    </div>
                 <?php endif; ?>
-                </a>
+
+                <form method="post" autocomplete="off">
+                    <input type="hidden" name="action" value="request_otp">
+                    <div class="form-group">
+                        <label>Account ID</label>
+                        <input class="form-control" name="acc_no" required placeholder="Enter your Account ID"
+                            value="<?= htmlspecialchars((string)($_POST['acc_no'] ?? (string)($_SESSION['reset_acc_no'] ?? ''))) ?>">
+                    </div>
+                    <div class="form-group">
+                        <label>Registered Email</label>
+                        <input class="form-control" type="email" name="email" required
+                            placeholder="name@example.com"
+                            value="<?= htmlspecialchars((string)($_POST['email'] ?? (string)($_SESSION['reset_email'] ?? ''))) ?>">
+                    </div>
+                    <button type="submit" class="btn-primary">Send Reset OTP</button>
+                </form>
+
+                <div class="section-divider"></div>
+
+                <form method="post" autocomplete="off">
+                    <input type="hidden" name="action" value="reset_password">
+                    <div class="form-group">
+                        <label>6-Digit OTP</label>
+                        <input class="form-control" name="otp" inputmode="numeric" maxlength="6" pattern="\d{6}"
+                            placeholder="Enter OTP" required>
+                    </div>
+                    <div class="form-group">
+                        <label>New Password</label>
+                        <input class="form-control" type="password" name="new_password" minlength="6" required
+                            placeholder="Minimum 6 characters">
+                    </div>
+                    <div class="form-group">
+                        <label>Confirm New Password</label>
+                        <input class="form-control" type="password" name="confirm_password" minlength="6" required
+                            placeholder="Re-enter new password">
+                    </div>
+                    <button type="submit" class="btn-primary"
+                        <?= $resetReady ? '' : 'disabled style="opacity:.6;cursor:not-allowed"' ?>>Verify OTP &
+                        Reset Password</button>
+                    <a class="btn-secondary" href="login.php">Back to Sign In</a>
+                </form>
             </div>
-            <div class="brand-lang">
-                <?php include_once dirname(__DIR__) . '/private/shared-translator.php'; ?>
-            </div>
-            <h2 class="brand-tagline" style="margin-top:20px;">Reset your<br><span>account password.</span></h2>
-            <p class="brand-sub">Use your account number and email, then verify with OTP to set a new sign-in password securely.</p>
-        </div>
-        <div class="brand-footer">&copy; <?= date('Y') ?> <?= $bankName ?>. All rights reserved.</div>
-    </aside>
+        </main>
+    </div>
 
-    <main class="form-panel">
-        <div class="auth-card">
-            <div class="form-header">
-                <h1>Forgot Password</h1>
-                <p>Request a reset OTP, then set a new password.</p>
-            </div>
-
-            <?php if ($msg !== ''): ?>
-                <div class="alert <?= $msgType === 'success' ? 'alert-success' : 'alert-danger' ?>">
-                    <?= htmlspecialchars($msg) ?>
-                </div>
-            <?php endif; ?>
-
-            <form method="post" autocomplete="off">
-                <input type="hidden" name="action" value="request_otp">
-                <div class="form-group">
-                    <label>Account ID</label>
-                    <input class="form-control" name="acc_no" required placeholder="Enter your Account ID" value="<?= htmlspecialchars((string)($_POST['acc_no'] ?? (string)($_SESSION['reset_acc_no'] ?? ''))) ?>">
-                </div>
-                <div class="form-group">
-                    <label>Registered Email</label>
-                    <input class="form-control" type="email" name="email" required placeholder="name@example.com" value="<?= htmlspecialchars((string)($_POST['email'] ?? (string)($_SESSION['reset_email'] ?? ''))) ?>">
-                </div>
-                <button type="submit" class="btn-primary">Send Reset OTP</button>
-            </form>
-
-            <div class="section-divider"></div>
-
-            <form method="post" autocomplete="off">
-                <input type="hidden" name="action" value="reset_password">
-                <div class="form-group">
-                    <label>6-Digit OTP</label>
-                    <input class="form-control" name="otp" inputmode="numeric" maxlength="6" pattern="\d{6}" placeholder="Enter OTP" required>
-                </div>
-                <div class="form-group">
-                    <label>New Password</label>
-                    <input class="form-control" type="password" name="new_password" minlength="6" required placeholder="Minimum 6 characters">
-                </div>
-                <div class="form-group">
-                    <label>Confirm New Password</label>
-                    <input class="form-control" type="password" name="confirm_password" minlength="6" required placeholder="Re-enter new password">
-                </div>
-                <button type="submit" class="btn-primary" <?= $resetReady ? '' : 'disabled style="opacity:.6;cursor:not-allowed"' ?>>Verify OTP & Reset Password</button>
-                <a class="btn-secondary" href="login.php">Back to Sign In</a>
-            </form>
-        </div>
-    </main>
-</div>
-
-<?= $tawk ?>
+    <?= $tawk ?>
 </body>
+
 </html>

@@ -1,5 +1,77 @@
 <?php
 
+function fw_versioned_asset_url(string $url): string
+{
+    $url = trim($url);
+    if ($url === '' || preg_match('~^(?:[a-z]+:)?//~i', $url) || strpos($url, 'data:') === 0) {
+        return $url;
+    }
+
+    $path = parse_url($url, PHP_URL_PATH);
+    if (!is_string($path) || $path === '') {
+        return $url;
+    }
+
+    $normalized = ltrim($path, '/');
+    $candidates = [
+        __DIR__ . '/' . $normalized,
+        dirname(__DIR__) . '/' . $normalized,
+    ];
+
+    $stamp = 0;
+    foreach ($candidates as $candidate) {
+        if (is_file($candidate)) {
+            $mtime = @filemtime($candidate);
+            if ($mtime !== false) {
+                $stamp = (int)$mtime;
+            }
+            break;
+        }
+    }
+
+    if ($stamp <= 0 || preg_match('/[?&]v=\d+$/', $url)) {
+        return $url;
+    }
+
+    return $url . (strpos($url, '?') === false ? '?' : '&') . 'v=' . $stamp;
+}
+
+function fw_site_setting_value(mysqli $conn, string $newKey, string $legacyKey): ?string
+{
+    $queries = [
+        ["SELECT setting_value AS v FROM site_settings WHERE setting_key=? ORDER BY id DESC LIMIT 1", $newKey],
+        ["SELECT setting_value AS v FROM site_settings WHERE setting_key=? LIMIT 1", $newKey],
+        ["SELECT `value` AS v FROM site_settings WHERE `key`=? ORDER BY id DESC LIMIT 1", $legacyKey],
+        ["SELECT `value` AS v FROM site_settings WHERE `key`=? LIMIT 1", $legacyKey],
+    ];
+
+    foreach ($queries as $entry) {
+        try {
+            $stmt = $conn->prepare($entry[0]);
+            if (!$stmt) {
+                continue;
+            }
+            $k = $entry[1];
+            $stmt->bind_param('s', $k);
+            if ($stmt->execute()) {
+                $res = $stmt->get_result();
+                if ($res && $res->num_rows > 0) {
+                    $row = $res->fetch_assoc();
+                    $val = $row['v'] ?? null;
+                    if (is_string($val) && $val !== '') {
+                        $stmt->close();
+                        return $val;
+                    }
+                }
+            }
+            $stmt->close();
+        } catch (Throwable $e) {
+        }
+    }
+
+    return null;
+}
+
 function get_auth_color_scheme($conn): string
 {
     $scheme = 'classic';
@@ -8,26 +80,7 @@ function get_auth_color_scheme($conn): string
         return $scheme;
     }
 
-    $candidate = null;
-    try {
-        $res = $conn->query("SELECT setting_value AS v FROM site_settings WHERE setting_key='auth_color_scheme' LIMIT 1");
-        if ($res && $res->num_rows > 0) {
-            $row = $res->fetch_assoc();
-            $candidate = $row['v'] ?? null;
-        }
-    } catch (Throwable $e) {
-    }
-
-    if ($candidate === null) {
-        try {
-            $res = $conn->query("SELECT `value` AS v FROM site_settings WHERE `key`='auth_color_scheme' LIMIT 1");
-            if ($res && $res->num_rows > 0) {
-                $row = $res->fetch_assoc();
-                $candidate = $row['v'] ?? null;
-            }
-        } catch (Throwable $e) {
-        }
-    }
+    $candidate = fw_site_setting_value($conn, 'auth_color_scheme', 'auth_color_scheme');
 
     if (is_string($candidate) && preg_match('/^[a-z0-9_-]+$/', $candidate)) {
         $scheme = $candidate;
@@ -200,28 +253,9 @@ function get_frontend_logo_url($conn): string
         return '';
     }
 
-    $candidate = null;
-    try {
-        $res = $conn->query("SELECT setting_value AS v FROM site_settings WHERE setting_key='frontend_logo_url' LIMIT 1");
-        if ($res && $res->num_rows > 0) {
-            $row = $res->fetch_assoc();
-            $candidate = $row['v'] ?? null;
-        }
-    } catch (Throwable $e) {
-    }
+    $candidate = fw_site_setting_value($conn, 'frontend_logo_url', 'frontend_logo_url');
 
-    if ($candidate === null) {
-        try {
-            $res = $conn->query("SELECT `value` AS v FROM site_settings WHERE `key`='frontend_logo_url' LIMIT 1");
-            if ($res && $res->num_rows > 0) {
-                $row = $res->fetch_assoc();
-                $candidate = $row['v'] ?? null;
-            }
-        } catch (Throwable $e) {
-        }
-    }
-
-    return is_string($candidate) && $candidate !== '' ? htmlspecialchars($candidate) : '';
+    return is_string($candidate) && $candidate !== '' ? htmlspecialchars(fw_versioned_asset_url($candidate)) : '';
 }
 
 function get_auth_logo_url($conn): string
@@ -230,29 +264,10 @@ function get_auth_logo_url($conn): string
         return '';
     }
 
-    $candidate = null;
-    try {
-        $res = $conn->query("SELECT setting_value AS v FROM site_settings WHERE setting_key='auth_logo_url' LIMIT 1");
-        if ($res && $res->num_rows > 0) {
-            $row = $res->fetch_assoc();
-            $candidate = $row['v'] ?? null;
-        }
-    } catch (Throwable $e) {
-    }
-
-    if ($candidate === null) {
-        try {
-            $res = $conn->query("SELECT `value` AS v FROM site_settings WHERE `key`='auth_logo_url' LIMIT 1");
-            if ($res && $res->num_rows > 0) {
-                $row = $res->fetch_assoc();
-                $candidate = $row['v'] ?? null;
-            }
-        } catch (Throwable $e) {
-        }
-    }
+    $candidate = fw_site_setting_value($conn, 'auth_logo_url', 'auth_logo_url');
 
     if (is_string($candidate) && $candidate !== '') {
-        return htmlspecialchars($candidate);
+        return htmlspecialchars(fw_versioned_asset_url($candidate));
     }
 
     // Backward compatibility for existing installs.
@@ -265,29 +280,10 @@ function get_dashboard_logo_url($conn): string
         return '';
     }
 
-    $candidate = null;
-    try {
-        $res = $conn->query("SELECT setting_value AS v FROM site_settings WHERE setting_key='dashboard_logo_url' LIMIT 1");
-        if ($res && $res->num_rows > 0) {
-            $row = $res->fetch_assoc();
-            $candidate = $row['v'] ?? null;
-        }
-    } catch (Throwable $e) {
-    }
-
-    if ($candidate === null) {
-        try {
-            $res = $conn->query("SELECT `value` AS v FROM site_settings WHERE `key`='dashboard_logo_url' LIMIT 1");
-            if ($res && $res->num_rows > 0) {
-                $row = $res->fetch_assoc();
-                $candidate = $row['v'] ?? null;
-            }
-        } catch (Throwable $e) {
-        }
-    }
+    $candidate = fw_site_setting_value($conn, 'dashboard_logo_url', 'dashboard_logo_url');
 
     if (is_string($candidate) && $candidate !== '') {
-        return htmlspecialchars($candidate);
+        return htmlspecialchars(fw_versioned_asset_url($candidate));
     }
 
     $adminLogo = get_admin_logo_url($conn);
@@ -304,26 +300,7 @@ function get_admin_logo_url($conn): string
         return '';
     }
 
-    $candidate = null;
-    try {
-        $res = $conn->query("SELECT setting_value AS v FROM site_settings WHERE setting_key='admin_logo_url' LIMIT 1");
-        if ($res && $res->num_rows > 0) {
-            $row = $res->fetch_assoc();
-            $candidate = $row['v'] ?? null;
-        }
-    } catch (Throwable $e) {
-    }
+    $candidate = fw_site_setting_value($conn, 'admin_logo_url', 'admin_logo_url');
 
-    if ($candidate === null) {
-        try {
-            $res = $conn->query("SELECT `value` AS v FROM site_settings WHERE `key`='admin_logo_url' LIMIT 1");
-            if ($res && $res->num_rows > 0) {
-                $row = $res->fetch_assoc();
-                $candidate = $row['v'] ?? null;
-            }
-        } catch (Throwable $e) {
-        }
-    }
-
-    return is_string($candidate) && $candidate !== '' ? htmlspecialchars($candidate) : '';
+    return is_string($candidate) && $candidate !== '' ? htmlspecialchars(fw_versioned_asset_url($candidate)) : '';
 }

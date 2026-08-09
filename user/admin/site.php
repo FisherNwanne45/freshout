@@ -1,11 +1,11 @@
 <?php
 session_start();
-include_once ('session.php');
-if(!isset($_SESSION['email'])){
-	
-header("Location: login.php");
+include_once('session.php');
+if (!isset($_SESSION['email'])) {
 
-exit(); 
+  header("Location: login.php");
+
+  exit();
 }
 require_once 'class.admin.php';
 require dirname(__DIR__, 2) . '/config.php';
@@ -13,7 +13,8 @@ $conn = $GLOBALS['conn'] ?? null;
 
 $reg_user = new USER();
 
-function site_setting_get(mysqli $conn, string $key, string $default = ''): string {
+function site_setting_get(mysqli $conn, string $key, string $default = ''): string
+{
   $safe = $conn->real_escape_string($key);
   try {
     $res = $conn->query("SELECT setting_value FROM site_settings WHERE setting_key='" . $safe . "' ORDER BY id DESC LIMIT 1");
@@ -34,7 +35,8 @@ function site_setting_get(mysqli $conn, string $key, string $default = ''): stri
   return $default;
 }
 
-function site_setting_set(mysqli $conn, string $key, string $value): void {
+function site_setting_set(mysqli $conn, string $key, string $value): void
+{
   $safeKey = $conn->real_escape_string($key);
   $safeVal = $conn->real_escape_string($value);
 
@@ -76,7 +78,8 @@ function site_setting_set(mysqli $conn, string $key, string $value): void {
   }
 }
 
-function handle_site_upload(string $fieldName, string $destDir, array $allowedExt, int $maxBytes, string $prefix): array {
+function handle_site_upload(string $fieldName, string $destDir, array $allowedExt, int $maxBytes, string $prefix): array
+{
   if (!isset($_FILES[$fieldName]) || !is_array($_FILES[$fieldName])) {
     return ['file' => null, 'error' => '', 'path' => null];
   }
@@ -138,7 +141,8 @@ function handle_site_upload(string $fieldName, string $destDir, array $allowedEx
   return ['file' => null, 'error' => 'Could not save uploaded file.', 'path' => null];
 }
 
-function normalize_livechat_embed(string $raw): string {
+function normalize_livechat_embed(string $raw): string
+{
   $raw = trim($raw);
   if ($raw === '') {
     return '';
@@ -157,7 +161,7 @@ function normalize_livechat_embed(string $raw): string {
   return $raw;
 }
 
-if(isset($_GET['id'])){
+if (isset($_GET['id'])) {
   $id = (int)$_GET['id'];
 } else {
   $id = 1;
@@ -217,8 +221,7 @@ $buildLogoPreviewUrls = static function (array $siteRow, string $authLogo, strin
 
 $currentFavicon = site_setting_get($conn, 'site_favicon', '');
 
-if(isset($_POST['upgrade']))
-{
+if (isset($_POST['upgrade'])) {
   $name  = trim((string)($_POST['name'] ?? ''));
   $phone = trim((string)($_POST['phone'] ?? ''));
   $email = trim((string)($_POST['email'] ?? ''));
@@ -307,7 +310,7 @@ if(isset($_POST['upgrade']))
     if ($favAbs === '') {
       $favAbs = $uploadDir . '/' . $currentFavicon;
     }
-    
+
     // Ensure favicon is copied to all required locations
     $favicopaths = [
       dirname(__DIR__) . '/img/favicon.png',
@@ -324,7 +327,7 @@ if(isset($_POST['upgrade']))
       dirname(__DIR__, 2) . '/themes/theme1/img/favicon-16x16.png',
       dirname(__DIR__, 2) . '/themes/theme1/images/favicon.png',
     ];
-    
+
     foreach ($favicopaths as $favPath) {
       $favDir = dirname($favPath);
       if (!is_dir($favDir)) {
@@ -336,18 +339,18 @@ if(isset($_POST['upgrade']))
     }
   }
 
-    $safeName  = $conn->real_escape_string($name);
-    $safePhone = $conn->real_escape_string($phone);
-    $safeEmail = $conn->real_escape_string($email);
-    $safeAddr  = $conn->real_escape_string($addr);
-    $safeTawk  = $conn->real_escape_string($tawk);
-    $safeImage = $conn->real_escape_string($image);
+  $safeName  = $conn->real_escape_string($name);
+  $safePhone = $conn->real_escape_string($phone);
+  $safeEmail = $conn->real_escape_string($email);
+  $safeAddr  = $conn->real_escape_string($addr);
+  $safeTawk  = $conn->real_escape_string($tawk);
+  $safeImage = $conn->real_escape_string($image);
 
-    $conn->query("UPDATE site SET name='$safeName', phone='$safePhone', email='$safeEmail', addr='$safeAddr', tawk='$safeTawk', image='$safeImage' WHERE id=" . (int)$id);
+  $conn->query("UPDATE site SET name='$safeName', phone='$safePhone', email='$safeEmail', addr='$safeAddr', tawk='$safeTawk', image='$safeImage' WHERE id=" . (int)$id);
 
-    $stmt = $reg_user->runQuery("SELECT * FROM site WHERE id='" . (int)$id . "'");
-    $stmt->execute();
-    $row = $stmt->fetch(PDO::FETCH_ASSOC);
+  $stmt = $reg_user->runQuery("SELECT * FROM site WHERE id='" . (int)$id . "'");
+  $stmt->execute();
+  $row = $stmt->fetch(PDO::FETCH_ASSOC);
 
   [$authLogoPreviewUrl, $dashboardLogoPreviewUrl] = $buildLogoPreviewUrls(
     is_array($row) ? $row : [],
@@ -386,167 +389,227 @@ $branchRes = $conn->query("SELECT * FROM site_branches ORDER BY sort_order, id")
 if ($branchRes) while ($b = $branchRes->fetch_assoc()) $allBranches[] = $b;
 
 if (isset($_POST['add_branch'])) {
-    $bName  = trim($conn->real_escape_string($_POST['branch_name']  ?? ''));
-    $bAddr  = trim($conn->real_escape_string($_POST['branch_addr']  ?? ''));
-    $bPhone = trim($conn->real_escape_string($_POST['branch_phone'] ?? ''));
-    $bOrder = (int)($_POST['branch_order'] ?? 99);
-    if ($bName && $bAddr) {
-        $conn->query("INSERT INTO site_branches (branch_name,address,phone,sort_order) VALUES ('$bName','$bAddr','$bPhone',$bOrder)");
-        $branchMsg = "<div class='alert alert-success'><button class='close' data-dismiss='alert'>&times;</button><strong>Branch added.</strong></div>";
-    } else {
-        $branchMsg = "<div class='alert alert-danger'><button class='close' data-dismiss='alert'>&times;</button><strong>Branch name and address are required.</strong></div>";
-    }
-    $branchRes = $conn->query("SELECT * FROM site_branches ORDER BY sort_order, id");
-    $allBranches = []; while ($b = $branchRes->fetch_assoc()) $allBranches[] = $b;
+  $bName  = trim($conn->real_escape_string($_POST['branch_name']  ?? ''));
+  $bAddr  = trim($conn->real_escape_string($_POST['branch_addr']  ?? ''));
+  $bPhone = trim($conn->real_escape_string($_POST['branch_phone'] ?? ''));
+  $bOrder = (int)($_POST['branch_order'] ?? 99);
+  if ($bName && $bAddr) {
+    $conn->query("INSERT INTO site_branches (branch_name,address,phone,sort_order) VALUES ('$bName','$bAddr','$bPhone',$bOrder)");
+    $branchMsg = "<div class='alert alert-success'><button class='close' data-dismiss='alert'>&times;</button><strong>Branch added.</strong></div>";
+  } else {
+    $branchMsg = "<div class='alert alert-danger'><button class='close' data-dismiss='alert'>&times;</button><strong>Branch name and address are required.</strong></div>";
+  }
+  $branchRes = $conn->query("SELECT * FROM site_branches ORDER BY sort_order, id");
+  $allBranches = [];
+  while ($b = $branchRes->fetch_assoc()) $allBranches[] = $b;
 }
 if (isset($_POST['update_branch'])) {
-    $bId    = (int)($_POST['branch_id']      ?? 0);
-    $bName  = trim($conn->real_escape_string($_POST['branch_name_e']  ?? ''));
-    $bAddr  = trim($conn->real_escape_string($_POST['branch_addr_e']  ?? ''));
-    $bPhone = trim($conn->real_escape_string($_POST['branch_phone_e'] ?? ''));
-    $bOrder = (int)($_POST['branch_order_e'] ?? 99);
-    if ($bId && $bName) {
-        $conn->query("UPDATE site_branches SET branch_name='$bName', address='$bAddr', phone='$bPhone', sort_order=$bOrder WHERE id=$bId");
-    }
-    header('Location: ' . $_SERVER['PHP_SELF'] . '?id=' . (int)($_GET['id'] ?? 20)); exit();
+  $bId    = (int)($_POST['branch_id']      ?? 0);
+  $bName  = trim($conn->real_escape_string($_POST['branch_name_e']  ?? ''));
+  $bAddr  = trim($conn->real_escape_string($_POST['branch_addr_e']  ?? ''));
+  $bPhone = trim($conn->real_escape_string($_POST['branch_phone_e'] ?? ''));
+  $bOrder = (int)($_POST['branch_order_e'] ?? 99);
+  if ($bId && $bName) {
+    $conn->query("UPDATE site_branches SET branch_name='$bName', address='$bAddr', phone='$bPhone', sort_order=$bOrder WHERE id=$bId");
+  }
+  header('Location: ' . $_SERVER['PHP_SELF'] . '?id=' . (int)($_GET['id'] ?? 20));
+  exit();
 }
 if (isset($_POST['toggle_branch'])) {
-    $bId = (int)$_POST['toggle_branch'];
-    $conn->query("UPDATE site_branches SET is_active = 1 - is_active WHERE id = $bId");
-    header('Location: ' . $_SERVER['PHP_SELF'] . '?id=' . (int)($_GET['id'] ?? 20)); exit();
+  $bId = (int)$_POST['toggle_branch'];
+  $conn->query("UPDATE site_branches SET is_active = 1 - is_active WHERE id = $bId");
+  header('Location: ' . $_SERVER['PHP_SELF'] . '?id=' . (int)($_GET['id'] ?? 20));
+  exit();
 }
 if (isset($_POST['delete_branch'])) {
-    $bId = (int)$_POST['delete_branch'];
-    $conn->query("DELETE FROM site_branches WHERE id = $bId");
-    header('Location: ' . $_SERVER['PHP_SELF'] . '?id=' . (int)($_GET['id'] ?? 20)); exit();
+  $bId = (int)$_POST['delete_branch'];
+  $conn->query("DELETE FROM site_branches WHERE id = $bId");
+  header('Location: ' . $_SERVER['PHP_SELF'] . '?id=' . (int)($_GET['id'] ?? 20));
+  exit();
 }
 
 require_once __DIR__ . '/partials/admin-shell-open.php';
 ?>
 
-<?php if(isset($msg)) echo $msg; ?>
+<?php if (isset($msg)) echo $msg; ?>
 <div class="grid grid-cols-1 xl:grid-cols-2 gap-6 items-start">
-<div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 max-w-none">
-  <h2 class="font-semibold text-gray-800 mb-5">Site Information</h2>
-  <?php if(isset($row)): ?>
-  <form method="POST" enctype="multipart/form-data" class="space-y-4">
-    <div><label class="block text-xs font-medium text-gray-700 mb-1">Bank / Site Name</label>
-      <input type="text" name="name" value="<?= htmlspecialchars($row['name'] ?? '') ?>" class="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" required></div>
-    <div><label class="block text-xs font-medium text-gray-700 mb-1">Phone</label>
-      <input type="text" name="phone" value="<?= htmlspecialchars($row['phone'] ?? '') ?>" class="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"></div>
-    <div><label class="block text-xs font-medium text-gray-700 mb-1">Email</label>
-      <input type="email" name="email" value="<?= htmlspecialchars($row['email'] ?? '') ?>" class="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"></div>
-    <div><label class="block text-xs font-medium text-gray-700 mb-1">Address</label>
-      <input type="text" name="addr" value="<?= htmlspecialchars($row['addr'] ?? '') ?>" class="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"></div>
-    <div>
-      <label class="block text-xs font-medium text-gray-700 mb-1">Live Chat Embed Script (Tawk / Any Provider)</label>
-      <textarea name="tawk" rows="4" class="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Paste full live chat embed script. You can also paste a plain Tawk ID like 64a198a694cf5d49dc611232/1h4bjojco"><?= htmlspecialchars((string)($row['tawk'] ?? '')) ?></textarea>
-      <p class="mt-1 text-xs text-gray-500">This script is rendered on user dashboard/auth pages and frontend themes.</p>
-    </div>
-    <div>
-      <label class="block text-xs font-medium text-gray-700 mb-1">Logo Image</label>
-      <input type="file" name="image" class="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 !py-1.5" accept="image/*">
-      <?php if (!empty($row['image']) && is_file(__DIR__ . '/site/' . $row['image'])): ?>
-        <p class="mt-2 text-xs text-gray-500">Current logo:</p>
-        <img src="site/<?= htmlspecialchars($row['image']) ?>" alt="Current logo" class="mt-1 h-12 w-auto rounded border border-gray-200 bg-gray-50 p-1">
-      <?php endif; ?>
-    </div>
-    <div>
-      <label class="block text-xs font-medium text-gray-700 mb-1">Auth Logo</label>
-      <input type="file" name="auth_logo" class="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 !py-1.5" accept="image/*">
-      <p class="mt-1 text-xs text-gray-500">Used on login, register, OTP and forgot-password pages. Falls back to the base logo image when not set.</p>
-      <?php if (!empty($authLogoPreviewUrl)): ?>
-        <p class="mt-2 text-xs text-gray-500">Auth logo preview:</p>
-        <img src="<?= htmlspecialchars($authLogoPreviewUrl) ?>" alt="Auth logo preview" class="mt-1 h-12 w-auto rounded border border-gray-200 bg-gray-50 p-1">
-      <?php endif; ?>
-    </div>
-    <div>
-      <label class="block text-xs font-medium text-gray-700 mb-1">Dashboard Logo</label>
-      <input type="file" name="dashboard_logo" class="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 !py-1.5" accept="image/*">
-      <p class="mt-1 text-xs text-gray-500">Used on customer dashboard pages. Falls back to the base logo image when not set.</p>
-      <?php if (!empty($dashboardLogoPreviewUrl)): ?>
-        <p class="mt-2 text-xs text-gray-500">Dashboard logo preview:</p>
-        <img src="<?= htmlspecialchars($dashboardLogoPreviewUrl) ?>" alt="Dashboard logo preview" class="mt-1 h-12 w-auto rounded border border-gray-200 bg-gray-50 p-1">
-      <?php endif; ?>
-    </div>
-    <div>
-      <label class="block text-xs font-medium text-gray-700 mb-1">Favicon</label>
-      <input type="file" name="favicon" class="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 !py-1.5" accept=".ico,image/png,image/x-icon,image/svg+xml,image/*">
-      <?php if (!empty($currentFavicon) && is_file(__DIR__ . '/site/' . $currentFavicon)): ?>
-        <p class="mt-2 text-xs text-gray-500">Current favicon:</p>
-        <img src="site/<?= htmlspecialchars($currentFavicon) ?>" alt="Current favicon" class="mt-1 h-8 w-8 rounded border border-gray-200 bg-gray-50 p-1">
-      <?php endif; ?>
-    </div>
-    <div class="flex gap-3">
-      <button type="submit" name="upgrade" class="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium px-4 py-2 rounded-lg transition-colors cursor-pointer"><i class="fa-solid fa-floppy-disk"></i> Save Changes</button>
-    </div>
-  </form>
-  <?php endif; ?>
-</div>
-
-<?php if($branchMsg) echo $branchMsg; ?>
-
-<!-- Branch Addresses -->
-<div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 max-w-none">
-  <h2 class="font-semibold text-gray-800 mb-5">Branch Addresses</h2>
-  <!-- Add form -->
-  <form method="POST" class="mb-6">
-    <p class="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-3">Add Branch</p>
-    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
-      <div><label class="block text-xs font-medium text-gray-700 mb-1">Branch Name <span class="text-red-500">*</span></label>
-        <input type="text" name="branch_name" class="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Downtown Branch" required></div>
-      <div><label class="block text-xs font-medium text-gray-700 mb-1">Phone</label>
-        <input type="text" name="branch_phone" class="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="+1 555 000 0000"></div>
-      <div class="sm:col-span-2"><label class="block text-xs font-medium text-gray-700 mb-1">Address <span class="text-red-500">*</span></label>
-        <input type="text" name="branch_addr" class="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="123 Main St, City, State 00000" required></div>
-      <div><label class="block text-xs font-medium text-gray-700 mb-1">Sort Order</label>
-        <input type="number" name="branch_order" class="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" value="99" min="0"></div>
-    </div>
-    <button type="submit" name="add_branch" class="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium px-4 py-2 rounded-lg transition-colors cursor-pointer"><i class="fa-solid fa-plus"></i> Add Branch</button>
-  </form>
-
-  <!-- Branches table -->
-  <?php if(!empty($allBranches)): ?>
-  <div class="overflow-x-auto">
-    <table class="min-w-full text-sm border-collapse">
-      <thead>
-        <tr class="bg-gray-50 border-y border-gray-200">
-          <th class="px-3 py-2.5 text-left text-xs font-semibold text-gray-600 uppercase tracking-wide">Branch</th>
-          <th class="px-3 py-2.5 text-left text-xs font-semibold text-gray-600 uppercase tracking-wide">Address</th>
-          <th class="px-3 py-2.5 text-left text-xs font-semibold text-gray-600 uppercase tracking-wide">Phone</th>
-          <th class="px-3 py-2.5 text-left text-xs font-semibold text-gray-600 uppercase tracking-wide">Status</th>
-          <th class="px-3 py-2.5 text-left text-xs font-semibold text-gray-600 uppercase tracking-wide">Actions</th>
-        </tr>
-      </thead>
-      <tbody class="divide-y divide-gray-100">
-        <?php foreach($allBranches as $b): ?>
-        <tr class="hover:bg-gray-50">
-          <td class="px-3 py-3 text-sm text-gray-700 font-medium"><?= htmlspecialchars($b['branch_name']) ?></td>
-          <td class="px-3 py-3 text-sm text-gray-700"><?= htmlspecialchars($b['address']) ?></td>
-          <td class="px-3 py-3 text-sm text-gray-700"><?= htmlspecialchars($b['phone']) ?></td>
-          <td class="px-3 py-3 text-sm">
-            <form method="POST" class="inline">
-              <input type="hidden" name="toggle_branch" value="<?= $b['id'] ?>">
-              <button type="submit" class="text-xs <?= $b['is_active'] ? 'text-green-600' : 'text-gray-400' ?> hover:underline"><?= $b['is_active'] ? 'Active' : 'Inactive' ?></button>
-            </form>
-          </td>
-          <td class="px-3 py-3 text-sm flex gap-2">
-            <button onclick="editBranch(<?= $b['id'] ?>,'<?= htmlspecialchars(addslashes($b['branch_name'])) ?>','<?= htmlspecialchars(addslashes($b['address'])) ?>','<?= htmlspecialchars(addslashes($b['phone'])) ?>',<?= (int)$b['sort_order'] ?>)"
-              class="inline-flex items-center gap-1 bg-blue-600 hover:bg-blue-700 text-white text-xs font-medium px-2 py-0.5 rounded-lg cursor-pointer"><i class="fa-solid fa-pen"></i></button>
-            <form method="POST" class="inline" onsubmit="return confirm('Delete this branch?')">
-              <input type="hidden" name="delete_branch" value="<?= $b['id'] ?>">
-              <button type="submit" class="inline-flex items-center gap-1 bg-red-500 hover:bg-red-600 text-white text-xs font-medium px-2 py-0.5 rounded-lg cursor-pointer"><i class="fa-solid fa-trash"></i></button>
-            </form>
-          </td>
-        </tr>
-        <?php endforeach; ?>
-      </tbody>
-    </table>
+  <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 max-w-none">
+    <h2 class="font-semibold text-gray-800 mb-5">Site Information</h2>
+    <?php if (isset($row)): ?>
+      <form method="POST" enctype="multipart/form-data" class="space-y-4">
+        <div><label class="block text-xs font-medium text-gray-700 mb-1">Bank / Site Name</label>
+          <input type="text" name="name" value="<?= htmlspecialchars($row['name'] ?? '') ?>"
+            class="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+            required>
+        </div>
+        <div><label class="block text-xs font-medium text-gray-700 mb-1">Phone</label>
+          <input type="text" name="phone" value="<?= htmlspecialchars($row['phone'] ?? '') ?>"
+            class="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+        </div>
+        <div><label class="block text-xs font-medium text-gray-700 mb-1">Email</label>
+          <input type="email" name="email" value="<?= htmlspecialchars($row['email'] ?? '') ?>"
+            class="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+        </div>
+        <div><label class="block text-xs font-medium text-gray-700 mb-1">Address</label>
+          <input type="text" name="addr" value="<?= htmlspecialchars($row['addr'] ?? '') ?>"
+            class="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+        </div>
+        <div>
+          <label class="block text-xs font-medium text-gray-700 mb-1">Live Chat Embed Script (Tawk / Any
+            Provider)</label>
+          <textarea name="tawk" rows="4"
+            class="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+            placeholder="Paste full live chat embed script. You can also paste a plain Tawk ID like 64a198a694cf5d49dc611232/1h4bjojco"><?= htmlspecialchars((string)($row['tawk'] ?? '')) ?></textarea>
+          <p class="mt-1 text-xs text-gray-500">This script is rendered on user dashboard/auth pages and frontend
+            themes.</p>
+        </div>
+        <div>
+          <label class="block text-xs font-medium text-gray-700 mb-1">Logo Image</label>
+          <input type="file" name="image"
+            class="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 !py-1.5"
+            accept="image/*">
+          <?php if (!empty($row['image']) && is_file(__DIR__ . '/site/' . $row['image'])): ?>
+            <p class="mt-2 text-xs text-gray-500">Current logo:</p>
+            <img src="site/<?= htmlspecialchars($row['image']) ?>" alt="Current logo"
+              class="mt-1 h-12 w-auto rounded border border-gray-200 bg-gray-50 p-1">
+          <?php endif; ?>
+        </div>
+        <div>
+          <label class="block text-xs font-medium text-gray-700 mb-1">Auth Logo</label>
+          <input type="file" name="auth_logo"
+            class="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 !py-1.5"
+            accept="image/*">
+          <p class="mt-1 text-xs text-gray-500">Used on login, register, OTP and forgot-password pages. Falls back
+            to the base logo image when not set.</p>
+          <?php if (!empty($authLogoPreviewUrl)): ?>
+            <p class="mt-2 text-xs text-gray-500">Auth logo preview:</p>
+            <img src="<?= htmlspecialchars($authLogoPreviewUrl) ?>" alt="Auth logo preview"
+              class="mt-1 h-12 w-auto rounded border border-gray-200 bg-gray-50 p-1">
+          <?php endif; ?>
+        </div>
+        <div>
+          <label class="block text-xs font-medium text-gray-700 mb-1">Dashboard Logo</label>
+          <input type="file" name="dashboard_logo"
+            class="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 !py-1.5"
+            accept="image/*">
+          <p class="mt-1 text-xs text-gray-500">Used on customer dashboard pages. Falls back to the base logo
+            image when not set.</p>
+          <?php if (!empty($dashboardLogoPreviewUrl)): ?>
+            <p class="mt-2 text-xs text-gray-500">Dashboard logo preview:</p>
+            <img src="<?= htmlspecialchars($dashboardLogoPreviewUrl) ?>" alt="Dashboard logo preview"
+              class="mt-1 h-12 w-auto rounded border border-gray-200 bg-gray-50 p-1">
+          <?php endif; ?>
+        </div>
+        <div>
+          <label class="block text-xs font-medium text-gray-700 mb-1">Favicon</label>
+          <input type="file" name="favicon"
+            class="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 !py-1.5"
+            accept=".ico,image/png,image/x-icon,image/svg+xml,image/*">
+          <?php if (!empty($currentFavicon) && is_file(__DIR__ . '/site/' . $currentFavicon)): ?>
+            <p class="mt-2 text-xs text-gray-500">Current favicon:</p>
+            <img src="site/<?= htmlspecialchars($currentFavicon) ?>" alt="Current favicon"
+              class="mt-1 h-8 w-8 rounded border border-gray-200 bg-gray-50 p-1">
+          <?php endif; ?>
+        </div>
+        <div class="flex gap-3">
+          <button type="submit" name="upgrade"
+            class="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium px-4 py-2 rounded-lg transition-colors cursor-pointer"><i
+              class="fa-solid fa-floppy-disk"></i> Save Changes</button>
+        </div>
+      </form>
+    <?php endif; ?>
   </div>
-  <?php else: ?>
-  <p class="text-gray-400 text-sm">No branches added yet. Use the form above to add one.</p>
-  <?php endif; ?>
-</div>
+
+  <?php if ($branchMsg) echo $branchMsg; ?>
+
+  <!-- Branch Addresses -->
+  <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 max-w-none">
+    <h2 class="font-semibold text-gray-800 mb-5">Branch Addresses</h2>
+    <!-- Add form -->
+    <form method="POST" class="mb-6">
+      <p class="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-3">Add Branch</p>
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
+        <div><label class="block text-xs font-medium text-gray-700 mb-1">Branch Name <span
+              class="text-red-500">*</span></label>
+          <input type="text" name="branch_name"
+            class="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+            placeholder="Downtown Branch" required>
+        </div>
+        <div><label class="block text-xs font-medium text-gray-700 mb-1">Phone</label>
+          <input type="text" name="branch_phone"
+            class="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+            placeholder="+1 555 000 0000">
+        </div>
+        <div class="sm:col-span-2"><label class="block text-xs font-medium text-gray-700 mb-1">Address <span
+              class="text-red-500">*</span></label>
+          <input type="text" name="branch_addr"
+            class="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+            placeholder="123 Main St, City, State 00000" required>
+        </div>
+        <div><label class="block text-xs font-medium text-gray-700 mb-1">Sort Order</label>
+          <input type="number" name="branch_order"
+            class="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+            value="99" min="0">
+        </div>
+      </div>
+      <button type="submit" name="add_branch"
+        class="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium px-4 py-2 rounded-lg transition-colors cursor-pointer"><i
+          class="fa-solid fa-plus"></i> Add Branch</button>
+    </form>
+
+    <!-- Branches table -->
+    <?php if (!empty($allBranches)): ?>
+      <div class="overflow-x-auto">
+        <table class="min-w-full text-sm border-collapse">
+          <thead>
+            <tr class="bg-gray-50 border-y border-gray-200">
+              <th class="px-3 py-2.5 text-left text-xs font-semibold text-gray-600 uppercase tracking-wide">
+                Branch</th>
+              <th class="px-3 py-2.5 text-left text-xs font-semibold text-gray-600 uppercase tracking-wide">
+                Address</th>
+              <th class="px-3 py-2.5 text-left text-xs font-semibold text-gray-600 uppercase tracking-wide">
+                Phone</th>
+              <th class="px-3 py-2.5 text-left text-xs font-semibold text-gray-600 uppercase tracking-wide">
+                Status</th>
+              <th class="px-3 py-2.5 text-left text-xs font-semibold text-gray-600 uppercase tracking-wide">
+                Actions</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-gray-100">
+            <?php foreach ($allBranches as $b): ?>
+              <tr class="hover:bg-gray-50">
+                <td class="px-3 py-3 text-sm text-gray-700 font-medium">
+                  <?= htmlspecialchars($b['branch_name']) ?></td>
+                <td class="px-3 py-3 text-sm text-gray-700"><?= htmlspecialchars($b['address']) ?></td>
+                <td class="px-3 py-3 text-sm text-gray-700"><?= htmlspecialchars($b['phone']) ?></td>
+                <td class="px-3 py-3 text-sm">
+                  <form method="POST" class="inline">
+                    <input type="hidden" name="toggle_branch" value="<?= $b['id'] ?>">
+                    <button type="submit"
+                      class="text-xs <?= $b['is_active'] ? 'text-green-600' : 'text-gray-400' ?> hover:underline"><?= $b['is_active'] ? 'Active' : 'Inactive' ?></button>
+                  </form>
+                </td>
+                <td class="px-3 py-3 text-sm flex gap-2">
+                  <button
+                    onclick="editBranch(<?= $b['id'] ?>,'<?= htmlspecialchars(addslashes($b['branch_name'])) ?>','<?= htmlspecialchars(addslashes($b['address'])) ?>','<?= htmlspecialchars(addslashes($b['phone'])) ?>',<?= (int)$b['sort_order'] ?>)"
+                    class="inline-flex items-center gap-1 bg-blue-600 hover:bg-blue-700 text-white text-xs font-medium px-2 py-0.5 rounded-lg cursor-pointer"><i
+                      class="fa-solid fa-pen"></i></button>
+                  <form method="POST" class="inline" onsubmit="return confirm('Delete this branch?')">
+                    <input type="hidden" name="delete_branch" value="<?= $b['id'] ?>">
+                    <button type="submit"
+                      class="inline-flex items-center gap-1 bg-red-500 hover:bg-red-600 text-white text-xs font-medium px-2 py-0.5 rounded-lg cursor-pointer"><i
+                        class="fa-solid fa-trash"></i></button>
+                  </form>
+                </td>
+              </tr>
+            <?php endforeach; ?>
+          </tbody>
+        </table>
+      </div>
+    <?php else: ?>
+      <p class="text-gray-400 text-sm">No branches added yet. Use the form above to add one.</p>
+    <?php endif; ?>
+  </div>
 </div>
 
 <!-- Edit Branch Modal -->
@@ -556,29 +619,40 @@ require_once __DIR__ . '/partials/admin-shell-open.php';
     <form method="POST" class="space-y-3">
       <input type="hidden" id="branch-id" name="branch_id">
       <div><label class="block text-xs font-medium text-gray-700 mb-1">Branch Name</label>
-        <input type="text" id="branch-name-e" name="branch_name_e" class="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" required></div>
+        <input type="text" id="branch-name-e" name="branch_name_e"
+          class="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+          required>
+      </div>
       <div><label class="block text-xs font-medium text-gray-700 mb-1">Address</label>
-        <input type="text" id="branch-addr-e" name="branch_addr_e" class="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"></div>
+        <input type="text" id="branch-addr-e" name="branch_addr_e"
+          class="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+      </div>
       <div><label class="block text-xs font-medium text-gray-700 mb-1">Phone</label>
-        <input type="text" id="branch-phone-e" name="branch_phone_e" class="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"></div>
+        <input type="text" id="branch-phone-e" name="branch_phone_e"
+          class="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+      </div>
       <div><label class="block text-xs font-medium text-gray-700 mb-1">Sort Order</label>
-        <input type="number" id="branch-order-e" name="branch_order_e" class="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"></div>
+        <input type="number" id="branch-order-e" name="branch_order_e"
+          class="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+      </div>
       <div class="flex gap-3 justify-end pt-2">
-        <button type="button" onclick="document.getElementById('edit-branch-modal').classList.add('hidden')" class="inline-flex items-center bg-gray-200 hover:bg-gray-300 text-gray-700 text-xs font-medium px-3 py-1.5 rounded-lg cursor-pointer">Cancel</button>
-        <button type="submit" name="update_branch" class="inline-flex items-center bg-green-600 hover:bg-green-700 text-white text-xs font-medium px-3 py-1.5 rounded-lg cursor-pointer">Save</button>
+        <button type="button" onclick="document.getElementById('edit-branch-modal').classList.add('hidden')"
+          class="inline-flex items-center bg-gray-200 hover:bg-gray-300 text-gray-700 text-xs font-medium px-3 py-1.5 rounded-lg cursor-pointer">Cancel</button>
+        <button type="submit" name="update_branch"
+          class="inline-flex items-center bg-green-600 hover:bg-green-700 text-white text-xs font-medium px-3 py-1.5 rounded-lg cursor-pointer">Save</button>
       </div>
     </form>
   </div>
 </div>
 <script>
-function editBranch(id, name, addr, phone, order) {
-  document.getElementById('branch-id').value = id;
-  document.getElementById('branch-name-e').value = name;
-  document.getElementById('branch-addr-e').value = addr;
-  document.getElementById('branch-phone-e').value = phone;
-  document.getElementById('branch-order-e').value = order;
-  document.getElementById('edit-branch-modal').classList.remove('hidden');
-}
+  function editBranch(id, name, addr, phone, order) {
+    document.getElementById('branch-id').value = id;
+    document.getElementById('branch-name-e').value = name;
+    document.getElementById('branch-addr-e').value = addr;
+    document.getElementById('branch-phone-e').value = phone;
+    document.getElementById('branch-order-e').value = order;
+    document.getElementById('edit-branch-modal').classList.remove('hidden');
+  }
 </script>
 
 <?php require_once __DIR__ . '/partials/admin-shell-close.php'; ?>

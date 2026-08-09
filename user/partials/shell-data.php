@@ -2,12 +2,14 @@
 // ── Shell Data Partial ─────────────────────────────────────────────────────────
 // Computes display variables for shell-open.php + shell-close.php.
 // Include AFTER page has established $reg_user (or $user_home), $row, $accNo.
-if (defined('SHELL_DATA_LOADED')) { return; }
+if (defined('SHELL_DATA_LOADED')) {
+    return;
+}
 define('SHELL_DATA_LOADED', 1);
 
 // Resolve USER instance + row regardless of page variable name
 $_shellDb  = isset($reg_user)   && ($reg_user  instanceof USER) ? $reg_user
-           : (isset($user_home) && ($user_home instanceof USER) ? $user_home : null);
+    : (isset($user_home) && ($user_home instanceof USER) ? $user_home : null);
 $_shellRow = isset($row) && is_array($row) ? $row : [];
 $shellAccNo = isset($accNo) ? (string)$accNo : (string)($_SESSION['acc_no'] ?? '');
 
@@ -123,7 +125,8 @@ if ($_shellDb) {
                 $shellLogoUrl = $versionAssetUrl('admin/site/' . rawurlencode($logoFile));
             }
         }
-    } catch (Throwable $e) {}
+    } catch (Throwable $e) {
+    }
 }
 
 if ($shellLogoUrl === '') {
@@ -139,9 +142,15 @@ if (!function_exists('get_auth_palette') && is_file(__DIR__ . '/../auth-theme.ph
 
 // -- Color palette ---------------------------------------------------------
 $shellPalette = [
-    'navy'=>'#0d1f3c','navy2'=>'#162847','gold'=>'#c9a84c','gold2'=>'#e8c96e',
-    'light'=>'#f5f6fa','muted'=>'#8895a7','border'=>'#dce3ec',
-    'danger'=>'#c0392b','success'=>'#16a34a',
+    'navy' => '#0d1f3c',
+    'navy2' => '#162847',
+    'gold' => '#c9a84c',
+    'gold2' => '#e8c96e',
+    'light' => '#f5f6fa',
+    'muted' => '#8895a7',
+    'border' => '#dce3ec',
+    'danger' => '#c0392b',
+    'success' => '#16a34a',
 ];
 $_shellAuthScheme = 'default';
 if ($_shellDb) {
@@ -150,14 +159,19 @@ if ($_shellDb) {
         $sq = $_shellDb->runQuery("SELECT setting_value FROM site_settings WHERE setting_key='auth_color_scheme' ORDER BY id DESC LIMIT 1");
         $sq->execute();
         $sv = $sq->fetch(PDO::FETCH_ASSOC);
-        if ($sv && !empty($sv['setting_value'])) { $_shellAuthScheme = (string)$sv['setting_value']; }
+        if ($sv && !empty($sv['setting_value'])) {
+            $_shellAuthScheme = (string)$sv['setting_value'];
+        }
     } catch (Throwable $e) {
         try {
             $sq = $_shellDb->runQuery("SELECT `value` FROM site_settings WHERE `key`='auth_color_scheme' ORDER BY id DESC LIMIT 1");
             $sq->execute();
             $sv = $sq->fetch(PDO::FETCH_ASSOC);
-            if ($sv && !empty($sv['value'])) { $_shellAuthScheme = (string)$sv['value']; }
-        } catch (Throwable $e2) {}
+            if ($sv && !empty($sv['value'])) {
+                $_shellAuthScheme = (string)$sv['value'];
+            }
+        } catch (Throwable $e2) {
+        }
     }
 } elseif (function_exists('get_auth_color_scheme') && isset($conn) && $conn instanceof mysqli) {
     $_shellAuthScheme = get_auth_color_scheme($conn);
@@ -169,12 +183,16 @@ if (function_exists('get_auth_palette')) {
 // -- User identity ---------------------------------------------------------
 $shellFullName = trim(
     ($_shellRow['fname'] ?? '') . ' ' .
-    ($_shellRow['lname'] ?? '')
+        ($_shellRow['lname'] ?? '')
 );
-if ($shellFullName === '') { $shellFullName = 'Customer'; }
+if ($shellFullName === '') {
+    $shellFullName = 'Customer';
+}
 
 $shellBaseCurrency = strtoupper(trim((string)($_shellRow['currency'] ?? 'USD')));
-if (!preg_match('/^[A-Z0-9]{2,10}$/', $shellBaseCurrency)) { $shellBaseCurrency = 'USD'; }
+if (!preg_match('/^[A-Z0-9]{2,10}$/', $shellBaseCurrency)) {
+    $shellBaseCurrency = 'USD';
+}
 
 // -- Account status --------------------------------------------------------
 $shellRawStatus    = trim((string)($_shellRow['status'] ?? 'Active'));
@@ -186,8 +204,10 @@ $shellStatusColor   = '#64748b';
 if (strpos($shellStatusLower, 'dormant') !== false || strpos($shellStatusLower, 'inactive') !== false) {
     $shellDisplayStatus = 'Dormant/Inactive';
     $shellStatusColor   = '#f59e0b';
-} elseif ($shellStatusLower === 'active' || $shellStatusLower === 'pincode' || $shellStatusLower === 'otp'
-          || strpos($shellStatusLower, 'active') !== false) {
+} elseif (
+    $shellStatusLower === 'active' || $shellStatusLower === 'pincode' || $shellStatusLower === 'otp'
+    || strpos($shellStatusLower, 'active') !== false
+) {
     $shellDisplayStatus = 'Active';
     $shellStatusColor   = '#16a34a';
 } elseif ($shellStatusLower === 'closed') {
@@ -211,19 +231,23 @@ if ($shellAvatarSrc === '') {
     $nameParts = preg_split('/\s+/', trim((string)$shellFullName)) ?: [];
     $initials = '';
     foreach ($nameParts as $part) {
-        if ($part === '') { continue; }
+        if ($part === '') {
+            continue;
+        }
         $initials .= strtoupper(substr($part, 0, 1));
-        if (strlen($initials) >= 2) { break; }
+        if (strlen($initials) >= 2) {
+            break;
+        }
     }
     if ($initials === '') {
         $initials = 'CU';
     }
     $label = htmlspecialchars($initials, ENT_QUOTES, 'UTF-8');
     $svg = '<svg xmlns="http://www.w3.org/2000/svg" width="88" height="88" viewBox="0 0 88 88">'
-         . '<defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#0d1f3c"/><stop offset="100%" stop-color="#1f3a63"/></linearGradient></defs>'
-         . '<circle cx="44" cy="44" r="43" fill="url(#g)" stroke="#dce3ec" stroke-width="2"/>'
-         . '<text x="44" y="51" text-anchor="middle" fill="#ffffff" font-size="28" font-family="Arial,sans-serif" font-weight="700">' . $label . '</text>'
-         . '</svg>';
+        . '<defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#0d1f3c"/><stop offset="100%" stop-color="#1f3a63"/></linearGradient></defs>'
+        . '<circle cx="44" cy="44" r="43" fill="url(#g)" stroke="#dce3ec" stroke-width="2"/>'
+        . '<text x="44" y="51" text-anchor="middle" fill="#ffffff" font-size="28" font-family="Arial,sans-serif" font-weight="700">' . $label . '</text>'
+        . '</svg>';
     $shellAvatarSrc = 'data:image/svg+xml;base64,' . base64_encode($svg);
 }
 $shellIdentityLine = 'Account ID: ' . $shellAccNo;
@@ -236,7 +260,8 @@ if ($_shellDb) {
         $mc = $_shellDb->runQuery('SELECT COUNT(*) AS c FROM message WHERE reci_name=:u AND COALESCE(is_read,0)=0');
         $mc->execute([':u' => ($_shellRow['uname'] ?? $shellAccNo)]);
         $shellMessageCount = (int)($mc->fetch(PDO::FETCH_ASSOC)['c'] ?? 0);
-    } catch (Throwable $e) {}
+    } catch (Throwable $e) {
+    }
     try {
         // Ensure the unread marker exists for ticket thread replies.
         try {
@@ -263,7 +288,8 @@ if ($_shellDb) {
             ':sender_name' => $ticketOwnerName,
         ]);
         $shellTicketCount = (int)($tc->fetch(PDO::FETCH_ASSOC)['c'] ?? 0);
-    } catch (Throwable $e) {}
+    } catch (Throwable $e) {
+    }
 }
 
 // -- Current page for active nav -------------------------------------------

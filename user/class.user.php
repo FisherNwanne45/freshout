@@ -612,6 +612,24 @@ class USER
 		}
 
 		$smtp_config = isset($APP_CONFIG['smtp']) && is_array($APP_CONFIG['smtp']) ? $APP_CONFIG['smtp'] : [];
+
+		// Admin SMTP settings are stored in site_settings, so they must win over config.php defaults.
+		foreach ([
+			'host' => 'smtp_host',
+			'port' => 'smtp_port',
+			'secure' => 'smtp_secure',
+			'username' => 'smtp_username',
+			'password' => 'smtp_password',
+			'from' => 'smtp_from',
+			'from_name' => 'smtp_from_name',
+			'reply_to' => 'smtp_reply_to',
+		] as $cfgKey => $settingKey) {
+			$stored = $getSetting($settingKey, null);
+			if ($stored !== null && trim((string)$stored) !== '') {
+				$smtp_config[$cfgKey] = $stored;
+			}
+		}
+
 		$from = $smtp_config['from'] ?? 'noreply@banking.local';
 		$from_name = $smtp_config['from_name'] ?? 'Banking System';
 
@@ -639,7 +657,11 @@ class USER
 			$mailer->SMTPAuth = true;
 			$mailer->Username = (string)($smtp_config['username'] ?? '');
 			$mailer->Password = (string)($smtp_config['password'] ?? '');
-			$secure = (string)($smtp_config['secure'] ?? 'ssl');
+			$secure = strtolower(trim((string)($smtp_config['secure'] ?? 'ssl')));
+			// 'starttls' is stored as an alias; PHPMailer uses 'tls' for STARTTLS.
+			if ($secure === 'starttls') {
+				$secure = 'tls';
+			}
 			$mailer->SMTPSecure = in_array($secure, ['ssl', 'tls'], true) ? $secure : '';
 
 			$mailer->setFrom($from, $from_name);

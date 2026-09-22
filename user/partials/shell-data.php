@@ -220,7 +220,7 @@ if (strpos($shellStatusLower, 'dormant') !== false || strpos($shellStatusLower, 
 
 // -- Sidebar avatar + identity line ----------------------------------------
 $shellAvatarSrc = '';
-$shellAvatarCandidate = trim((string)($_shellRow['image'] ?? ''));
+$shellAvatarCandidate = trim((string)($_shellRow['pp'] ?? ''));
 if ($shellAvatarCandidate !== '') {
     $avatarFile = __DIR__ . '/../admin/foto/' . basename($shellAvatarCandidate);
     if (is_file($avatarFile)) {
